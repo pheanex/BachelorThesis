@@ -1,4 +1,4 @@
-Aufgabe der bachelorarbeit:
+Aufgabe der Bachelorarbeit:
 Gegeben:
 	Ein Wlan netzwerk mit zentralen WLC und vielen APs
 	Matrix mit signalstärken zwischen Aps
@@ -9,35 +9,20 @@ Gesucht:(Mit Christoph nochmal genauer absprechen)
 	Die erzeugung der links sollte eine survival path funktion haben (sollte ein link ausfallen kann der nächste übernommen werden)
 	Nach Möglichkeit sollte auch die Latenz zwischen den Knoten minimiert werden (QoS)
 
-gibt es einen weg einen graphen zeichnen zu lassen bei dem die kantenlaengen zu jedem anderen knoten bekannt sind?
 
 Fragen:
-Ein AP soll nur über einen channel mit einem anderen AP sprechen ja/nein?
-linkbewertung: momentaufnahme oder betrachte gesamte zeit bisher?
-Gibt es einen strukturierteren weg durch paper zu gehen? - Breitensuche/Tiefensuch / strukturiert anmerkungen zu machen? - papergraph?
-wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder sehende AP mit einem anderen verbinden, oder nur möglichst wenige(wie wählt man diese aus?)?
-Ist eine trennung der algorithmen in verbindungserstellungsalgo und channelassignmentalgo sinnvoll?
-Werden Beacons auf einem bestimmten channel gesendet= -> Kann es sein, dass die daraus ermittelte verbindungsqualität nur für den channel gilt auf dem das beacon empfangen wurde? Bzw die Qualität auf anderen channeln ganz anders sein kann?
-Phy signal level als score nutzen!
-Noise level als grundrauschen miteinbeziehen?
-d3js javascript graph als erweitung zu der derzeoitigen python/graphviz loesung nutzen?!
+Gibt es einen strukturierteren weg durch paper zu gehen? - Breitensuche/Tiefensuch / strukturiert anmerkungen zu machen? - papergraph? Ich habe das problem, dass ich paper lese, deren Referenzen folge und dann ua bei papern ankommen von denen ich nicht sofort erkenne, dass ich sie bereits gelesen habe (unnötige arbeit => wie kann man das umgehen?) ich möchte mir einen möglichst guten überblick über alle paper auf einem feld verschaffen. => wie tue ich das? graph software die das gut darstellt? als auch die referenzen untereinander? action science explorer/citation network visualization
 Wie unterteile ich mir das weitere vorgehen? Algorithmensuche/bewertung/...?
-ich möchte mir einen möglichst guten überblick über alle paper auf einem feld verschaffen. => wie tue ich das? graph software die das gut darstellt? als auch die referenzen untereinander? action science explorer/citation network visualization
+Wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder sehende AP mit einem anderen verbinden, oder nur möglichst wenige(wie wählt man diese aus?)?
+Ist eine Trennung der algorithmen in verbindungserstellungsalgo und channelassignmentalgo sinnvoll? Oder soll man einen finden der beides macht? (wie zb INSTC)
+Noise level als grundrauschen miteinbeziehen? Inwiefern war das gemeint?
+warum sehen die einzelnen APs mehr ssids als sie an den WLC zurückmelden? Befürchtung: Aps sehen mehrer andere APs des AutoWDS, melden diese aber nicht an den WLC=>WLC kann nicht auf der kompletten graph-grundlage/Möglichkeiten arbeiten => suboptimale teillösungen
 
-Anmkerungen:
-Die APs müssten eigentlich auf jedem channel messungen machen und feststellen wie sehr die bereits ausgelastet sind(störung durch fremndgeräte) => beachten bei channelverteilung
-vl kann man bei der initialen anfrage der aps auch noch auf die bereits belegten channel achten (andere aps die evtl stören?)
-CA-Algo muss nicht zwingend topology preserving sein
-non-dynamic CA
-non-adaptive
-bei späteren verbesserungen beachte auch die pfadnutzung(traffic/auslastung) und bevorzuge diese
-Für die Link-erzeugung kann man den minimalen spannbaum berechnen und dann jeweils für jede kante nochmal laufen lassen, jedoch ohne diese
+Anmkerungen/Ideen:
+Evtl. kann man bei der initialen Abfrage der aps auch noch auf die bereits belegten channel achten (andere aps die evtl stören?) und versuchen diese zu umgehen?
+Für die Link-erzeugung kann man auf dem zugrundeliegenden (wer sieht wen)-graph den minimalen spannbaum berechnen und das verfahren n(Anzahl der knoten) mal widerholen, nur dass man dabei immer jeweils einen knoten wegnimmt(simuliert dessen ausfall). Am ende fasst man alle diese graphen zu einem zusammen und man hat einen 2-connected-graph
+Joes Buch ali Makram nicht so interessant da distributed CA
 
-
-- Channel Assignment and Security in Multi-Channel Multi_Radio Wireless Mesh Networks:
-	Wir haben wohl als anforderung ein non-dynamic/non-adaptive/static CA
-	clusterung scheint ein distributed ca zu sein
-	Clustering notwendig?
  - Centralized Channel Assignment and Routing Algorithms for Multi-Channel Wireless Mesh Networks:
 	Linkzuteilungsalgo
 	Genau unser szenario
@@ -45,23 +30,36 @@ Für die Link-erzeugung kann man den minimalen spannbaum berechnen und dann jewe
 	verstehe die link load estimation noch nicht ganz
 	unklar wie die links aufgebaut werden sollen.(vl erwartet das eine fertige topologie?)
 
-4 zentrale ansätze (laut paper weishen si overview channel assignment...):
-	CLICA schwierig mit multiplen radios
-	BFS-CA
-	INSTC löst auch k-connected(survival feature)aber all nodes must have same number of radios
-	CTA
+4 zentrale interessante algos (siehe paper weishen si overview channel assignment...):
+	CLICA schwierig mit multiplen radios (marina topology control approach for utilizing)
+	BFS-CA (ramachandran beldgin interference-aware channel assignment in multi-radio wireless mesh networks)
+	INSTC löst auch k-connected(survival feature)aber all nodes must have same number of radios (jian tang interference-aware tolopogy control ans qos routing)
+	CTA (tabu based) - noch nicht genauer betrachtet
 
-laut jos buch interessant:
-rbab06 - ramachandran beldgin interference-aware channel assignment in multi-radio wireless mesh networks -BFS-CA
-akt04 - raniwala architecture and algorithms for assignment and routing 
-abl05 - mansoor alicherry joint channel assignment and routing - math theoretical
-ms05 - marina topology control approach for utilizing - CLICA
-sgd - anand subramanian minimum interference channel assignment - based on tabu based, greedy seems random
-txz05 - jian tang interference-aware tolopogy control ans qos routing - INSTC
-davr05 - das optimization models for fixed channel assignment - solved with ILP theoretically
-dvr06 - das static channel assignment in multi-radio multi-channel
-
-todo:
-graph mit allen sichtbarkeiten (grau) zeichnen
+interessante paper:
+anand subramanian minimum interference channel assignment - based on tabu based, greedy seems random
+das optimization models for fixed channel assignment - solved with ILP theoretically
+das static channel assignment in multi-radio multi-channel
+Minimum Interference Channel Assignment in Multiradio Wireless Mesh networks subramanian:
+	7,8.9.10.11,13
+Todo:
+graph mit allen sichtbarkeiten (grau) zeichnen -> christop (warum sehen die Aps mehr ssids als der WLC)
 channel assignment algorithmen lesen vergleichen
-buch caa verstehen
+
+Done:
+
+Gelöst Fragen:
+gibt es einen weg einen graphen zeichnen zu lassen bei dem die kantenlaengen zu jedem anderen knoten bekannt sind?
+	Ist nicht trivial, wird mir force directed graphs bezeichnet/gemacht. Stichwort Fruchtermann-Ehrenirgendwas methode.
+Linkbewertung: momentaufnahme oder betrachte gesamte zeit bisher?
+	Ich nehme zur Linkbewertung vorerst einen score der sich aus der phys signalstärke zwischen den aps berechnet (Später könnte man das nochverfeinern)
+Ein AP soll nur über einen channel mit einem anderen AP sprechen ja/nein?
+	Ich sage erstmal ja, da verbindungen wertvoll sind und wir wlan module nicht für soetwas verschwenden wollen/sollten
+Werden Beacons auf einem bestimmten channel gesendet= -> Kann es sein, dass die daraus ermittelte verbindungsqualität nur für den channel gilt auf dem das beacon empfangen wurde? Bzw die Qualität auf anderen channeln ganz anders sein kann?
+	Eigentlich stimmt das laut Alfred, aber da evtl störer nicht nur auf einem bestimmten kanal stören (mikrowelle) kann man den einen schon als representativen wählen.
+	Zusätzlich können störer natürlich auch andere wlan sein. Das Problem hierbei ist nur dass wir das mit den lancom geräten anscheinend nicht wirklich erfassen können
+d3js javascript graph als erweitung zu der derzeoitigen python/graphviz loesung nutzen?!
+	Ist zwar nett in js aber ich weiss noch nicht ob wir da genausoviel auswahl bei den darstellungsmöglichkeiten haben(das beispiel ist schon recht simpel)
+	Dazu kann ich auch kein js => graphviz ist erstmal gut genug
+bei späteren verbesserungen beachte auch die pfadnutzung(traffic/auslastung) und bevorzuge diese
+	den trafficeinfluss lassen wir vorerst raus. macht nur alles komplizierter. evtl für später interessant.
