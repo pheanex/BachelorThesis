@@ -23,7 +23,7 @@ Variable Anzahl von Netzwerkinterfaces wichtig
 2-3 channel im 2.4ghz abstand halten => 3/4 überlappungsfreie
 input von christoph: anz überlappungsfreie channel
 Output to christoph: 	     SRC              DEST
-						APID APINTNR  -  APID APINTNR	  KANALID	
+						APID APINTNR  -  APID APINTNR	  KANALID
 
  - Centralized Channel Assignment and Routing Algorithms for Multi-Channel Wireless Mesh Networks:
 	Linkzuteilungsalgo
