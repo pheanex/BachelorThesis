@@ -11,17 +11,19 @@ Gesucht:(Mit Christoph nochmal genauer absprechen)
 
 
 Fragen:
-Gibt es einen strukturierteren weg durch paper zu gehen? - Breitensuche/Tiefensuch / strukturiert anmerkungen zu machen? - papergraph? Ich habe das problem, dass ich paper lese, deren Referenzen folge und dann ua bei papern ankommen von denen ich nicht sofort erkenne, dass ich sie bereits gelesen habe (unnötige arbeit => wie kann man das umgehen?) ich möchte mir einen möglichst guten überblick über alle paper auf einem feld verschaffen. => wie tue ich das? graph software die das gut darstellt? als auch die referenzen untereinander? action science explorer/citation network visualization
-Wie unterteile ich mir das weitere vorgehen? Algorithmensuche/bewertung/...?
-Wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder sehende AP mit einem anderen verbinden, oder nur möglichst wenige(wie wählt man diese aus?)?
 Ist eine Trennung der algorithmen in verbindungserstellungsalgo und channelassignmentalgo sinnvoll? Oder soll man einen finden der beides macht? (wie zb INSTC)
-Noise level als grundrauschen miteinbeziehen? Inwiefern war das gemeint?
-warum sehen die einzelnen APs mehr ssids als sie an den WLC zurückmelden? Befürchtung: Aps sehen mehrer andere APs des AutoWDS, melden diese aber nicht an den WLC=>WLC kann nicht auf der kompletten graph-grundlage/Möglichkeiten arbeiten => suboptimale teillösungen
+Warum sehen die einzelnen APs mehr ssids als sie an den WLC zurückmelden? Befürchtung: Aps sehen mehrer andere APs des AutoWDS, melden diese aber nicht an den WLC=>WLC kann nicht auf der kompletten graph-grundlage/Möglichkeiten arbeiten => suboptimale teillösungen
+Wie kann man das ganze testen?
+Was ist wahrscheinlicher: Link kaputt oder Node kaputt? (Erfahrungswerte?)
 
 Anmkerungen/Ideen:
 Evtl. kann man bei der initialen Abfrage der aps auch noch auf die bereits belegten channel achten (andere aps die evtl stören?) und versuchen diese zu umgehen?
 Für die Link-erzeugung kann man auf dem zugrundeliegenden (wer sieht wen)-graph den minimalen spannbaum berechnen und das verfahren n(Anzahl der knoten) mal widerholen, nur dass man dabei immer jeweils einen knoten wegnimmt(simuliert dessen ausfall). Am ende fasst man alle diese graphen zu einem zusammen und man hat einen 2-connected-graph
-Joes Buch ali Makram nicht so interessant da distributed CA
+Variable Anzahl von Netzwerkinterfaces wichtig
+2-3 channel im 2.4ghz abstand halten => 3/4 überlappungsfreie
+input von christoph: anz überlappungsfreie channel
+Output to christoph: 	     SRC              DEST
+						APID APINTNR  -  APID APINTNR	  KANALID	
 
  - Centralized Channel Assignment and Routing Algorithms for Multi-Channel Wireless Mesh Networks:
 	Linkzuteilungsalgo
@@ -30,11 +32,14 @@ Joes Buch ali Makram nicht so interessant da distributed CA
 	verstehe die link load estimation noch nicht ganz
 	unklar wie die links aufgebaut werden sollen.(vl erwartet das eine fertige topologie?)
 
-4 zentrale interessante algos (siehe paper weishen si overview channel assignment...):
+6 zentrale interessante algos (siehe paper weishen si overview channel assignment...):
 	CLICA schwierig mit multiplen radios (marina topology control approach for utilizing)
 	BFS-CA (ramachandran beldgin interference-aware channel assignment in multi-radio wireless mesh networks)
 	INSTC löst auch k-connected(survival feature)aber all nodes must have same number of radios (jian tang interference-aware tolopogy control ans qos routing)
 	CTA (tabu based) - noch nicht genauer betrachtet
+	MCI-CA
+	MCCA
+
 
 interessante paper:
 anand subramanian minimum interference channel assignment - based on tabu based, greedy seems random
@@ -42,13 +47,26 @@ das optimization models for fixed channel assignment - solved with ILP theoretic
 das static channel assignment in multi-radio multi-channel
 Minimum Interference Channel Assignment in Multiradio Wireless Mesh networks subramanian:
 	7,8.9.10.11,13
+
 Todo:
 graph mit allen sichtbarkeiten (grau) zeichnen -> christop (warum sehen die Aps mehr ssids als der WLC)
 channel assignment algorithmen lesen vergleichen
+programm jabref installieren
+mail an joe : graphviz images/python scripts/michael vu paper
+basisalgo implementieren (dazu zunächst entscheiden welchen algo einsetzen?)
+DLP ansehen und als Lösungsansatz evaluieren / SAT solver
+Expected load nacher noch miteinfliessen lassen
+Antrittsvortrag erstellen:
+	umfang 10min intention: feedback/ideen einsammeln 10min +5min frage ein par slides:
+	2slides motivation 2 slides wissentliche ansatz/channel assignment ; was sind ideen, ansätze; prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden), wie koennte man das evaluieren?qos violation zb; zeitplan
+BA anmelden (nach antrittsvortrag)
+Zeitplan genau aufstellen (monat zeitnehmen zum schreiben danach 4 monate zeit)
 
 Done:
 
 Gelöst Fragen:
+Machbarkeitsfrage:
+	Es gibt paper die das bereits gelöst haben => ja
 gibt es einen weg einen graphen zeichnen zu lassen bei dem die kantenlaengen zu jedem anderen knoten bekannt sind?
 	Ist nicht trivial, wird mir force directed graphs bezeichnet/gemacht. Stichwort Fruchtermann-Ehrenirgendwas methode.
 Linkbewertung: momentaufnahme oder betrachte gesamte zeit bisher?
@@ -63,3 +81,11 @@ d3js javascript graph als erweitung zu der derzeoitigen python/graphviz loesung 
 	Dazu kann ich auch kein js => graphviz ist erstmal gut genug
 bei späteren verbesserungen beachte auch die pfadnutzung(traffic/auslastung) und bevorzuge diese
 	den trafficeinfluss lassen wir vorerst raus. macht nur alles komplizierter. evtl für später interessant.
+Gibt es einen strukturierteren weg durch paper zu gehen? - Breitensuche/Tiefensuch / strukturiert anmerkungen zu machen? - papergraph? Ich habe das problem, dass ich paper lese, deren Referenzen folge und dann ua bei papern ankommen von denen ich nicht sofort erkenne, dass ich sie bereits gelesen habe (unnötige arbeit => wie kann man das umgehen?) ich möchte mir einen möglichst guten überblick über alle paper auf einem feld verschaffen. => wie tue ich das? graph software die das gut darstellt? als auch die referenzen untereinander? action science explorer/citation network visualization
+	jabref
+Wie unterteile ich mir das weitere vorgehen? Algorithmensuche/bewertung/...?:
+	zunächst für einen algo entscheiden, als nächstes die basisversion ans laufen bringen, dann diese tunen, dann evaluation, dann schreiben
+Wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder sehende AP mit einem anderen verbinden, oder nur möglichst wenige(wie wählt man diese aus?)?:
+	nach der anforderung des survival paths, sollte jeweils eine backuproute vorhanden sein
+Noise level als grundrauschen miteinbeziehen? Inwiefern war das gemeint?:
+	wenn nacher noch zeit ist, zunächst nicht(vorallem da auch nicht so ohne weiteres an die daten heranzukommen ist (aps))

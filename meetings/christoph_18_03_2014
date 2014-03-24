@@ -1,0 +1,10 @@
+meeting christoph 18.03.2014 16:30
+variable anzahl an interfaces wichtig
+2-3 channel im 2.4ghz abstand halten => 3/4 überlappungsfreie
+input von christoph in algo: anzhal der überlappuungsfreien kanäle
+output form:
+
+	     SRC              DEST
+	APID APINTNR  -  APID APINTNR	  KANALID	
+
+
