@@ -39,6 +39,55 @@ Output to christoph: 	     SRC              DEST
 	CTA (tabu based) - noch nicht genauer betrachtet
 	MCI-CA
 	MCCA
+Eigener Algo:
+	Unterteile Knoten in Stratum-gruppen (Entfernung zum Gateway: 0,1,2,...)
+	Starte Mit Stratum 0
+	Betrachte einzelne Kante:
+		Habe ich noch module frei bei A ?
+			Ja:
+				Habe ich noch module frei bei B?
+					Ja:
+						Kann ich eine Farbe nutzen, die weder von a noch von b genutzt wurde?
+							Ja:
+								Nutze eine davon, die bei A am wenigsten genutzt wurde
+								Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+								Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+								Alternativ: eine nicht zuletzt gewählt
+							Nein:
+								Kann ich eine Farbe nutzen, die bei einem von beiden noch nicht genutzt wurde?
+									Ja:
+										Wähle eine dieser Farben, die bei A am wenigsten genutzt wurde
+										Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+										Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+										Alternativ: eine nicht zuletzt gewählt
+									Nein:
+										Nutze eine der Farben, welche in der Umgebung am wenigsten genutzt wurde
+										Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+										Alternativ: eine nicht zuletzt gewählt
+					Nein:
+						Verwende eine von B bereits genutzten Farben, die bei B noch weniger genutzt wurde,
+						Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+						Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+						Alternativ: eine nicht zuletzt gewählt
+						#Dieser Fall funktioniert, da ich ja bei A noch freie module habe
+			Nein:
+				Habe ich noch Module bei B frei?
+					Ja:
+						Verwende eine von A bereits genutzten Farben, die bei A noch weniger genutzt wurde,
+						Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+						Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+						Alternativ: eine nicht zuletzt gewählt
+						#Dieser Fall funktioniert, da ich ja bei B noch freie module habe
+					Nein:
+						#Ich habe also gar keine module mehr frei
+						Gibt es eine Schnittmenge der Farben, die A und B bereits nutzen?
+							Ja:
+								Nutze eine Farbe davon, die bei A am wenigsten genutzt wurde
+								Alternativ: ...
+							Nein:
+								#bad case
+								#loesung von hycint-mcr2
+								nimmt von allen hier verwendeten farben die, welche die am kürzesten zusammenhängende strecke hat (incl einem farbwechsel) am wenigsten auftritt / verlängerung) und ersetze sie mir einer von den bereits verwendeten
 
 
 interessante paper:
@@ -49,10 +98,11 @@ Minimum Interference Channel Assignment in Multiradio Wireless Mesh networks sub
 	7,8.9.10.11,13
 
 Todo:
+kollisionskanten miteinbauen, also interferenzen nahe zusammenstehender knoten mitberücksichtigen (wähl immer kannte die nach möglichkeit in der umgebung noch nicht auftritt)
 graph mit allen sichtbarkeiten (grau) zeichnen -> christop (warum sehen die Aps mehr ssids als der WLC)
 channel assignment algorithmen lesen vergleichen
-programm jabref installieren
-mail an joe : graphviz images/python scripts/michael vu paper
+	CLICA: sieht gut aus
+	INSTC: equal nr of radios (problem)
 basisalgo implementieren (dazu zunächst entscheiden welchen algo einsetzen?)
 DLP ansehen und als Lösungsansatz evaluieren / SAT solver
 Expected load nacher noch miteinfliessen lassen
@@ -61,8 +111,11 @@ Antrittsvortrag erstellen:
 	2slides motivation 2 slides wissentliche ansatz/channel assignment ; was sind ideen, ansätze; prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden), wie koennte man das evaluieren?qos violation zb; zeitplan
 BA anmelden (nach antrittsvortrag)
 Zeitplan genau aufstellen (monat zeitnehmen zum schreiben danach 4 monate zeit)
+mail an jo: michael vu paper
 
 Done:
+programm jabref installieren (sehe den vorteil davon nicht)
+mail an joe : graphviz images/python scripts
 
 Gelöst Fragen:
 Machbarkeitsfrage:
