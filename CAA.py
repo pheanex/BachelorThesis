@@ -6,6 +6,7 @@
 import networkx as nx
 import collections
 import random
+import pydot
 
 #Get here the 2-connected graph from the dijkstra algorithms:
 Graph = nx.Graph()
@@ -19,6 +20,14 @@ Graph.add_edge("C", "F")
 Graph.add_edge("D", "F")
 Graph.add_edge("E", "G")
 Graph.add_edge("F", "G")
+Graph.add_node("A", modules=2)
+Graph.add_node("B", modules=2)
+Graph.add_node("C", modules=2)
+Graph.add_node("D", modules=2)
+Graph.add_node("E", modules=2)
+Graph.add_node("F", modules=2)
+Graph.add_node("G", modules=2)
+
 
 #liste von kanten die bereits gefaebt wurden (Am Anfang leer)
 edges_done = set()
@@ -120,6 +129,8 @@ def set_edge_color(edgecolor, node_a, node_b):
     overall_color_usage[edgecolor] += 1
     edges_done.add(node_a, node_b)
     edges_done.add(node_b, node_a)
+    #color in pydot for debugging, remove later
+    pydotgraph.add_edge(pydot.Edge(node_a, node_b, color=edgecolor))
 
 
 #returns the number of modules for a node
@@ -206,11 +217,18 @@ def color_edge(node_a, node_b):
 #                       #loesung von hycint-mcr2
 #                       nimmt von allen hier verwendeten farben die, welche die am kuerzesten zusammenhaengende strecke hat (incl einem farbwechsel) am wenigsten auftritt / verlaengerung) und ersetze sie mir einer von den bereits verwendeten
 
+#convert data to paydot for drawing
+pydotgraph = pydot.Dot(graph_type='graph', layout="fdp")
+#transform from networkx to pydot
+for (A, B) in Graph.edges():
+    pydotgraph.add_edge(pydot.Edge(A, B))
+pydotgraph.write("caa.svg", format="svg")
 
 #Hauptschleife:
 for node in nodelist:
-    neigbohrs = Graph.neighbors(node)
-    for neigbohr in neighbors:
+    neighbors = Graph.neighbors(node)
+    for neighbor in neighbors:
         if (node, neighbor) not in edges_done:
             color_edge(node, neighbor)
             nodelist.append(neighbor)
+            pydotgraph.write("caa.svg", format="svg")

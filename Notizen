@@ -17,6 +17,7 @@ Wie kann man das ganze testen?
 Was ist wahrscheinlicher: Link kaputt oder Node kaputt? (Erfahrungswerte?)
 
 Anmkerungen/Ideen:
+CAA: in pick_best_channel-fkt: prioritätsliste (störer-aps/ bei den nachbarn im wer-sieht-wen-grap benutzte channel beachten)
 Evtl. kann man bei der initialen Abfrage der aps auch noch auf die bereits belegten channel achten (andere aps die evtl stören?) und versuchen diese zu umgehen?
 Für die Link-erzeugung kann man auf dem zugrundeliegenden (wer sieht wen)-graph den minimalen spannbaum berechnen und das verfahren n(Anzahl der knoten) mal widerholen, nur dass man dabei immer jeweils einen knoten wegnimmt(simuliert dessen ausfall). Am ende fasst man alle diese graphen zu einem zusammen und man hat einen 2-connected-graph
 Variable Anzahl von Netzwerkinterfaces wichtig
