@@ -9,24 +9,26 @@ import random
 import pydot
 
 #Get here the 2-connected graph from the dijkstra algorithms:
-Graph = nx.Graph()
+Graph = nx.fast_gnp_random_graph(25, 0.2)
+for node in Graph.nodes():
+    Graph.node[node]["modules"] = 2
 #The following is just for debug, remove later
-Graph.add_edge("A", "B")
-Graph.add_edge("A", "C")
-Graph.add_edge("A", "D")
-Graph.add_edge("B", "E")
-Graph.add_edge("C", "E")
-Graph.add_edge("C", "F")
-Graph.add_edge("D", "F")
-Graph.add_edge("E", "G")
-Graph.add_edge("F", "G")
-Graph.add_node("A", modules=2)
-Graph.add_node("B", modules=2)
-Graph.add_node("C", modules=2)
-Graph.add_node("D", modules=2)
-Graph.add_node("E", modules=2)
-Graph.add_node("F", modules=2)
-Graph.add_node("G", modules=2)
+#Graph.add_edge("A", "B")
+#Graph.add_edge("A", "C")
+#Graph.add_edge("A", "D")
+#Graph.add_edge("B", "E")
+#Graph.add_edge("C", "E")
+#Graph.add_edge("C", "F")
+#Graph.add_edge("D", "F")
+#Graph.add_edge("E", "G")
+#Graph.add_edge("F", "G")
+#Graph.add_node("A", modules=2)
+#Graph.add_node("B", modules=2)
+#Graph.add_node("C", modules=2)
+#Graph.add_node("D", modules=2)
+#Graph.add_node("E", modules=2)
+#Graph.add_node("F", modules=2)
+#Graph.add_node("G", modules=2)
 
 
 #liste von kanten die bereits gefaebt wurden (Am Anfang leer)
@@ -36,7 +38,7 @@ edges_done = set()
 nodelist = list()
 
 #Initially put one of the gatewaynode in the nodelist as the rootnode(could also be another node)
-nodelist.append("A")
+nodelist.append(0)
 
 #list of all channels/colors which can be used for assignment
 assignable_colors = ["red", "green", "blue"]
@@ -45,6 +47,7 @@ assignable_colors = ["red", "green", "blue"]
 overall_color_usage = collections.Counter()
 for color in assignable_colors:
     overall_color_usage[color] = 0
+
 
 # counterlist = dictionary with colors and their number of occurences
 # allowed_colors = list to pick colors from (because we might not be allowed to use all in a certain situation)
@@ -153,10 +156,6 @@ def get_best_color_in(colorset, node_a, node_b):
                 else:
                     #All have been ties so far, now take one color at random
                     random_color = random.choice(colorset)
-
-                    #for debug:
-                    print "random decision"
-
                     return random_color
 
 
@@ -166,8 +165,10 @@ def set_edge_color(edgecolor, node_a, node_b):
     overall_color_usage[edgecolor] += 1
     edges_done.add((node_a, node_b))
     edges_done.add((node_b, node_a))
+
     #color in pydot for debugging, remove later
-    pydotgraph.add_edge(pydot.Edge(node_a, node_b, color=edgecolor))
+    edge = pydotgraph.get_edge(str(node_a), str(node_b))
+    edge.set_color(edgecolor)
 
 
 #returns the number of modules for a node
@@ -182,7 +183,7 @@ def get_number_of_colors_used_for_node(nodename):
     neighbors = Graph.neighbors(nodename)
     edges_used = 0
     for neighbor in neighbors:
-        if (nodename,neighbor) in edges_done:
+        if (nodename, neighbor) in edges_done:
             edges_used += 1
     return edges_used
 
@@ -198,8 +199,8 @@ def modules_free_count(nodename):
 def get_colors_used_for_nodes(node_a, node_b):
     colors_used_by_node_a = get_colors_used_for_node(node_a)
     colors_used_by_node_b = get_colors_used_for_node(node_b)
-    colors_used_by_both = [i for i in get_colors_used_for_node(node_a) or get_colors_used_for_node(node_b)]
-    return colors_used_by_both
+    colors_used_by_either_node_a_or_node_b = list(set(colors_used_by_node_a + colors_used_by_node_b))
+    return colors_used_by_either_node_a_or_node_b
 
 
 #returns the colors which a node already uses
@@ -225,11 +226,65 @@ def get_colors_not_used_for_node(nodename):
     return colors_not_used
 
 
-#Color a edge
-def color_edge(node_a, node_b):
+
+# Returns a dictionary with connected colorusage for the node provided
+def get_color_count_for_node(nodename):
+    #initialize color counter
+    color_counter = collections.Counter()
+    colors_of_nodename = get_colors_used_for_node(nodename)
+    for color in colors_of_nodename:
+        color_counter[color] = 0
+
+    for color in colors_of_nodename:
+        edges_done = set()
+        nodes_togo = list()
+
+        #add initial node to be able to start from there
+        nodes_togo.append(nodename)
+
+        for node in nodes_togo:
+            neighbors = Graph.neighbors(node)
+            for neighbor in neighbors:
+                edge = Graph.get_edge_data(node, neighbor)
+                if edge and "color" in edge.keys() and edge["color"] == color and (node, neighbor) not in edges_done:
+                    #add edge to done-list
+                    edges_done.add((node, neighbor))
+                    edges_done.add((neighbor, node))
+
+                    #increase counter
+                    color_counter[color] += 1
+
+                    #add node togo if not already visited
+                    if neighbor not in nodes_togo:
+                        nodes_togo.append(neighbor)
+    return color_counter
+
+
+# Recolors for a given node all connected edges
+def recolor_edges_for_node(nodename, oldcolor, newcolor):
+    edges_done = set()
+    nodes_togo = list()
+
+    #add initial node to be able to start from there
+    nodes_togo.append(nodename)
+
+    for node in nodes_togo:
+        neighbors = Graph.neighbors(node)
+        for neighbor in neighbors:
+            edge = Graph.get_edge_data(node, neighbor)
+            if edge and "color" in edge.keys() and edge["color"] == oldcolor:
+                #recolor that edge
+                set_edge_color(newcolor, node, neighbor)
+
+                #add the destination node to nodes_togo
+                nodes_togo.append(neighbor)
+
+
+# Find the best color for an edge
+def find_color_for_edge(node_a, node_b):
     if modules_free_count(node_a) > 0:
         if modules_free_count(node_b) > 0:
-            #Is there a color used by neither node_a or node_b?
+            #Is there a color used by neither node_a nor node_b?
             colors_not_used_by_node_a = get_colors_not_used_for_node(node_a)
             colors_not_used_by_node_b = get_colors_not_used_for_node(node_b)
             colors_unused_by_both = [i for i in colors_not_used_by_node_a if i in colors_not_used_by_node_b]
@@ -240,7 +295,7 @@ def color_edge(node_a, node_b):
                 # Kann ich eine Farbe nutzen, die zumindest bei einem von beiden noch nicht genutzt wurde?
                 colors_not_used_by_node_a = get_colors_not_used_for_node(node_a)
                 colors_not_used_by_node_b = get_colors_not_used_for_node(node_b)
-                colors_not_used_by_either_node_a_or_node_b = [i for i in colors_not_used_by_node_a or i in colors_not_used_by_node_b]
+                colors_not_used_by_either_node_a_or_node_b = list(set(colors_not_used_by_node_a + colors_not_used_by_node_b))
                 if colors_not_used_by_either_node_a_or_node_b:
                     best_color = get_best_color_in(colors_not_used_by_either_node_a_or_node_b, node_a, node_b)
                     set_edge_color(best_color, node_a, node_b)
@@ -254,7 +309,8 @@ def color_edge(node_a, node_b):
                         # Verwende eine von B bereits genutzten Farben, die bei B noch weniger genutzt wurd
                         # Dieser Fall funktioniert, da ich ja bei A noch freie module habe
                         colors_used_by_node_b = get_colors_used_for_node(node_b)
-                        best_color = get_best_color_in(colors_not_used_by_node_b, node_a, node_b)
+                        best_color = get_best_color_in(colors_used_by_node_b, node_a, node_b)
+                        set_edge_color(best_color, node_a, node_b)
 
     else:
         if modules_free_count(node_b) > 0:
@@ -274,18 +330,39 @@ def color_edge(node_a, node_b):
                 best_color = get_best_color_in(colors_used_by_both, node_a, node_b)
                 set_edge_color(best_color, node_a, node_b)
             else:
-                #bad case
-                #loesung von hycint-mcr2
-                #nimmt von allen hier verwendeten farben die, welche die am kuerzesten zusammenhaengende strecke
-                #hat (incl einem farbwechsel) am wenigsten auftritt / verlaengerung)
-                #und ersetze sie mir einer von den bereits verwendeten
-                print "todo: worst case"
+                # tricky case, loesung von hycint-mcr2
+                # nimmt von allen hier verwendeten farben die, welche zusammenhaengend bei node a und node b am wenigsten vorkommt
+                # (wir koennen diese dann am einfachsten ersetzen, ohne viel schaden anzurichten)
+                # Ersetze diese mit einer von den bereits verwendeten
+
+                #debug remove later:
+                print "tricky case"
+
+                #get the colorcounts for both nodes and combine them
+                combined_color_counter = get_color_count_for_node(node_a) + get_color_count_for_node(node_b)
+
+                # Find the color which is the least common
+                least_common_color = combined_color_counter.most_common()[-1][0]
+
+                # Find the color we will use for this dilemma
+                colors_used_by_node_a = get_colors_used_for_node(node_a)
+                colors_used_by_node_b = get_colors_used_for_node(node_b)
+                colors_used_by_either_node_a_or_node_b = list(set(colors_used_by_node_a + colors_used_by_node_b))
+                best_color = get_best_color_in(colors_used_by_either_node_a_or_node_b, node_a, node_b)
+
+                # recolor all other connected edges for both nodes
+                recolor_edges_for_node(node_a, least_common_color, best_color)
+                recolor_edges_for_node(node_b, least_common_color, best_color)
+
+                # color the edge from node_a to node_b with this color
+                set_edge_color(best_color, node_a, node_b)
+
 
 #convert data to paydot for drawing
 pydotgraph = pydot.Dot(graph_type='graph', layout="fdp")
 #transform from networkx to pydot
 for (A, B) in Graph.edges():
-    pydotgraph.add_edge(pydot.Edge(A, B))
+    pydotgraph.add_edge(pydot.Edge(str(A), str(B)))
 pydotgraph.write("caa.svg", format="svg")
 
 #Hauptschleife:
@@ -293,7 +370,7 @@ for node in nodelist:
     neighbors = Graph.neighbors(node)
     for neighbor in neighbors:
         if (node, neighbor) not in edges_done:
-            color_edge(node, neighbor)
+            find_color_for_edge(node, neighbor)
             nodelist.append(neighbor)
             pydotgraph.write("caa.svg", format="svg")
 
