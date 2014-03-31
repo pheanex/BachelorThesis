@@ -24,7 +24,7 @@ for node in RandomGraph.nodes():
     RandomGraph.node[node]["modules"] = 2
 
 # Set random weights on edges for mst
-for (a,b) in RandomGraph.edges():
+for (a, b) in RandomGraph.edges():
     RandomGraph[a][b]["weight"] = random.randrange(1, 20)
 
 # List of edges which have been visited (empty at beginning)
@@ -38,6 +38,7 @@ Assignable_Colors = ["red", "green", "blue", "orange"]
 Overall_Color_Counter = collections.Counter()
 for color in Assignable_Colors:
     Overall_Color_Counter[color] = 0
+
 
 # counterlist = dictionary with colors and their number of occurences
 # allowed_colors = list to pick colors from (because we might not be allowed to use all in a certain situation)
@@ -309,6 +310,8 @@ def recolor_edges_for_node(graphname, nodename, oldcolor, newcolor):
 
 # Find the best color for an edge
 def find_color_for_edge(graphname, node_a, node_b):
+    #Todo: This is just graphtheory optimal, not real world, since it only,
+    #looks for the best color/channel in the nodes hop-vicinity instead of real world channel usage
     if modules_free_count(graphname, node_a) > 0:
         if modules_free_count(graphname, node_b) > 0:
             # Is there a color used by neither node_a nor node_b?
@@ -376,7 +379,9 @@ def find_color_for_edge(graphname, node_a, node_b):
 
                 # Remove the least common color from this set, because then this color would always be cosen,
                 # because of its rare usage
-                if least_common_color in colors_used_by_either_node_a_or_node_b: colors_used_by_either_node_a_or_node_b.remove(least_common_color)
+                if least_common_color in colors_used_by_either_node_a_or_node_b:
+                    colors_used_by_either_node_a_or_node_b.remove(least_common_color)
+
                 best_color = get_best_color_in(graphname, colors_used_by_either_node_a_or_node_b, node_a, node_b)
 
                 # Recolor all other connected edges for both nodes
