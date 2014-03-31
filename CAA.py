@@ -8,10 +8,18 @@ import collections
 import random
 import pydot
 
+#imageiterator, for debugging remove later
+number = 0
+
 #Get here the 2-connected graph from the dijkstra algorithms:
 Graph = nx.fast_gnp_random_graph(25, 0.5)
 for node in Graph.nodes():
     Graph.node[node]["modules"] = 2
+
+#set random weights on edges for mst
+for (a,b) in Graph.edges():
+    Graph[a][b]["weight"] = random.randrange(1,20)
+
 #The following is just for debug, remove later
 #Graph.add_edge("A", "B")
 #Graph.add_edge("A", "C")
@@ -85,7 +93,7 @@ def get_least_used_colors_for_node(nodename, allowed_colors):
 
     for neighbor in neighbors:
         edge = Graph.get_edge_data(nodename, neighbor)
-        if edge:
+        if edge and "color" in edge.keys():
             edgecolor = edge["color"]
             if edgecolor:
                 color_counter[edgecolor] += 1
@@ -106,14 +114,14 @@ def get_least_used_colors_for_nodes(node_a, node_b, allowed_colors):
 
     for neighbor in neighbors_of_a:
         edge = Graph.get_edge_data(node_a, neighbor)
-        if edge:
+        if edge and "color" in edge.keys():
             edgecolor = edge["color"]
             if edgecolor:
                 color_counter[edgecolor] += 1
 
     for neighbor in neighbors_of_b:
         edge = Graph.get_edge_data(node_b, neighbor)
-        if edge:
+        if edge and "color" in edge.keys():
             edgecolor = edge["color"]
             # because we dont want to count the edge between node_a and node_b twice
             if edgecolor and not neighbor == node_a:
@@ -121,6 +129,25 @@ def get_least_used_colors_for_nodes(node_a, node_b, allowed_colors):
 
     return get_least_used_elements_for_counter_dict(color_counter, allowed_colors)
 
+
+#calculates for a given graph the survival graph and returns it
+def calculate_survival_graph(graphname):
+    MST_Graph = nx.minimum_spanning_tree(graphname).copy()
+    for node in graphname.nodes():
+
+        # Create new temp Graph to work with
+        Work_Graph = graphname.copy()
+
+        #Remove the node
+        Work_Graph.remove_node(node)
+
+        #Now calculate mst on this new graph
+        MST_Work_Graph = nx.minimum_spanning_tree(Work_Graph)
+
+        #Add the now necessary edges to the resulting graph
+        for From, To, Attributes in MST_Work_Graph.edges(data=True):
+            MST_Graph.add_edge(From, To, weight=Attributes['weight'])
+    return MST_Graph
 
 #return list of colors which are used the least over all edges in the graph and are in the allowed_colors list
 def get_least_used_colors_overall(allowed_colors):
@@ -161,15 +188,24 @@ def get_best_color_in(colorset, node_a, node_b):
 
 #set the color for a edge
 def set_edge_color(edgecolor, node_a, node_b):
-    Graph.add_edge(node_a, node_b, color=edgecolor)
+    edge_data = Graph.get_edge_data(node_a, node_b)
+    edge_weight = edge_data["weight"]
+
+    #color the edge
+    Graph[node_a][node_b]["color"] = edgecolor
+
+    #increase the overall colorcounters
     overall_color_usage[edgecolor] += 1
+
+    #mark edge as done
     edges_done.add((node_a, node_b))
     edges_done.add((node_b, node_a))
 
     #color in pydot for debugging, remove later
     edge = pydotgraph.get_edge(str(node_a), str(node_b))[0]
     edge.set_color(edgecolor)
-    edge.set_penwidth("3")
+    penwidth = str(6.0/edge_weight)
+    edge.set_penwidth(penwidth)
     edge.set_style("solid")
 
 
@@ -272,6 +308,20 @@ def recolor_edges_for_node(nodename, oldcolor, newcolor):
                 #add the destination node to nodes_togo
                 nodes_togo.append(neighbor)
 
+#transform networkxgraph to pydot graph
+def transform_graph(networkxgraph):
+    for (A, B) in networkxgraph.edges():
+        edge_data = networkxgraph.get_edge_data(A, B)
+        edge_weight = edge_data["weight"]
+        penwidth = str(6.0/edge_weight)
+        pydotgraph.add_edge(pydot.Edge(str(A), str(B), style="dotted", penwidth=penwidth))
+
+
+#writes the pydotgraph
+def write_image():
+    global number
+    pydotgraph.write("caa_step_" + str(number) + ".svg", format="svg")
+    number += 1
 
 # Find the best color for an edge
 def find_color_for_edge(node_a, node_b):
@@ -351,20 +401,36 @@ def find_color_for_edge(node_a, node_b):
                 set_edge_color(best_color, node_a, node_b)
 
 
-#convert data to paydot for drawing
+#create pydotgraph (so we can draw it better)
 pydotgraph = pydot.Dot(graph_type='graph', layout="fdp")
-#transform from networkx to pydot
-for (A, B) in Graph.edges():
-    pydotgraph.add_edge(pydot.Edge(str(A), str(B), style="dashed"))
-pydotgraph.write("caa.svg", format="svg")
 
-#Hauptschleife:
+#Show Connectivity
+transform_graph(Graph)
+write_image()
+
+#Minimal Spanning Tree
+pydotgraph = pydot.Dot(graph_type='graph', layout="fdp")
+mst_graph = calculate_survival_graph(Graph)
+transform_graph(mst_graph)
+write_image()
+
+#Channel assignment
 for node in nodelist:
-    neighbors = Graph.neighbors(node)
+    neighbors = mst_graph.neighbors(node)
     for neighbor in neighbors:
         if (node, neighbor) not in edges_done:
             find_color_for_edge(node, neighbor)
             nodelist.append(neighbor)
-            pydotgraph.write("caa.svg", format="svg")
+            write_image()
+
+
+#now add the nodes we didnt use due to mst optimization
+#for (a, b) in Graph.edges():
+#    if Graph.has_edge(a, b) and not mst_graph.has_edge(a, b):
+#        edge_data = Graph.get_edge_data(a, b)
+#        edge_weight = edge_data["weight"]
+#        penwidth = str(6.0/edge_weight)
+#        pydotgraph.add_edge(pydot.Edge(str(a), str(b), style="dotted", color="grey60", penwidth=penwidth))
+#        write_image()
 
 #Todo: check if the coloring is valid (does ever node only use a number of colors = his modules and Are all edges colored?)
