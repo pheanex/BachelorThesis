@@ -215,7 +215,7 @@ def get_colors_used_for_node(nodename):
                 #add color to list
                 colors_used.add(edgecolor)
             else:
-                print "warning this should not happen"
+                print("warning this should not happen")
     return list(colors_used)
 
 
@@ -336,7 +336,7 @@ def find_color_for_edge(node_a, node_b):
                 # Ersetze diese mit einer von den bereits verwendeten
 
                 #debug remove later:
-                print "tricky case"
+                print("tricky case")
 
                 #get the colorcounts for both nodes and combine them
                 combined_color_counter = get_color_count_for_node(node_a) + get_color_count_for_node(node_b)
