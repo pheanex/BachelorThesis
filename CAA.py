@@ -9,7 +9,7 @@ import random
 import pydot
 
 #Get here the 2-connected graph from the dijkstra algorithms:
-Graph = nx.fast_gnp_random_graph(25, 0.2)
+Graph = nx.fast_gnp_random_graph(25, 0.5)
 for node in Graph.nodes():
     Graph.node[node]["modules"] = 2
 #The following is just for debug, remove later
@@ -167,8 +167,10 @@ def set_edge_color(edgecolor, node_a, node_b):
     edges_done.add((node_b, node_a))
 
     #color in pydot for debugging, remove later
-    edge = pydotgraph.get_edge(str(node_a), str(node_b))
+    edge = pydotgraph.get_edge(str(node_a), str(node_b))[0]
     edge.set_color(edgecolor)
+    edge.set_penwidth("3")
+    edge.set_style("solid")
 
 
 #returns the number of modules for a node
@@ -178,14 +180,21 @@ def get_modules_count_for_node(nodename):
         return modules
 
 
-#returns the number of channels this node already uses
-def get_number_of_colors_used_for_node(nodename):
+#returns set of colors for all edges of a node
+def get_colors_used_for_node(nodename):
+    colorset = set()
     neighbors = Graph.neighbors(nodename)
-    edges_used = 0
     for neighbor in neighbors:
-        if (nodename, neighbor) in edges_done:
-            edges_used += 1
-    return edges_used
+        edge = Graph.get_edge_data(nodename, neighbor)
+        if edge and "color" in edge.keys():
+            edgecolor = edge["color"]
+            colorset.add(edgecolor)
+    return list(colorset)
+
+#returns the number of the (distinct) colors this node already uses
+def get_number_of_colors_used_for_node(nodename):
+    colors_used = get_colors_used_for_node(nodename)
+    return len(colors_used)
 
 
 #returns the number of modules for a node that are still free to use
@@ -201,22 +210,6 @@ def get_colors_used_for_nodes(node_a, node_b):
     colors_used_by_node_b = get_colors_used_for_node(node_b)
     colors_used_by_either_node_a_or_node_b = list(set(colors_used_by_node_a + colors_used_by_node_b))
     return colors_used_by_either_node_a_or_node_b
-
-
-#returns the colors which a node already uses
-def get_colors_used_for_node(nodename):
-    colors_used = set()
-    neighbors = Graph.neighbors(nodename)
-    for neighbor in neighbors:
-        edge = Graph.get_edge_data(nodename, neighbor)
-        if edge and "color" in edge.keys():
-            edgecolor = edge["color"]
-            if edgecolor:
-                #add color to list
-                colors_used.add(edgecolor)
-            else:
-                print("warning this should not happen")
-    return list(colors_used)
 
 
 #returns a list of colors which are not used by the node
@@ -362,7 +355,7 @@ def find_color_for_edge(node_a, node_b):
 pydotgraph = pydot.Dot(graph_type='graph', layout="fdp")
 #transform from networkx to pydot
 for (A, B) in Graph.edges():
-    pydotgraph.add_edge(pydot.Edge(str(A), str(B)))
+    pydotgraph.add_edge(pydot.Edge(str(A), str(B), style="dashed"))
 pydotgraph.write("caa.svg", format="svg")
 
 #Hauptschleife:
