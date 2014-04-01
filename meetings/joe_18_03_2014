@@ -1,0 +1,28 @@
+besprechung joe 18.03.2014
+programm jabref
+prinzipielle machbarkeit?
+mit einfachem basis algo anfangen
+naechstes ziel eine basisversion laufen lassen koennen und mit christoph darauf einigen.
+naechste frage: wie kann man das testen?
+wie passt der algorithmus in das environment
+graphviz graphen an joe schicken
+michael vu email fuer details oder joe paper zugänglich
+schnittstelle zu christoph: wie sieht christophs input bvzw mein out aus?
+DLP ansehen
+link estimator
+link kaputt oder node kaputt was ist haeufiger?
+expected load auf channel ist wichtiger punkt und evtl später nocho mitbetrachten
+weiteres vorgehen:
+mitte april: antrittsvortrag: umfang 10min intention: feedback/ideen einsammeln 10min +5min frage ein par slides:
+	2slides motivation 2 slides wissentliche ansatz/channel assignment ; was sind ideen, ansätze; prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden), wie koennte man das evaluieren?qos violation zb; zeitplan
+
+
+zeitplan mit christoph disktuieren:
+Anmeldung nach antrittvortrags
+monat zeitnehmen zum schreiben danach 4 monate zeit
+
+
+weiteres todo:
+meeting zu evaluation
+zeitplan aufstellen mit evaluation schreiben implementierung
+13 uhr alle zwei wochen Dienstag bei Comsys beginnend mit 1.4.2014

@@ -1,4 +1,4 @@
-Aufgabe der bachelorarbeit:
+Aufgabe der Bachelorarbeit:
 Gegeben:
 	Ein Wlan netzwerk mit zentralen WLC und vielen APs
 	Matrix mit signalstärken zwischen Aps
@@ -9,35 +9,23 @@ Gesucht:(Mit Christoph nochmal genauer absprechen)
 	Die erzeugung der links sollte eine survival path funktion haben (sollte ein link ausfallen kann der nächste übernommen werden)
 	Nach Möglichkeit sollte auch die Latenz zwischen den Knoten minimiert werden (QoS)
 
-gibt es einen weg einen graphen zeichnen zu lassen bei dem die kantenlaengen zu jedem anderen knoten bekannt sind?
 
 Fragen:
-Ein AP soll nur über einen channel mit einem anderen AP sprechen ja/nein? nein, luxus
-linkbewertung: momentaufnahme oder betrachte gesamte zeit bisher?
-Gibt es einen strukturierteren weg durch paper zu gehen? - Breitensuche/Tiefensuch / strukturiert anmerkungen zu machen? - papergraph?
-wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder sehende AP mit einem anderen verbinden, oder nur möglichst wenige(wie wählt man diese aus?)?
-Ist eine trennung der algorithmen in verbindungserstellungsalgo und channelassignmentalgo sinnvoll?
-Werden Beacons auf einem bestimmten channel gesendet= -> Kann es sein, dass die daraus ermittelte verbindungsqualität nur für den channel gilt auf dem das beacon empfangen wurde? Bzw die Qualität auf anderen channeln ganz anders sein kann?
-Phy signal level als score nutzen!
-Noise level als grundrauschen miteinbeziehen?
-d3js javascript graph als erweitung zu der derzeoitigen python/graphviz loesung nutzen?!
-Wie unterteile ich mir das weitere vorgehen? Algorithmensuche/bewertung/...?
-ich möchte mir einen möglichst guten überblick über alle paper auf einem feld verschaffen. => wie tue ich das? graph software die das gut darstellt? als auch die referenzen untereinander? action science explorer/citation network visualization
+Ist eine Trennung der algorithmen in verbindungserstellungsalgo und channelassignmentalgo sinnvoll? Oder soll man einen finden der beides macht? (wie zb INSTC)
+Warum sehen die einzelnen APs mehr ssids als sie an den WLC zurückmelden? Befürchtung: Aps sehen mehrer andere APs des AutoWDS, melden diese aber nicht an den WLC=>WLC kann nicht auf der kompletten graph-grundlage/Möglichkeiten arbeiten => suboptimale teillösungen
+Wie kann man das ganze testen?
+Was ist wahrscheinlicher: Link kaputt oder Node kaputt? (Erfahrungswerte?)
 
-Anmkerungen:
-Die APs müssten eigentlich auf jedem channel messungen machen und feststellen wie sehr die bereits ausgelastet sind(störung durch fremndgeräte) => beachten bei channelverteilung
-vl kann man bei der initialen anfrage der aps auch noch auf die bereits belegten channel achten (andere aps die evtl stören?)
-CA-Algo muss nicht zwingend topology preserving sein
-non-dynamic CA
-non-adaptive
-bei späteren verbesserungen beachte auch die chnittspfadnutzung(traffic/auslastung) und bevorzuge diese
-Für die Link-erzeugung kann man den minimalen spannbaum berechnen und dann jeweils für jede kante nochmal laufen lassen, jedoch ohne diese
+Anmkerungen/Ideen:
+CAA: in pick_best_channel-fkt: prioritätsliste (störer-aps/ bei den nachbarn im wer-sieht-wen-grap benutzte channel beachten)
+Evtl. kann man bei der initialen Abfrage der aps auch noch auf die bereits belegten channel achten (andere aps die evtl stören?) und versuchen diese zu umgehen?
+Für die Link-erzeugung kann man auf dem zugrundeliegenden (wer sieht wen)-graph den minimalen spannbaum berechnen und das verfahren n(Anzahl der knoten) mal widerholen, nur dass man dabei immer jeweils einen knoten wegnimmt(simuliert dessen ausfall). Am ende fasst man alle diese graphen zu einem zusammen und man hat einen 2-connected-graph
+Variable Anzahl von Netzwerkinterfaces wichtig
+2-3 channel im 2.4ghz abstand halten => 3/4 überlappungsfreie
+input von christoph: anz überlappungsfreie channel
+Output to christoph: 	     SRC              DEST
+						APID APINTNR  -  APID APINTNR	  KANALID
 
-
-- Channel Assignment and Security in Multi-Channel Multi_Radio Wireless Mesh Networks:
-	Wir haben wohl als anforderung ein non-dynamic/non-adaptive/static CA
-	clusterung scheint ein distributed ca zu sein
-	Clustering notwendig?
  - Centralized Channel Assignment and Routing Algorithms for Multi-Channel Wireless Mesh Networks:
 	Linkzuteilungsalgo
 	Genau unser szenario
@@ -45,70 +33,113 @@ Für die Link-erzeugung kann man den minimalen spannbaum berechnen und dann jewe
 	verstehe die link load estimation noch nicht ganz
 	unklar wie die links aufgebaut werden sollen.(vl erwartet das eine fertige topologie?)
 
-4 zentrale ansätze (laut paper weishen si overview channel assignment...):
-	CLICA schwierig mit multiplen radio
-	BFS-CA
-	INSTC löst auch k-connected(survival feature)aber all nodes must have same number of radios
-	CTA
+6 zentrale interessante algos (siehe paper weishen si overview channel assignment...):
+	CLICA schwierig mit multiplen radios (marina topology control approach for utilizing)
+	BFS-CA (ramachandran beldgin interference-aware channel assignment in multi-radio wireless mesh networks)
+	INSTC löst auch k-connected(survival feature)aber all nodes must have same number of radios (jian tang interference-aware tolopogy control ans qos routing)
+	CTA (tabu based) - noch nicht genauer betrachtet
+	MCI-CA
+	MCCA
+Eigener Algo:
+	Unterteile Knoten in Stratum-gruppen (Entfernung zum Gateway: 0,1,2,...)
+	Starte Mit Stratum 0
+	Betrachte einzelne Kante:
+		Habe ich noch module frei bei A ?
+			Ja:
+				Habe ich noch module frei bei B?
+					Ja:
+						Kann ich eine Farbe nutzen, die weder von a noch von b genutzt wurde?
+							Ja:
+								Nutze eine davon, die bei A am wenigsten genutzt wurde
+								Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+								Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+								Alternativ: eine nicht zuletzt gewählt
+							Nein:
+								Kann ich eine Farbe nutzen, die bei einem von beiden noch nicht genutzt wurde?
+									Ja:
+										Wähle eine dieser Farben, die bei A am wenigsten genutzt wurde
+										Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+										Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+										Alternativ: eine nicht zuletzt gewählt
+									Nein:
+										Nutze eine der Farben, welche in der Umgebung am wenigsten genutzt wurde
+										Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+										Alternativ: eine nicht zuletzt gewählt
+					Nein:
+						Verwende eine von B bereits genutzten Farben, die bei B noch weniger genutzt wurde,
+						Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+						Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+						Alternativ: eine nicht zuletzt gewählt
+						#Dieser Fall funktioniert, da ich ja bei A noch freie module habe
+			Nein:
+				Habe ich noch Module bei B frei?
+					Ja:
+						Verwende eine von A bereits genutzten Farben, die bei A noch weniger genutzt wurde,
+						Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
+						Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
+						Alternativ: eine nicht zuletzt gewählt
+						#Dieser Fall funktioniert, da ich ja bei B noch freie module habe
+					Nein:
+						#Ich habe also gar keine module mehr frei
+						Gibt es eine Schnittmenge der Farben, die A und B bereits nutzen?
+							Ja:
+								Nutze eine Farbe davon, die bei A am wenigsten genutzt wurde
+								Alternativ: ...
+							Nein:
+								#bad case
+								#loesung von hycint-mcr2
+								nimmt von allen hier verwendeten farben die, welche die am kürzesten zusammenhängende strecke hat (incl einem farbwechsel) am wenigsten auftritt / verlängerung) und ersetze sie mir einer von den bereits verwendeten
 
-laut jos buch interessant:
-rbab06 - ramachandran beldgin interference-aware channel assignment in multi-radio wireless mesh networks -BFS-CA
-akt04 - raniwala architecture and algorithms for assignment and routing 
-abl05 - mansoor alicherry joint channel assignment and routing - math theoretical
-ms05 - marina topology control approach for utilizing - CLICA
-sgd - anand subramanian minimum interference channel assignment - based on tabu based, greedy seems random
-txz05 - jian tang interference-aware tolopogy control ans qos routing - INSTC
-davr05 - das optimization models for fixed channel assignment - solved with ILP theoretically
-dvr06 - das static channel assignment in multi-radio multi-channel
 
-todo:
-graph mit allen sichtbarkeiten (grau) zeichnen
+interessante paper:
+anand subramanian minimum interference channel assignment - based on tabu based, greedy seems random
+das optimization models for fixed channel assignment - solved with ILP theoretically
+das static channel assignment in multi-radio multi-channel
+Minimum Interference Channel Assignment in Multiradio Wireless Mesh networks subramanian:
+	7,8.9.10.11,13
+
+Todo:
+kollisionskanten miteinbauen, also interferenzen nahe zusammenstehender knoten mitberücksichtigen (wähl immer kannte die nach möglichkeit in der umgebung noch nicht auftritt)
+graph mit allen sichtbarkeiten (grau) zeichnen -> christop (warum sehen die Aps mehr ssids als der WLC)
 channel assignment algorithmen lesen vergleichen
-buch caa verstehen
-programm jabref installieren
-
-
-besprechung joe 18.03.2014
-programm jabref
-prinzipielle machbarkeit?
-mit einfachem basis algo anfangen
-naechstes ziel eine basisversion laufen lassen koennen und mit christoph darauf einigen.
-naechste frage: wie kann man das testen?
-wie passt der algorithmus in das environment
-graphviz graphen an joe schicken
-michael vu email fuer details oder joe paper zugänglich
-schnittstelle zu christoph: wie sieht christophs input bvzw mein out aus?
-DLP ansehen
-link estimator
-link kaputt oder node kaputt was ist haeufiger?
-expected load auf channel ist wichtiger punkt und evtl später nocho mitbetrachten
-weiteres vorgehen:
-mitte april: antrittsvortrag: umfang 10min intention: feedback/ideen einsammeln 10min +5min frage ein par slides:
+	CLICA: sieht gut aus
+	INSTC: equal nr of radios (problem)
+basisalgo implementieren (dazu zunächst entscheiden welchen algo einsetzen?)
+DLP ansehen und als Lösungsansatz evaluieren / SAT solver
+Expected load nacher noch miteinfliessen lassen
+Antrittsvortrag erstellen:
+	umfang 10min intention: feedback/ideen einsammeln 10min +5min frage ein par slides:
 	2slides motivation 2 slides wissentliche ansatz/channel assignment ; was sind ideen, ansätze; prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden), wie koennte man das evaluieren?qos violation zb; zeitplan
+BA anmelden (nach antrittsvortrag)
+Zeitplan genau aufstellen (monat zeitnehmen zum schreiben danach 4 monate zeit)
+mail an jo: michael vu paper
 
+Done:
+programm jabref installieren (sehe den vorteil davon nicht)
+mail an joe : graphviz images/python scripts
 
-zeitplan mit christoph disktuieren:
-Anmeldung nach antrittvortrags
-monat zeitnehmen zum schreiben danach 4 monate zeit
-
-
-weiteres todo:
-meeting zu evaluation
-zeitplan aufstellen mit evaluation schreiben implementierung
-13 uhr alle zwei wochen Dienstag bei Comsys beginnend mit 1.4.2014
-
-
-
-
-
-
-meeting christoph 18.03.2014 16:30
-variable anzahl an interfaces wichtig
-2-3 channel im 2.4ghz abstand halten => 3/4 überlappungsfreie
-input von christoph in algo: anzhal der überlappuungsfreien kanäle
-output form:
-
-	     SRC              DEST
-	APID APINTNR  -  APID APINTNR	  KANALID	
-
-
+Gelöst Fragen:
+Machbarkeitsfrage:
+	Es gibt paper die das bereits gelöst haben => ja
+gibt es einen weg einen graphen zeichnen zu lassen bei dem die kantenlaengen zu jedem anderen knoten bekannt sind?
+	Ist nicht trivial, wird mir force directed graphs bezeichnet/gemacht. Stichwort Fruchtermann-Ehrenirgendwas methode.
+Linkbewertung: momentaufnahme oder betrachte gesamte zeit bisher?
+	Ich nehme zur Linkbewertung vorerst einen score der sich aus der phys signalstärke zwischen den aps berechnet (Später könnte man das nochverfeinern)
+Ein AP soll nur über einen channel mit einem anderen AP sprechen ja/nein?
+	Ich sage erstmal ja, da verbindungen wertvoll sind und wir wlan module nicht für soetwas verschwenden wollen/sollten
+Werden Beacons auf einem bestimmten channel gesendet= -> Kann es sein, dass die daraus ermittelte verbindungsqualität nur für den channel gilt auf dem das beacon empfangen wurde? Bzw die Qualität auf anderen channeln ganz anders sein kann?
+	Eigentlich stimmt das laut Alfred, aber da evtl störer nicht nur auf einem bestimmten kanal stören (mikrowelle) kann man den einen schon als representativen wählen.
+	Zusätzlich können störer natürlich auch andere wlan sein. Das Problem hierbei ist nur dass wir das mit den lancom geräten anscheinend nicht wirklich erfassen können
+d3js javascript graph als erweitung zu der derzeoitigen python/graphviz loesung nutzen?!
+	Ist zwar nett in js aber ich weiss noch nicht ob wir da genausoviel auswahl bei den darstellungsmöglichkeiten haben(das beispiel ist schon recht simpel)
+	Dazu kann ich auch kein js => graphviz ist erstmal gut genug
+bei späteren verbesserungen beachte auch die pfadnutzung(traffic/auslastung) und bevorzuge diese
+	den trafficeinfluss lassen wir vorerst raus. macht nur alles komplizierter. evtl für später interessant.
+Gibt es einen strukturierteren weg durch paper zu gehen? - Breitensuche/Tiefensuch / strukturiert anmerkungen zu machen? - papergraph? Ich habe das problem, dass ich paper lese, deren Referenzen folge und dann ua bei papern ankommen von denen ich nicht sofort erkenne, dass ich sie bereits gelesen habe (unnötige arbeit => wie kann man das umgehen?) ich möchte mir einen möglichst guten überblick über alle paper auf einem feld verschaffen. => wie tue ich das? graph software die das gut darstellt? als auch die referenzen untereinander? action science explorer/citation network visualization
+	jabref
+Wie unterteile ich mir das weitere vorgehen? Algorithmensuche/bewertung/...?:
+	zunächst für einen algo entscheiden, als nächstes die basisversion ans laufen bringen, dann diese tunen, dann evaluation, dann schreiben
+Wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder sehende AP mit einem anderen verbinden, oder nur möglichst wenige(wie wählt man diese aus?)?:
+	nach der anforderung des survival paths, sollte jeweils eine backuproute vorhanden sein
+Noise level als grundrauschen miteinbeziehen? Inwiefern war das gemeint?:
+	wenn nacher noch zeit ist, zunächst nicht(vorallem da auch nicht so ohne weiteres an die daten heranzukommen ist (aps))
