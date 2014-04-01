@@ -417,7 +417,7 @@ def graph_is_valid(graphname):
             color_set.add(color)
         if len(color_set) > nr_of_modules:
             print("Node " + str(node) + " has more colors attached than it has modules:" + str(len(color_set)) + " > " + str(nr_of_modules) + ")")
-            print color_set
+            print(color_set)
             print("Graph is NOT valid")
             return
 
