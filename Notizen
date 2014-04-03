@@ -104,7 +104,6 @@ graph mit allen sichtbarkeiten (grau) zeichnen -> christop (warum sehen die Aps 
 channel assignment algorithmen lesen vergleichen
 	CLICA: sieht gut aus
 	INSTC: equal nr of radios (problem)
-basisalgo implementieren (dazu zunächst entscheiden welchen algo einsetzen?)
 DLP ansehen und als Lösungsansatz evaluieren / SAT solver
 Expected load nacher noch miteinfliessen lassen
 Antrittsvortrag erstellen:
@@ -117,6 +116,7 @@ mail an jo: michael vu paper
 Done:
 programm jabref installieren (sehe den vorteil davon nicht)
 mail an joe : graphviz images/python scripts
+basisalgo implementieren (dazu zunächst entscheiden welchen algo einsetzen?)
 
 Gelöst Fragen:
 Machbarkeitsfrage:
