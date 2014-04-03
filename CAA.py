@@ -144,7 +144,7 @@ def get_least_used_colors_overall(allowed_colors):
 
 # colorset = list of colors we can chose from
 # caluclates the optimal color from this set
-# Returns the color to use
+# Returns the color to use (not a list of colors)
 def get_best_color_in(graphname, colorset, node_a, node_b):
     # Speed up things if there is only one color to chose from
     if len(colorset) == 1:
@@ -233,7 +233,7 @@ def modules_free_count(graphname, nodename):
     return get_modules_count_for_node(graphname, nodename) - get_number_of_colors_used_for_node(graphname, nodename)
 
 
-# Returns list of the colors which the two nodes already use for their edges
+# Returns list of the colors which the either node a or node b uses
 def get_colors_used_for_nodes(graphname, node_a, node_b):
     colors_used_by_node_a = get_colors_used_for_node(graphname, node_a)
     colors_used_by_node_b = get_colors_used_for_node(graphname, node_b)
@@ -320,35 +320,35 @@ def find_color_for_edge(graphname, node_a, node_b):
             colors_not_used_by_node_b = get_colors_not_used_for_node(graphname, node_b)
             colors_unused_by_both = [i for i in colors_not_used_by_node_a if i in colors_not_used_by_node_b]
             if colors_unused_by_both:
-                best_color = get_best_color_in(graphname, colors_unused_by_both, node_a, node_b)
-                set_edge_color(graphname, best_color, node_a, node_b)
+                second_best_color = get_best_color_in(graphname, colors_unused_by_both, node_a, node_b)
+                set_edge_color(graphname, second_best_color, node_a, node_b)
             else:
                 # Is there a color, which has at least not been used by one of the two nodes?
                 colors_not_used_by_node_a = get_colors_not_used_for_node(graphname, node_a)
                 colors_not_used_by_node_b = get_colors_not_used_for_node(graphname, node_b)
                 colors_not_used_by_either_node_a_or_node_b = list(set(colors_not_used_by_node_a + colors_not_used_by_node_b))
                 if colors_not_used_by_either_node_a_or_node_b:
-                    best_color = get_best_color_in(graphname, colors_not_used_by_either_node_a_or_node_b, node_a, node_b)
-                    set_edge_color(graphname, best_color, node_a, node_b)
+                    second_best_color = get_best_color_in(graphname, colors_not_used_by_either_node_a_or_node_b, node_a, node_b)
+                    set_edge_color(graphname, second_best_color, node_a, node_b)
                 else:
                     # There are no new colors anymore, pick the best one in the already used ones by the nodes
-                    colors_used_by_both = get_colors_used_for_nodes(graphname, node_a, node_b)
-                    if colors_used_by_both:
-                        best_color = get_best_color_in(graphname, colors_used_by_both, node_a, node_b)
-                        set_edge_color(graphname, best_color, node_a, node_b)
+                    colors_used_by_either_node_a_or_node_b = get_colors_used_for_nodes(graphname, node_a, node_b)
+                    if colors_used_by_either_node_a_or_node_b:
+                        second_best_color = get_best_color_in(graphname, colors_used_by_either_node_a_or_node_b, node_a, node_b)
+                        set_edge_color(graphname, second_best_color, node_a, node_b)
                     else:
                         # Use a color which is already used by B, which is used less there
                         # This works, since we still have free modules at A
                         colors_used_by_node_b = get_colors_used_for_node(graphname, node_b)
-                        best_color = get_best_color_in(graphname, colors_used_by_node_b, node_a, node_b)
-                        set_edge_color(graphname, best_color, node_a, node_b)
+                        second_best_color = get_best_color_in(graphname, colors_used_by_node_b, node_a, node_b)
+                        set_edge_color(graphname, second_best_color, node_a, node_b)
     else:
         if modules_free_count(graphname, node_b) > 0:
             # Use one of A's colors, which has been used the least there
             # This works, since we have still unused modules at A
             colors_used_for_node_a = get_colors_used_for_node(graphname, node_a)
-            best_color = get_best_color_in(graphname, colors_used_for_node_a, node_a, node_b)
-            set_edge_color(graphname, best_color, node_a, node_b)
+            second_best_color = get_best_color_in(graphname, colors_used_for_node_a, node_a, node_b)
+            set_edge_color(graphname, second_best_color, node_a, node_b)
         else:
             # We dont have any free modules at A or B
             # Is there an intersection of colors which A and B already use? => Use one of those
@@ -357,10 +357,12 @@ def find_color_for_edge(graphname, node_a, node_b):
             colors_used_by_both = [i for i in colors_used_by_node_a if i in colors_used_by_node_b]
             if colors_used_by_both:
                 # Chose the best from them
-                best_color = get_best_color_in(graphname, colors_used_by_both, node_a, node_b)
-                set_edge_color(graphname, best_color, node_a, node_b)
+                second_best_color = get_best_color_in(graphname, colors_used_by_both, node_a, node_b)
+                set_edge_color(graphname, second_best_color, node_a, node_b)
             else:
-                print("tricky")
+                print("Coloring edge " + str(node_a) + "," + str(node_b) + " is tricky")
+                print("Because node " + str(node_b) + " has colors: " + str(colors_used_by_node_a))
+                print("And node " + str(node_a) + " has colors: " + str(colors_used_by_node_b))
                 # There is also no intersection of colors in A and B
                 # This is the most costly case
                 # The solution here is based on a paper called hycint-mcr2 and works like described in the following:
@@ -376,23 +378,74 @@ def find_color_for_edge(graphname, node_a, node_b):
                 least_common_color = combined_color_counter.most_common()[-1][0]
 
                 # Find the color we will use for this edge (This is then the second "best")
+                # Replace the second rarest used color with the rarest used
                 # Meaning we take all colors from both nodes A and B, in order to find the best in this set
                 colors_used_by_either_node_a_or_node_b = list(set(colors_used_by_node_a + colors_used_by_node_b))
 
-                # Remove the least common color from this set, because then this color would always be cosen,
+                # Remove the least common color from this set, because then this color would always be chosen,
                 # because of its rare usage
                 if least_common_color in colors_used_by_either_node_a_or_node_b:
                     colors_used_by_either_node_a_or_node_b.remove(least_common_color)
 
-                best_color = get_best_color_in(graphname, colors_used_by_either_node_a_or_node_b, node_a, node_b)
+                second_best_color = get_best_color_in(graphname, colors_used_by_either_node_a_or_node_b, node_a, node_b)
 
-                # Recolor all other connected edges for both nodes
-                recolor_edges_for_node(graphname, node_a, least_common_color, best_color)
-                recolor_edges_for_node(graphname, node_b, least_common_color, best_color)
+                # Recolor all other connected edges for both nodes, means recolor all second_best_colors with the least_common_color
+                print("recoloring: " + str(second_best_color) + " -> " + str(least_common_color))
+                recolor_edges_for_node(graphname, node_a, second_best_color, least_common_color)
+                recolor_edges_for_node(graphname, node_b, second_best_color, least_common_color)
 
-                # Color the edge from node_a to node_b with this color
-                set_edge_color(graphname, best_color, node_a, node_b)
-
+                # Color the edge from node_a to node_b with this the best color available at node a
+                # Now the tricky case is solved and continue with the normal procedure
+                #Todo: this is copy code, how do we do this better?
+                if modules_free_count(graphname, node_a) > 0:
+                    if modules_free_count(graphname, node_b) > 0:
+                        # Is there a color used by neither node_a nor node_b?
+                        colors_not_used_by_node_a = get_colors_not_used_for_node(graphname, node_a)
+                        colors_not_used_by_node_b = get_colors_not_used_for_node(graphname, node_b)
+                        colors_unused_by_both = [i for i in colors_not_used_by_node_a if i in colors_not_used_by_node_b]
+                        if colors_unused_by_both:
+                            second_best_color = get_best_color_in(graphname, colors_unused_by_both, node_a, node_b)
+                            set_edge_color(graphname, second_best_color, node_a, node_b)
+                        else:
+                            # Is there a color, which has at least not been used by one of the two nodes?
+                            colors_not_used_by_node_a = get_colors_not_used_for_node(graphname, node_a)
+                            colors_not_used_by_node_b = get_colors_not_used_for_node(graphname, node_b)
+                            colors_not_used_by_either_node_a_or_node_b = list(set(colors_not_used_by_node_a + colors_not_used_by_node_b))
+                            if colors_not_used_by_either_node_a_or_node_b:
+                                second_best_color = get_best_color_in(graphname, colors_not_used_by_either_node_a_or_node_b, node_a, node_b)
+                                set_edge_color(graphname, second_best_color, node_a, node_b)
+                            else:
+                                # There are no new colors anymore, pick the best one in the already used ones by the nodes
+                                colors_used_by_either_node_a_or_node_b = get_colors_used_for_nodes(graphname, node_a, node_b)
+                                if colors_used_by_either_node_a_or_node_b:
+                                    second_best_color = get_best_color_in(graphname, colors_used_by_either_node_a_or_node_b, node_a, node_b)
+                                    set_edge_color(graphname, second_best_color, node_a, node_b)
+                                else:
+                                    # Use a color which is already used by B, which is used less there
+                                    # This works, since we still have free modules at A
+                                    colors_used_by_node_b = get_colors_used_for_node(graphname, node_b)
+                                    second_best_color = get_best_color_in(graphname, colors_used_by_node_b, node_a, node_b)
+                                    set_edge_color(graphname, second_best_color, node_a, node_b)
+                else:
+                    if modules_free_count(graphname, node_b) > 0:
+                        # Use one of A's colors, which has been used the least there
+                        # This works, since we have still unused modules at A
+                        colors_used_for_node_a = get_colors_used_for_node(graphname, node_a)
+                        second_best_color = get_best_color_in(graphname, colors_used_for_node_a, node_a, node_b)
+                        set_edge_color(graphname, second_best_color, node_a, node_b)
+                    else:
+                        # We dont have any free modules at A or B
+                        # Is there an intersection of colors which A and B already use? => Use one of those
+                        colors_used_by_node_a = get_colors_used_for_node(graphname, node_a)
+                        colors_used_by_node_b = get_colors_used_for_node(graphname, node_b)
+                        colors_used_by_both = [i for i in colors_used_by_node_a if i in colors_used_by_node_b]
+                        if colors_used_by_both:
+                            # Chose the best from them
+                            second_best_color = get_best_color_in(graphname, colors_used_by_both, node_a, node_b)
+                            set_edge_color(graphname, second_best_color, node_a, node_b)
+                        else:
+                            print("ERROR: tricky case has not been solved correctly, could not assign color")
+                            exit(1)
 
 # Check if the coloring is valid (does ever node only use a number of colors = his modules and Are all edges colored?)
 def graph_is_valid(graphname):
@@ -459,46 +512,47 @@ mst_mode = "node"                                       # This variable sets the
                                                         # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
 Assignable_Colors = ["red", "green", "blue", "orange"]  # List of all channels/colors which can be used for assignment
 
+while True:
+    #
+    # Generating Graphs for testing
+    #
+    RandomGraph = nx.fast_gnp_random_graph(random.randrange(5, 50), 0.4)           # Generate a random graph, for debugging, remove later
+    for node in RandomGraph.nodes():
+        RandomGraph.node[node]["modules"] = 2
+    for (a, b) in RandomGraph.edges():                      # Set random weights on edges for mst
+        RandomGraph[a][b]["weight"] = random.randrange(1, 20)
 
-#
-# Generating Graphs for testing
-#
-RandomGraph = nx.fast_gnp_random_graph(15, 1)           # Generate a random graph, for debugging, remove later
-for node in RandomGraph.nodes():
-    RandomGraph.node[node]["modules"] = 2
-for (a, b) in RandomGraph.edges():                      # Set random weights on edges for mst
-    RandomGraph[a][b]["weight"] = random.randrange(1, 20)
+    #
+    # Main function
+    #
+    Edges_Done = set()                                      # List of edges which have been visited (empty at beginning)
+    Overall_Color_Counter = collections.Counter()           # This counts how often each color has been used overall, initially fill with 0
+    for color in Assignable_Colors:
+        Overall_Color_Counter[color] = 0
 
+    pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout) # Create pydotgraph (so we can draw it better), remove the whole pydot stuff for final release
+    transform_graph(RandomGraph)                            # Show basic Connectivity and channelquality
+    write_image()
 
-#
-# Main function
-#
-Edges_Done = set()                                      # List of edges which have been visited (empty at beginning)
-Overall_Color_Counter = collections.Counter()           # This counts how often each color has been used overall, initially fill with 0
-for color in Assignable_Colors:
-    Overall_Color_Counter[color] = 0
+    # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
+    del pydotgraph
+    pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout)
+    mst_graph = calculate_survival_graph(RandomGraph)
+    transform_graph(mst_graph)
+    write_image()
 
-pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout) # Create pydotgraph (so we can draw it better), remove the whole pydot stuff for final release
-transform_graph(RandomGraph)                            # Show basic Connectivity and channelquality
-write_image()
+    # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
+    nodelist = list()   # This is the list of nodes over which we iterate
+    nodelist.append(0)  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
+    for node in nodelist:
+        neighbors = mst_graph.neighbors(node)
+        for neighbor in neighbors:
+            if (node, neighbor) not in Edges_Done:
+                find_color_for_edge(mst_graph, node, neighbor)
+                nodelist.append(neighbor)
+                write_image()
 
-# First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
-del pydotgraph
-pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout)
-mst_graph = calculate_survival_graph(RandomGraph)
-transform_graph(mst_graph)
-write_image()
-
-# Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
-nodelist = list()   # This is the list of nodes over which we iterate
-nodelist.append(0)  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
-for node in nodelist:
-    neighbors = mst_graph.neighbors(node)
-    for neighbor in neighbors:
-        if (node, neighbor) not in Edges_Done:
-            find_color_for_edge(mst_graph, node, neighbor)
-            nodelist.append(neighbor)
-            write_image()
-
-# Finally check the graph for validity
-graph_is_valid(mst_graph)
+    # Finally check the graph for validity
+    if not graph_is_valid(mst_graph):
+        print("Found a bad one")
+        exit(1)
