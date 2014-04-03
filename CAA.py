@@ -8,37 +8,6 @@ import collections
 import random
 import pydot
 
-# Image-iterator for debugging
-#Number = 0
-
-# Factor for edge thickness, smaller value => smaller edges
-Edge_Thickness = 9.0
-
-# Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
-Graph_Layout = "fdp"
-
-# Generate a random graph
-# For debugging purpose
-RandomGraph = nx.fast_gnp_random_graph(30, 0.2)
-for node in RandomGraph.nodes():
-    RandomGraph.node[node]["modules"] = 2
-
-# Set random weights on edges for mst
-for (a, b) in RandomGraph.edges():
-    RandomGraph[a][b]["weight"] = random.randrange(1, 20)
-
-# List of edges which have been visited (empty at beginning)
-Edges_Done = set()
-
-# List of all channels/colors which can be used for assignment
-Assignable_Colors = ["red", "green", "blue", "orange"]
-
-# How often is each color used?
-# Initially fill it with 0 for all colors
-Overall_Color_Counter = collections.Counter()
-for color in Assignable_Colors:
-    Overall_Color_Counter[color] = 0
-
 
 # counterlist = dictionary with colors and their number of occurences
 # allowed_colors = list to pick colors from (because we might not be allowed to use all in a certain situation)
@@ -117,21 +86,53 @@ def get_least_used_colors_for_nodes(graphname, node_a, node_b, allowed_colors):
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
 def calculate_survival_graph(graphname):
     MST_Graph = nx.minimum_spanning_tree(graphname).copy()
-    for node in graphname.nodes():
+    for edge in MST_Graph.edges():
+        print("added edge " + str(edge[0]) + "," + str(edge[1]) + ", because it was in original MST")
+    if mst_mode == "node":
+        for node in graphname.nodes():
 
-        # Create new temp Graph to work with
-        Work_Graph = graphname.copy()
+            # Create new temp Graph to work with
+            work_graph = graphname.copy()
 
-        # Remove the node
-        Work_Graph.remove_node(node)
+            # Remove the node
+            work_graph.remove_node(node)
 
-        # Now calculate the mst on this new graph
-        MST_Work_Graph = nx.minimum_spanning_tree(Work_Graph)
+            # Now calculate the mst on this new graph
+            mst_work_graph = nx.minimum_spanning_tree(work_graph)
 
-        # Add the now necessary edges to the resulting graph
-        for From, To, Attributes in MST_Work_Graph.edges(data=True):
-            MST_Graph.add_edge(From, To, weight=Attributes['weight'])
+            # Add the now necessary edges to the resulting graph
+            for From, To, Attributes in mst_work_graph.edges(data=True):
+                if not MST_Graph.has_edge(From, To):
+                    MST_Graph.add_edge(From, To, weight=Attributes['weight'])
+                    print("added edge " + str(From) + "," + str(To) + " for MST on Graph without node " + str(node))
+    elif mst_mode == "edge":
+        # We have to note here, that we still could get less edges in the end
+        # (we get here more edges than necessary for a 2-connected graph), but you really may not only want to use
+        # only the edges, which you get by constructing a 2-connected graph, since this would also depend on bad quality-
+        # links (Like you could get from A to C over B with : A->(0.1)->B->(0.1)->C, but you would rather take an edge like
+        # A->(0.5)->C instead
+        for edge in graphname.edges():
 
+            # Create new temp Graph to work with
+            work_graph = graphname.copy()
+
+            # Remove the edge
+            work_graph.remove_edge(edge[0], edge[1])
+
+            # Now calculate the mst on the workgraph
+            mst_work_graph = nx.minimum_spanning_tree(work_graph)
+
+            # Add all of the edges from the MST_Work_Graph of this round to the final Graph
+            for From, To, Attributes in mst_work_graph.edges(data=True):
+                if not MST_Graph.has_edge(From, To):
+                    MST_Graph.add_edge(From, To, weight=Attributes['weight'])
+                    print("added edge " + str(From) + "," + str(To) + " for MST on Graph without edge " + str(edge))
+    elif mst_mode == "single":
+        #Just fall through, since we already calculated the plain mst
+        print()
+    else:
+        print("Unknown Mode: Please Chose one out of 'node', 'edge' or 'single'")
+        exit(1)
     return MST_Graph
 
 
@@ -359,6 +360,7 @@ def find_color_for_edge(graphname, node_a, node_b):
                 best_color = get_best_color_in(graphname, colors_used_by_both, node_a, node_b)
                 set_edge_color(graphname, best_color, node_a, node_b)
             else:
+                print("tricky")
                 # There is also no intersection of colors in A and B
                 # This is the most costly case
                 # The solution here is based on a paper called hycint-mcr2 and works like described in the following:
@@ -401,12 +403,12 @@ def graph_is_valid(graphname):
         if not edge:
             print(edge + " not valid")
             print("Graph is NOT valid")
-            return
+            return False
         else:
             if not graphname[edge[0]][edge[1]]["color"]:
                 print("Edge has no color: " + str(edge[0]) + "<->" + str(edge[1]))
                 print("Graph is NOT valid")
-                return
+                return False
 
     # Now check if every node has only so many attached colors/channels as the number of modules it has
     for node in graphname.nodes():
@@ -419,9 +421,10 @@ def graph_is_valid(graphname):
             print("Node " + str(node) + " has more colors attached than it has modules:" + str(len(color_set)) + " > " + str(nr_of_modules) + ")")
             print color_set
             print("Graph is NOT valid")
-            return
+            return False
 
     print("Graph is valid")
+    return True
 
 
 # Transform networkxgraph to pydot graph, for displaying purposes
@@ -444,27 +447,51 @@ def write_image():
     pydotgraph.write("caa.svg", format="svg")
 
 
-# Create pydotgraph (so we can draw it better)
-pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout)
+#
+# Configuration
+#
+Number = 0                                              # Image-iterator for debugging
+Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
+Graph_Layout = "circo"                                  # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
+mst_mode = "node"                                       # This variable sets the mode for the MST creation:
+                                                        # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
+                                                        # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
+                                                        # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
+Assignable_Colors = ["red", "green", "blue", "orange"]  # List of all channels/colors which can be used for assignment
 
-# Show basic Connectivity and channelquality
-transform_graph(RandomGraph)
+
+#
+# Generating Graphs for testing
+#
+RandomGraph = nx.fast_gnp_random_graph(15, 1)           # Generate a random graph, for debugging, remove later
+for node in RandomGraph.nodes():
+    RandomGraph.node[node]["modules"] = 2
+for (a, b) in RandomGraph.edges():                      # Set random weights on edges for mst
+    RandomGraph[a][b]["weight"] = random.randrange(1, 20)
+
+
+#
+# Main function
+#
+Edges_Done = set()                                      # List of edges which have been visited (empty at beginning)
+Overall_Color_Counter = collections.Counter()           # This counts how often each color has been used overall, initially fill with 0
+for color in Assignable_Colors:
+    Overall_Color_Counter[color] = 0
+
+pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout) # Create pydotgraph (so we can draw it better), remove the whole pydot stuff for final release
+transform_graph(RandomGraph)                            # Show basic Connectivity and channelquality
 write_image()
 
-# Calculate the Minimal Spanning Tree from the basic connectivity graph
+# First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 del pydotgraph
 pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout)
 mst_graph = calculate_survival_graph(RandomGraph)
 transform_graph(mst_graph)
 write_image()
 
-# This is the list of nodes over which we iterate
-nodelist = list()
-
-# Initially put only the gatewaynode in the nodelist (Could also be a different one)
-nodelist.append(0)
-
-# Find the best channels for every edge in the MST-Graph and assign them to the edges
+# Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
+nodelist = list()   # This is the list of nodes over which we iterate
+nodelist.append(0)  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
 for node in nodelist:
     neighbors = mst_graph.neighbors(node)
     for neighbor in neighbors:
