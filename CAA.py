@@ -7,6 +7,7 @@ import networkx as nx
 import collections
 import random
 import pydot
+import netsnmp
 
 
 # counterlist = dictionary with colors and their number of occurences
@@ -17,7 +18,7 @@ def get_least_used_elements_for_counter_dict(counterlist, allowed_colors):
 
     # Create new restricted counterlist with only those elements in it, which are also in allowed_colors
     restricted_counterlist = collections.Counter()
-    for element in counterlist:
+    for element in counterlist.keys():
         if element in allowed_colors:
             restricted_counterlist[element] = counterlist[element]
 
@@ -44,11 +45,12 @@ def get_least_used_colors_for_node(graphname, nodename, allowed_colors):
         color_counter[color] = 0
 
     for neighbor in neighbors:
-        edge = graphname.get_edge_data(nodename, neighbor)
-        if edge and "color" in edge.keys():
-            edgecolor = edge["color"]
-            if edgecolor:
-                color_counter[edgecolor] += 1
+        if not neighbor in lan_nodes:
+            edge = graphname.get_edge_data(nodename, neighbor)
+            if edge and "color" in edge.keys():
+                edgecolor = edge["color"]
+                if edgecolor:
+                    color_counter[edgecolor] += 1
 
     return get_least_used_elements_for_counter_dict(color_counter, allowed_colors)
 
@@ -66,19 +68,21 @@ def get_least_used_colors_for_nodes(graphname, node_a, node_b, allowed_colors):
     neighbors_of_b = graphname.neighbors(node_b)
 
     for neighbor in neighbors_of_a:
-        edge = graphname.get_edge_data(node_a, neighbor)
-        if edge and "color" in edge.keys():
-            edgecolor = edge["color"]
-            if edgecolor:
-                color_counter[edgecolor] += 1
+        if not neighbor in lan_nodes:
+            edge = graphname.get_edge_data(node_a, neighbor)
+            if edge and "color" in edge.keys():
+                edgecolor = edge["color"]
+                if edgecolor:
+                    color_counter[edgecolor] += 1
 
     for neighbor in neighbors_of_b:
-        edge = graphname.get_edge_data(node_b, neighbor)
-        if edge and "color" in edge.keys():
-            edgecolor = edge["color"]
-            # Do not count the edge between node_a and node_b twice
-            if edgecolor and not neighbor == node_a:
-                color_counter[edgecolor] += 1
+        if not neighbor in lan_nodes:
+            edge = graphname.get_edge_data(node_b, neighbor)
+            if edge and "color" in edge.keys():
+                edgecolor = edge["color"]
+                # Do not count the edge between node_a and node_b twice
+                if edgecolor and not neighbor == node_a:
+                    color_counter[edgecolor] += 1
 
     return get_least_used_elements_for_counter_dict(color_counter, allowed_colors)
 
@@ -211,7 +215,7 @@ def set_edge_color(graphname, edgecolor, node_a, node_b):
     # Color in pydot for debugging, remove later
     # TODO: (THIS SHOULD BE DONE SOMEWHERE ELSE LATER)
     edge = pydotgraph.get_edge(str(node_a), str(node_b))[0]
-    edge.set_color(edgecolor)
+    edge.set_color(colortable[edgecolor])
     penwidth = str(Edge_Thickness/edge_weight)
     edge.set_penwidth(penwidth)
     edge.set_style("solid")
@@ -229,10 +233,11 @@ def get_colors_used_for_node(graphname, nodename):
     colorset = set()
     neighbors = graphname.neighbors(nodename)
     for neighbor in neighbors:
-        edge = graphname.get_edge_data(nodename, neighbor)
-        if edge and "color" in edge.keys():
-            edgecolor = edge["color"]
-            colorset.add(edgecolor)
+        if not neighbor in lan_nodes:
+            edge = graphname.get_edge_data(nodename, neighbor)
+            if edge and "color" in edge.keys():
+                edgecolor = edge["color"]
+                colorset.add(edgecolor)
     return list(colorset)
 
 
@@ -281,18 +286,19 @@ def get_color_count_for_node(graphname, nodename):
         for node in nodes_todo:
             neighbors = graphname.neighbors(node)
             for neighbor in neighbors:
-                edge = graphname.get_edge_data(node, neighbor)
-                if edge and "color" in edge.keys() and edge["color"] == color and (node, neighbor) not in edges_done:
-                    # Add edge to done-list
-                    edges_done.add((node, neighbor))
-                    edges_done.add((neighbor, node))
+                if not neighbor in lan_nodes:
+                    edge = graphname.get_edge_data(node, neighbor)
+                    if edge and "color" in edge.keys() and edge["color"] == color and (node, neighbor) not in edges_done:
+                        # Add edge to done-list
+                        edges_done.add((node, neighbor))
+                        edges_done.add((neighbor, node))
 
-                    # Increase overall color counter
-                    color_counter[color] += 1
+                        # Increase overall color counter
+                        color_counter[color] += 1
 
-                    # Add node togo if not already visited
-                    if neighbor not in nodes_todo:
-                        nodes_todo.append(neighbor)
+                        # Add node togo if not already visited
+                        if neighbor not in nodes_todo:
+                            nodes_todo.append(neighbor)
 
     return color_counter
 
@@ -312,17 +318,18 @@ def recolor_edges_for_node(graphname, nodename, oldcolor, newcolor):
     for node in nodes_todo:
         neighbors = graphname.neighbors(node)
         for neighbor in neighbors:
-            edge = graphname.get_edge_data(node, neighbor)
-            if edge and "color" in edge.keys() and edge["color"] == oldcolor:
-                # Recolor that edge
-                set_edge_color(graphname, newcolor, node, neighbor)
+            if not neighbor in lan_nodes:
+                edge = graphname.get_edge_data(node, neighbor)
+                if edge and "color" in edge.keys() and edge["color"] == oldcolor:
+                    # Recolor that edge
+                    set_edge_color(graphname, newcolor, node, neighbor)
 
-                # Add the destination node to nodes_todo
-                nodes_todo.append(neighbor)
+                    # Add the destination node to nodes_todo
+                    nodes_todo.append(neighbor)
 
-                # Adjust overall_color_counter
-                Overall_Color_Counter[oldcolor] -= 1
-                Overall_Color_Counter[newcolor] += 1
+                    # Adjust overall_color_counter
+                    Overall_Color_Counter[oldcolor] -= 1
+                    Overall_Color_Counter[newcolor] += 1
 
 
 def find_color_for_edge_without_tricky(graphname, node_a, node_b):
@@ -421,33 +428,41 @@ def graph_is_valid(graphname):
 
     # First check if every edge has a color
     for edge in graphname.edges():
-        if not edge:
-            print(edge + " not valid")
-            print("Graph is NOT valid")
-            return False
-        else:
-            if not graphname.edge[edge[0]][edge[1]]["color"]:
-                print("Edge has no color: " + str(edge[0]) + "<->" + str(edge[1]))
+        if not edge[0] in lan_nodes and not edge[1] in lan_nodes:
+            if not edge:
+                print(edge + " not valid")
                 print("Graph is NOT valid")
                 return False
+            else:
+                if not graphname.edge[edge[0]][edge[1]]["color"]:
+                    print("Edge has no color: " + str(edge[0]) + "<->" + str(edge[1]))
+                    print("Graph is NOT valid")
+                    return False
 
     # Now check if every node has only so many attached colors/channels as the number of modules it has
     debug_sum_modules_used = 0
     debug_sum_modules_overall = 0
     for node in graphname.nodes():
-        color_set = set()
-        nr_of_modules = graphname.node[node]["modules"]
-        for neighbor in graphname.neighbors(node):
-            color = graphname.edge[node][neighbor]["color"]
-            color_set.add(color)
-        debug_sum_modules_used += len(color_set)
-        debug_sum_modules_overall += nr_of_modules
+        if node in wlan_modules:
+            color_set = set()
+            nr_of_modules = graphname.node[node]["modules"]
+            for neighbor in graphname.neighbors(node):
+                if not neighbor in lan_nodes:
+                    color = graphname.edge[node][neighbor]["color"]
+                    color_set.add(color)
+            debug_sum_modules_used += len(color_set)
+            debug_sum_modules_overall += nr_of_modules
 
-        if len(color_set) > nr_of_modules:
-            print("Node " + str(node) + " has more colors attached than it has modules:" + str(len(color_set)) + " > " + str(nr_of_modules) + ")")
-            print(color_set)
-            print("Graph is NOT valid")
-            return False
+            if len(color_set) > nr_of_modules:
+                print("Node " + str(node) + " has more colors attached than it has modules:" + str(len(color_set)) + " > " + str(nr_of_modules) + ")")
+                print(color_set)
+                print("Graph is NOT valid")
+                return False
+        else:
+            if not node in lan_nodes:
+                print("something is wrong, node is neither lannode nor wlan module")
+                return False
+
 
     print("Graph is valid with usage of: " + str(1.0*debug_sum_modules_used/debug_sum_modules_overall))
     return True
@@ -473,66 +488,157 @@ def write_image():
     pydotgraph.write("caa.svg", format="svg")
 
 
+#translate a lan_mac + interface nr to wlan_mac
+def translate_lan_mac_to_wlan_mac(lanmac, interfacenr, active_radios_table):
+    # Interfacenr is of the form "WLAN-ID"
+    #look for the combination lanmac + interfacenr in the table active radios and return the wlan_mac for it
+    results = [ i[2] for i in active_radios_table if i[1] == lanmac and i[3] == interfacenr]
+    if len(results) != 1:
+        print "Error: Could not find lanmac and interfacenr for " + str(lanmac) + "," + str(interfacenr) + " in active_radios"
+        exit(1)
+    else:
+        return results[0]
+
+
 #
 # Configuration
 #
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
 Graph_Layout = "dot"                                    # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
-mst_mode = "none"                                       # This variable sets the mode for the MST creation:
+mst_mode = "edge"                                       # This variable sets the mode for the MST creation:
                                                         # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
                                                         # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
                                                         # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
-Assignable_Colors = ["red", "green", "blue", "orange"]  # List of all channels/colors which can be used for assignment
+Assignable_Colors = ["1", "3", "6", "11"]  # List of all channels/colors which can be used for assignment
+colortable = dict()
+colortable["1"] = "red"
+colortable["3"] = "green"
+colortable["6"] = "blue"
+colortable["11"] = "orange"
 
-while True:
-    #
-    # Generating Graphs for testing
-    #
-    RandomGraph = nx.fast_gnp_random_graph(25, 0.3)           # Generate a random graph, for debugging, remove later
-    for node in RandomGraph.nodes():
-        RandomGraph.node[node]["modules"] = 2
-        actually_seen_colors = collections.Counter()
-        for color in Assignable_Colors:
-            actually_seen_colors[color] = random.randrange(1, 15)
-        RandomGraph.node[node]["seen_channels"] = actually_seen_colors
-    for (a, b) in RandomGraph.edges():                      # Set random weights on edges for mst
-        RandomGraph[a][b]["weight"] = random.randrange(1, 20)
+#
+# Generating Graphs for testing
+#
+#RandomGraph = nx.fast_gnp_random_graph(25, 0.3)           # Generate a random graph, for debugging, remove later
+#for node in RandomGraph.nodes():
+#    RandomGraph.node[node]["modules"] = 2
+#    actually_seen_colors = collections.Counter()
+#    for color in Assignable_Colors:
+#        actually_seen_colors[color] = random.randrange(1, 15)
+#    RandomGraph.node[node]["seen_channels"] = actually_seen_colors
+#for (a, b) in RandomGraph.edges():                      # Set random weights on edges for mst
+#    RandomGraph[a][b]["weight"] = random.randrange(1, 20)
 
-    #
-    # Main function
-    #
-    Edges_Done = set()                                      # List of edges which have been visited (empty at beginning)
-    Overall_Color_Counter = collections.Counter()           # This counts how often each color has been used overall, initially fill with 0
+#
+# Getting Data from WLC per SNMP
+#
+wlc_address = "172.16.40.100"
+snmp_community = "public"
+snmp_session = netsnmp.Session(DestHost=wlc_address, Version=2, Community=snmp_community)
+scan_results_ap_name = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.2'))
+scan_results_ap_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.4'))
+scan_results_ap_mac = [ i.encode("hex") for i in scan_results_ap_mac_hex]
+scan_results_seen_bssid_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.1'))
+scan_results_seen_bssid = [ i.encode("hex") for i in scan_results_seen_bssid_hex]
+scan_results_channel = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.9'))
+scan_results_signal_strengh = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.11'))
+scan_results_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.5'))
+
+# First create the interfaces-graph
+# That means we create a node for each WLAN-interface of a node
+# and connect each of those of a node with a link with quality 0(best)(so the MST takes this edge always)
+# Therefore we use the Status/WLAN-Management/AP-Status/Active-Radios/ Table of the WLC
+# This gives us the interfaces of each node (identified by the MACs (LAN/WLAN)
+active_radios_ap_name = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.3'))
+active_radios_ap_lan_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.1'))
+active_radios_ap_lan_mac = [ i.encode("hex") for i in active_radios_ap_lan_mac_hex]
+active_radios_ap_bssid_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.6'))
+active_radios_ap_bssid_mac = [ i.encode("hex") for i in active_radios_ap_bssid_mac_hex]
+active_radios_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.7'))  # 0=1, 1=2, ...
+active_radios = zip(active_radios_ap_name, active_radios_ap_lan_mac, active_radios_ap_bssid_mac, active_radios_interface_nr)
+scan_results_wlan_mac = [ translate_lan_mac_to_wlan_mac(i[0], i[1], active_radios) for i in zip(scan_results_ap_mac, scan_results_interface_nr) ]
+scan_results = zip(scan_results_ap_name, scan_results_ap_mac, scan_results_seen_bssid, scan_results_channel, scan_results_signal_strengh, scan_results_wlan_mac)
+
+wlan_modules = set(active_radios_ap_bssid_mac)
+lan_nodes = set(active_radios_ap_lan_mac)
+
+basic_connectivity_graph = nx.Graph()
+#generate node to interface edges
+for ap_name, ap_lan_mac, ap_wlan_interface_mac, ap_interface_nr in active_radios:
+    basic_connectivity_graph.add_edge(ap_lan_mac, ap_wlan_interface_mac)
+    basic_connectivity_graph[ap_lan_mac][ap_wlan_interface_mac]["weight"] = 1
+    #initialize actually seen counters for wlan modules:
+    actually_seen_colors = collections.Counter()
     for color in Assignable_Colors:
-        Overall_Color_Counter[color] = 0
+        actually_seen_colors[color] = 0
+    basic_connectivity_graph.node[ap_wlan_interface_mac]["seen_channels"] = actually_seen_colors
+    basic_connectivity_graph.node[ap_wlan_interface_mac]["interface-nr"] = ap_interface_nr
+    basic_connectivity_graph.node[ap_wlan_interface_mac]["module-of"] = ap_name
+    basic_connectivity_graph.node[ap_lan_mac]["name"] = ap_name
+    #initialize nr of modules for wlan module
+    basic_connectivity_graph.node[ap_wlan_interface_mac]["modules"] = 1
+    #initialize nr of modules for lan_mac
+    basic_connectivity_graph.node[ap_lan_mac]["modules"] = len(basic_connectivity_graph.neighbors(ap_lan_mac))
 
-    #pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout) # Create pydotgraph (so we can draw it better), remove the whole pydot stuff for final release
-    #transform_graph(RandomGraph)                            # Show basic Connectivity and channelquality
-    #write_image()
 
-    # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
-    #del pydotgraph
-    pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout)
-    mst_graph = calculate_survival_graph(RandomGraph)
-    transform_graph(mst_graph)
-    write_image()
+#add all possible links from scan-results-table (interface to interface)
+for ap_name, ap_lan_mac, dest_wlan_mac, channel, signal_strength, ap_wlan_mac in scan_results:
+    #check if we see one of our autowds aps or another wlan
+    if dest_wlan_mac in active_radios_ap_bssid_mac:
+        #its one of our connections in autowds
+        basic_connectivity_graph.add_edge(ap_wlan_mac, dest_wlan_mac)
 
-    # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
-    nodelist = list()   # This is the list of nodes over which we iterate
-    nodelist.append(0)  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
-    for node in nodelist:
-        neighbors = mst_graph.neighbors(node)
-        for neighbor in neighbors:
-            if (node, neighbor) not in Edges_Done:
-                find_color_for_edge(mst_graph, node, neighbor)
-                nodelist.append(neighbor)
-                #write_image()
+        # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
+        # because lower values are better there
+        basic_connectivity_graph[ap_wlan_mac][dest_wlan_mac]["weight"] = 1 + 100.0 / int(signal_strength)
+    else:
+        #its not one of our connections => add to interference list of this wlan module-node
+        basic_connectivity_graph.node[ap_wlan_mac]["seen_channels"][channel] += 1
 
-    write_image()
-    print(Overall_Color_Counter)
+#
+# Main function
+#
+Edges_Done = set()                                      # List of edges which have been visited (empty at beginning)
+Overall_Color_Counter = collections.Counter()           # This counts how often each color has been used overall, initially fill with 0
+for color in Assignable_Colors:
+    Overall_Color_Counter[color] = 0
 
-    # Finally check the graph for validity
-    if not graph_is_valid(mst_graph):
-        print("Found a bad one")
-        exit(1)
+#pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout) # Create pydotgraph (so we can draw it better), remove the whole pydot stuff for final release
+#transform_graph(RandomGraph)                            # Show basic Connectivity and channelquality
+#write_image()
+
+# First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
+#del pydotgraph
+pydotgraph = pydot.Dot(graph_type='graph', layout=Graph_Layout)
+mst_graph = calculate_survival_graph(basic_connectivity_graph)
+transform_graph(mst_graph)
+write_image()
+
+# Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
+nodelist = list()   # This is the list of nodes over which we iterate
+nodelist.append("ece555ffd63a")  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
+#todo: automate the line above
+
+# Add all edges which have a lan node in them, so we dont try to color them
+for From, To in mst_graph.edges():
+    if From in lan_nodes or To in lan_nodes:
+        Edges_Done.add((From, To))
+        Edges_Done.add((To, From))
+
+# Go through all nodes (main loop)
+for node in nodelist:
+    neighbors = mst_graph.neighbors(node)
+    for neighbor in neighbors:
+        if (node, neighbor) not in Edges_Done:
+            find_color_for_edge(mst_graph, node, neighbor)
+            nodelist.append(neighbor)
+            #write_image()
+
+write_image()
+print(Overall_Color_Counter)
+
+# Finally check the graph for validity
+if not graph_is_valid(mst_graph):
+    print("Found a bad one")
+    exit(1)
