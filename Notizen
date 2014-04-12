@@ -55,17 +55,19 @@ Eigener Algo:
 								Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
 								Alternativ: eine nicht zuletzt gewählt
 							Nein:
-								Kann ich eine Farbe nutzen, die bei einem von beiden noch nicht genutzt wurde?
+								Gibt es eine Farbe, die zumindest bei einem von beiden noch nicht genutzt wurde?
 									Ja:
 										Wähle eine dieser Farben, die bei A am wenigsten genutzt wurde
 										Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
 										Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
 										Alternativ: eine nicht zuletzt gewählt
 									Nein:
-										Nutze eine der Farben, welche in der Umgebung am wenigsten genutzt wurde
+										Betrachte alle möglichen Farben als allowed
+										Nutze davon eine der Farben, welche in der Umgebung am wenigsten genutzt wurde
 										Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
 										Alternativ: eine nicht zuletzt gewählt
 					Nein:
+						allowed = alle farben von B
 						Verwende eine von B bereits genutzten Farben, die bei B noch weniger genutzt wurde,
 						Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
 						Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
@@ -74,6 +76,7 @@ Eigener Algo:
 			Nein:
 				Habe ich noch Module bei B frei?
 					Ja:
+						allowed = alle farben von A
 						Verwende eine von A bereits genutzten Farben, die bei A noch weniger genutzt wurde,
 						Alternativ: Eine Farbe die in der Umgebung von A und B am wenigsten genutzt wurde
 						Alternativ: Eine Farbe die Global am wenigsten genutzt wurde
@@ -81,6 +84,7 @@ Eigener Algo:
 						#Dieser Fall funktioniert, da ich ja bei B noch freie module habe
 					Nein:
 						#Ich habe also gar keine module mehr frei
+						allowed = schnittmenge der farben die a und b verwenden
 						Gibt es eine Schnittmenge der Farben, die A und B bereits nutzen?
 							Ja:
 								Nutze eine Farbe davon, die bei A am wenigsten genutzt wurde
