@@ -1,0 +1,21 @@
+meeting zu evaluation
+
+networkx spring layout position an graphviz weitergeben
+mirko zu simulationstools fragen (simulationsexperte)
+	simulationstools:
+		omnet framework - mixim ist die modellsuite
+		ns3 eventuell auch
+		opnet
+		selbst schauen
+
+
+tatsächliche testszenario (mit wirklichen details) und das als testszenario ntzen das dann nacher generalisiert wird
+grundrissplaene von unis holen und diese dort simulieren
+gridlayout
+niko feragen zu dem layout am lehrstuhl wer sieht wen mit welcher signalstärke
+dirk fragen ob es datei gibt mit typischen ausbreitungscharakteristiken gibt (wer sieht wen wie stark)(im buch von joe eventuell)
+	alex zimmermann per email nach diesen instanzen der modelle fragen zu den alten mesh netwroks
+	oder martin krebs
+	bernhard nach modellen fragen
+	crawdad seite (joe fragen fuer details)
+christoph fragen wie stabil der link zwischen den knoten ist (wird gemessen in rssi, packet loss, retransmissions)
