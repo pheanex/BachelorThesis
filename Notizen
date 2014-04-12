@@ -104,8 +104,16 @@ Minimum Interference Channel Assignment in Multiradio Wireless Mesh networks sub
 
 Todo:
 Antrittsvortrag erstellen:
-	umfang 10min intention: feedback/ideen einsammeln 10min +5min frage ein par slides:
-	2slides motivation 2 slides wissenschaftliche ansatz/channel assignment ; was sind ideen, ansätze; prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden), wie koennte man das evaluieren?qos violation zb; zeitplan
+	umfang 10min
+	intention: feedback/ideen einsammeln
+	Dauer: 10 min / +5 min Diskuession
+	Aufbau:
+		2slides motivation
+		2 slides wissenschaftliche ansatz/channel assignment
+		was sind ideen, ansätze
+		prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden)
+		wie koennte man das evaluieren? QoS violation zb
+		Zzeitplan
 networkx spring layout position an graphviz weitergeben (damit man die tatsächliche position und wer sieht wen besser sieht)
 graph mit allen sichtbarkeiten (grau) zeichnen -> christop (warum sehen die Aps mehr ssids als der WLC)
 channel assignment algorithmen lesen vergleichen
