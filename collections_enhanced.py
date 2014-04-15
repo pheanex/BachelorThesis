@@ -475,12 +475,13 @@ class Counter(dict):
 
         '''
         most_common_element_value = _heapq.nlargest(1, self.iteritems(), key=_itemgetter(1))[0][1]
-        returnlist = list()
+        most_common_counter = Counter()
 
+        # Remove all those entries in the counter which do not also have the smallest value
         for (key, value) in sorted(self.iteritems(), key=_itemgetter(1), reverse=True):
             if value == most_common_element_value:
-                returnlist.append((key, value))
-        return returnlist
+                most_common_counter[key] = value
+        return most_common_counter
 
     def least_common(self, n=None):
         '''List the n least common elements and their counts from the least
@@ -503,12 +504,12 @@ class Counter(dict):
 
         '''
         least_common_element_value = _heapq.nsmallest(1, self.iteritems(), key=_itemgetter(1))[0][1]
-        returnlist = list()
+        least_common_counter = Counter()
 
         for (key, value) in sorted(self.iteritems(), key=_itemgetter(1), reverse=False):
             if value == least_common_element_value:
-                returnlist.append((key, value))
-        return returnlist
+                least_common_counter[key] = value
+        return least_common_counter
 
     def elements(self):
         '''Iterator over elements repeating each as many times as its count.
