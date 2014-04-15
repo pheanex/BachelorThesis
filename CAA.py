@@ -34,57 +34,31 @@ def get_least_used_elements_for_counter_dict(counterlist, allowed_colors):
     return least_used_elements
 
 
+# Get the parent node for a wlan modules
+def get_node_for_module(graphname, module):
+    return graphname.node[module]["module-of"]
+
+
 # Returns dictionary with entries (like color : nr of occurences of this color in neighborhood of node)
-# for a given node and allowed list of colors
-def get_least_used_colors_for_node(graphname, nodename, allowed_colors):
-    neighbors = graphname.neighbors(nodename)
-    color_counter = collections.Counter()
-
-    # Initially set all colors used to 0
-    for color in Assignable_Colors and allowed_colors:
-        color_counter[color] = 0
-
-    for neighbor in neighbors:
-        if not neighbor in lan_nodes:
-            edge = graphname.get_edge_data(nodename, neighbor)
-            if edge and "color" in edge.keys():
-                edgecolor = edge["color"]
-                if edgecolor:
-                    color_counter[edgecolor] += 1
-
-    return get_least_used_elements_for_counter_dict(color_counter, allowed_colors)
+# for a given node/module and allowed list of colors
+def get_least_used_colors_for_node(graphname, module, allowed_colors):
+    node = get_node_for_module(graphname, module)
+    return get_least_used_elements_for_counter_dict(graphname.node[node]["used-colors"], allowed_colors)
 
 
 # Returns dictionary with entries (like color : nr of occurences of this color in neighborhood of node_a and node_b)
-# for two nodes and a list of allowed colors
-def get_least_used_colors_for_nodes(graphname, node_a, node_b, allowed_colors):
-    color_counter = collections.Counter()
+# for two nodes/modules and a list of allowed colors
+def get_used_colors_for_nodes(graphname, modula_a, module_b, allowed_colors):
+    node_a = get_node_for_module(graphname, modula_a)
+    node_b = get_node_for_module(graphname, module_b)
+    common_color_counter = graphname.node[node_a]["used-colors"] + graphname.node[node_b]["used-colors"]
 
-    # Initially set all colors used to 0
-    for color in Assignable_Colors and allowed_colors:
-        color_counter[color] = 0
+    #safetly check
+    if not common_color_counter:
+        print("Error here")
+        common_color_counter = graphname.node[node_a]["used-colors"] + graphname.node[node_b]["used-colors"]
 
-    neighbors_of_a = graphname.neighbors(node_a)
-    neighbors_of_b = graphname.neighbors(node_b)
-
-    for neighbor in neighbors_of_a:
-        if not neighbor in lan_nodes:
-            edge = graphname.get_edge_data(node_a, neighbor)
-            if edge and "color" in edge.keys():
-                edgecolor = edge["color"]
-                if edgecolor:
-                    color_counter[edgecolor] += 1
-
-    for neighbor in neighbors_of_b:
-        if not neighbor in lan_nodes:
-            edge = graphname.get_edge_data(node_b, neighbor)
-            if edge and "color" in edge.keys():
-                edgecolor = edge["color"]
-                # Do not count the edge between node_a and node_b twice
-                if edgecolor and not neighbor == node_a:
-                    color_counter[edgecolor] += 1
-
-    return get_least_used_elements_for_counter_dict(color_counter, allowed_colors)
+    return get_least_used_elements_for_counter_dict(common_color_counter, allowed_colors)
 
 
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
@@ -139,82 +113,99 @@ def calculate_survival_graph(graphname):
 
 
 # Returns list of colors which are used the least over all edges in the graph and are in the allowed_colors list
-def get_least_used_colors_overall(allowed_colors):
+def get_least_used_colors_in_overall(allowed_colors):
     least_used_colors = get_least_used_elements_for_counter_dict(Overall_Color_Counter, allowed_colors)
     return least_used_colors
 
 
-# Get the color/channel for an edge, which has the least interference from other (not our) devices/wlans
-# That means take a look at the two nodes and for a given set to chose from, find the color, which
-# is used the least in their wireless region
+# Get the color/channel for an edge(pair of modules), which has the least interference from other (not our) devices/wlans
+# That means take a look at seen colors for the two modules and for a given set to chose from(color_set), find the color, which
+# is used the least in both wireless regions
 # Returns a list
-def get_least_actually_seen_colors_for_set(graphname, color_set, node_a, node_b):
-    seen_channels_for_node_a = graphname.node[node_a]["seen_channels"]
-    seen_channels_for_node_b = graphname.node[node_b]["seen_channels"]
+def get_least_actually_seen_colors_for_set(graphname, color_set, module_a, module_b):
+    seen_channels_for_node_a = graphname.node[module_a]["seen_channels"]
+    seen_channels_for_node_b = graphname.node[module_b]["seen_channels"]
     seen_channels_for_both_nodes = seen_channels_for_node_a + seen_channels_for_node_b
     least_seen_channels = get_least_used_elements_for_counter_dict(seen_channels_for_both_nodes, color_set)
     return least_seen_channels
 
 
+# Returns a dict of the form: color : nr_of_occurrences for two modules
+def get_actually_seen_colors_for_modules(graphname, module_a, module_b):
+    seen_channels_for_node_a = graphname.node[module_a]["seen_channels"]
+    seen_channels_for_node_b = graphname.node[module_b]["seen_channels"]
+    seen_channels_for_both_nodes = seen_channels_for_node_a + seen_channels_for_node_b
+    return seen_channels_for_both_nodes
+
 # colorset = list of colors we can chose from
 # caluclates the optimal color from this set
 # Returns the color to use (not a list of colors)
-def get_best_color_in(graphname, colorset, node_a, node_b):
+def get_best_color_in(graphname, colorset, module_a, module_b):
     # Speed up things if there is only one color to chose from
     if len(colorset) == 1:
         return colorset[0]
     else:
-        # Use only colors in colorset and then only those which have been used the least at A
-        least_used_colors_for_node_a = get_least_used_colors_for_node(graphname, node_a, colorset)
+        #color this edge and all connected edges with the best available color
+        used_colors_for_both = get_used_colors_for_nodes(graphname, module_a, module_b, colorset)
+        seen_colors_for_both = get_actually_seen_colors_for_modules(graphname, module_a, module_b)
 
-        # Speed up things if there is only one color to chose from
-        if len(least_used_colors_for_node_a) == 1:
-            return least_used_colors_for_node_a[0]
+        # Take the colors from used_colors_for_both which are used the least,
+        # if there is a tie, then take the one, which has a lower value in seen_colors_for_both
+        least_used_colors = get_least_used_elements_for_counter_dict(used_colors_for_both, colorset)
+        if len(least_used_colors) == 1:
+            best_color = least_used_colors[0]
         else:
-            # If the former is a tie, then also look at the colors from node b
-            least_used_colors_for_node_a_and_node_b = get_least_used_colors_for_nodes(graphname, node_a, node_b, colorset)
-
-            # Speed up things if there is only one color to chose from
-            if len(least_used_colors_for_node_a_and_node_b) == 1:
-                return least_used_colors_for_node_a_and_node_b[0]
+            least_seen_colors = get_least_used_elements_for_counter_dict(seen_colors_for_both, least_used_colors)
+            if len(least_seen_colors) == 1:
+                best_color = least_seen_colors[0]
             else:
-                #If there is again a tie,use the color which has the least actual interference an both nodes
-                leas_actually_seen_color = get_least_actually_seen_colors_for_set(graphname, least_used_colors_for_node_a_and_node_b, node_a, node_b)
-
-                # Speed up things if there is only one color to chose from
-                if len(leas_actually_seen_color) == 1:
-                    return leas_actually_seen_color[0]
+                least_used_colors_overall = get_least_used_colors_in_overall(least_seen_colors)
+                if len(least_used_colors_overall) == 1:
+                    best_color = least_used_colors_overall[0]
                 else:
-                    # If there is again a tie, look also at the overall color assignments and take the rarest used one
-                    least_used_colors_overall = get_least_used_colors_overall(colorset)
-
-                    # Speed up things if there is only one color to chose from
-                    if len(least_used_colors_overall) == 1:
-                        return least_used_colors_overall[0]
-                    else:
-                        # All have been ties so far, now take one color at random
-                        random_color = random.choice(colorset)
-                        return random_color
+                    # Pick one at random
+                    best_color = random.choice(least_used_colors_overall)
+    return best_color
 
 
 # Sets the color for an edge
-def set_edge_color(graphname, edgecolor, node_a, node_b):
-    edge_data = graphname.get_edge_data(node_a, node_b)
+def set_edge_color(graphname, edgecolor, module_a, module_b):
+    edge_data = graphname.edge[module_a][module_b]
     edge_weight = edge_data["weight"]
 
-    # Color the edge
-    graphname[node_a][node_b]["color"] = edgecolor
+    # Check if the edge had a color before,
+    # so it would be recoloring and we have to adapt the counters correspondingly
+    former_color = graphname.node[module_a][module_b]["color"]
+    node_of_module_a = get_node_for_module(graphname, module_a)
+    node_of_module_b = get_node_for_module(graphname, module_b)
+    if former_color != None:
+        # It had a color before => we do a recoloring
+        # Decrease for overpainting the old color
+        graphname.node[node_of_module_a]["used_colors"][former_color] -= 1
+        graphname.node[node_of_module_b]["used_colors"][former_color] -= 1
 
-    # Increase the overall colorcounters
+        # Decrease also the overall colorcounters for the former color
+        Overall_Color_Counter[former_color] -= 1
+
+    # Color the edge and the modules
+    graphname.node[module_a][module_b]["color"] = edgecolor
+    graphname.node[module_a]["color"] = edgecolor
+    graphname.node[module_b]["color"] = edgecolor
+
+    # Increase the color counter at the respective nodes for these modules
+    graphname.node[node_of_module_a]["used_colors"][edgecolor] += 1
+    graphname.node[node_of_module_b]["used_colors"][edgecolor] += 1
+
+    # Increase also the overall colorcounters
     Overall_Color_Counter[edgecolor] += 1
 
     # Mark edge as done
-    Edges_Done.add((node_a, node_b))
-    Edges_Done.add((node_b, node_a))
+    Edges_Done.add((module_a, module_b))
+    Edges_Done.add((module_b, module_a))
 
     # Color in pydot for debugging, remove later
     # TODO: (THIS SHOULD BE DONE SOMEWHERE ELSE LATER)
-    edge = pydotgraph.get_edge(str(node_a), str(node_b))[0]
+    edge = pydotgraph.get_edge(str(module_a), str(module_b))[0]
     edge.set_color(colortable[edgecolor])
     penwidth = str(Edge_Thickness/edge_weight)
     edge.set_penwidth(penwidth)
@@ -222,211 +213,230 @@ def set_edge_color(graphname, edgecolor, node_a, node_b):
 
 
 # Returns the number of modules for a node
-def get_modules_count_for_node(graphname, nodename):
-    modules = graphname.node[nodename]["modules"]
+def get_modules_count_for_node(graphname, node):
+    modules = graphname.node[node]["modules"]
     if modules:
         return modules
+    else:
+        print "node " + str(node) + " has no modules field. This is an error and should not happen"
+        exit(1)
 
 
-# Returns set of colors for all edges of a node
-def get_colors_used_for_node(graphname, nodename):
-    colorset = set()
-    neighbors = graphname.neighbors(nodename)
-    for neighbor in neighbors:
-        if not neighbor in lan_nodes:
-            edge = graphname.get_edge_data(nodename, neighbor)
-            if edge and "color" in edge.keys():
-                edgecolor = edge["color"]
-                colorset.add(edgecolor)
-    return list(colorset)
+# Returns set of colors for all edges of a node, colored so far
+def get_colorset_used_for_node(graphname, node):
+    return set(graphname.node[node]["used-colors"])
+
+
+# Returns set of colors for the node this module belongs to
+# This makes sense, since a module can always just have maximal 1 attached color/channel
+def get_colorset_used_for_module(graphname, module):
+    node = get_node_for_module(graphname, module)
+    return set(graphname.node[node]["used-colors"])
 
 
 # Returns the number of the (distinct) colors this node already uses
-def get_number_of_colors_used_for_node(graphname, nodename):
-    colors_used = get_colors_used_for_node(graphname, nodename)
+def get_number_of_colors_used_for_node(graphname, node):
+    colors_used = get_colorset_used_for_node(graphname, node)
     return len(colors_used)
 
 
 # Returns the number of modules for a node that are still free to use
 # modules=number of wlan modules (probably 2 or 3 atm)
-def modules_free_count(graphname, nodename):
-    #free modules = num of modules of node minus num of channels already used
-    return get_modules_count_for_node(graphname, nodename) - get_number_of_colors_used_for_node(graphname, nodename)
+def modules_free_count_for_node(graphname, node):
+    #free modules = number of modules of node minus number of channels already used on that node
+    return get_modules_count_for_node(graphname, node) - get_number_of_colors_used_for_node(graphname, node)
 
 
-# Returns list of the colors which the either node a or node b uses
+# Returns True, if this module already uses a color
+# Since a module is per definition only one, this just tells us whether this module already uses a color or not
+def module_is_already_colored(graphname, module):
+    if graphname.node[module]["color"] == None:
+        return False
+    else:
+        return True
+
+
+# Returns list of colors which either node a or node b uses
 def get_colors_used_for_nodes(graphname, node_a, node_b):
-    colors_used_by_node_a = get_colors_used_for_node(graphname, node_a)
-    colors_used_by_node_b = get_colors_used_for_node(graphname, node_b)
-    colors_used_by_either_node_a_or_node_b = list(set(colors_used_by_node_a + colors_used_by_node_b))
+    colors_used_by_node_a = get_colorset_used_for_node(graphname, node_a)
+    colors_used_by_node_b = get_colorset_used_for_node(graphname, node_b)
+    colors_used_by_either_node_a_or_node_b = set(colors_used_by_node_a.union(colors_used_by_node_b))
     return colors_used_by_either_node_a_or_node_b
 
 
-# Returns a list of colors which are not used by the node
-def get_colors_not_used_for_node(graphname, nodename):
-    colors_used_by_node = get_colors_used_for_node(graphname, nodename)
+# Returns a set of colors which are not used by the node
+def get_colors_not_used_for_node(graphname, node):
+    colors_used_by_node = get_colorset_used_for_node(graphname, node)
     colors_not_used = [i for i in Assignable_Colors if i not in colors_used_by_node]
-    return colors_not_used
+    return set(colors_not_used)
 
 
-# Returns a dictionary with connected colorusage for the node provided
-def get_color_count_for_node(graphname, nodename):
+# Check if edge has a color
+def edge_has_color(graphname, node_a, node_b):
+    if graphname.edge[node_a][node_b]["color"] != None:
+        return True
+    else:
+        return False
+
+
+# Returns the number of connected occurences for a certain color at a module
+# It counts all the connected edges of the same color (over multiple modules)
+def get_connected_color_count_for_module(graphname, module, color):
+    occurences = 0
+    edges_done = set()
+    modules_todo = list()
+
+    # Add initial node to be able to start from there
+    modules_todo.append(module)
+
+    for mod in modules_todo:
+        neighbors = graphname.neighbors(mod)
+        for neighbor in neighbors:
+            if neighbor in wlan_modules:
+                if graphname.edge[mod][neighbor]["color"] == color and (mod, neighbor) not in edges_done:
+                    # Increase overall color counter
+                    occurences += 1
+
+                    # Add edge to done-list
+                    edges_done.add((mod, neighbor))
+                    edges_done.add((neighbor, mod))
+
+                    # Add module to go if not already visited
+                    if neighbor not in modules_todo:
+                        modules_todo.append(neighbor)
+
+
+# Returns a dictionary with number of connected colorusage for the module provided
+def get_color_count_for_module(graphname, module):
     color_counter = collections.Counter()
-    colors_of_nodename = get_colors_used_for_node(graphname, nodename)
-    for color in colors_of_nodename:
+    colors_of_node = get_colorset_used_for_node(graphname, module)
+    for color in colors_of_node:
         color_counter[color] = 0
 
-    for color in colors_of_nodename:
+    for color in colors_of_node:
         edges_done = set()
-        nodes_todo = list()
+        modules_todo = list()
 
         # Add initial node to be able to start from there
-        nodes_todo.append(nodename)
+        modules_todo.append(module)
 
-        for node in nodes_todo:
-            neighbors = graphname.neighbors(node)
+        for mod in modules_todo:
+            neighbors = graphname.neighbors(mod)
             for neighbor in neighbors:
-                if not neighbor in lan_nodes:
-                    edge = graphname.get_edge_data(node, neighbor)
-                    if edge and "color" in edge.keys() and edge["color"] == color and (node, neighbor) not in edges_done:
-                        # Add edge to done-list
-                        edges_done.add((node, neighbor))
-                        edges_done.add((neighbor, node))
-
+                if neighbor in wlan_modules:
+                    edge = graphname.edge[mod][neighbor]
+                    if edge and "color" in edge.keys() and edge["color"] == color and (mod, neighbor) not in edges_done:
                         # Increase overall color counter
                         color_counter[color] += 1
 
-                        # Add node togo if not already visited
-                        if neighbor not in nodes_todo:
-                            nodes_todo.append(neighbor)
+                        # Add edge to done-list
+                        edges_done.add((mod, neighbor))
+                        edges_done.add((neighbor, mod))
 
+                        # Add module to go if not already visited
+                        if neighbor not in modules_todo:
+                            modules_todo.append(neighbor)
     return color_counter
 
 
-# Recolors for a given node all connected edges
-def recolor_edges_for_node(graphname, nodename, oldcolor, newcolor):
+# Recolors for a given module all connected edges of the same color (even over multiple modules)
+def recolor_edges_for_module(graphname, module, oldcolor, newcolor):
     # Speed up things if colors are equal
     if oldcolor == newcolor:
         # Nothing to do then
-        return
-
-    nodes_todo = list()
+        print("Error: tried to overpaint " + str(oldcolor) + " with " + str(newcolor) + ". This does not make sense  and should not happen.")
+        exit(1)
 
     # Add initial node to be able to start from there
-    nodes_todo.append(nodename)
+    modules_todo = list()
+    modules_todo.append(module)
 
-    for node in nodes_todo:
-        neighbors = graphname.neighbors(node)
+    for mod in modules_todo:
+        neighbors = graphname.neighbors(mod)
         for neighbor in neighbors:
-            if not neighbor in lan_nodes:
-                edge = graphname.get_edge_data(node, neighbor)
+            if neighbor in wlan_modules:
+                edge = graphname.edge[mod][neighbor]
                 if edge and "color" in edge.keys() and edge["color"] == oldcolor:
                     # Recolor that edge
-                    set_edge_color(graphname, newcolor, node, neighbor)
+                    set_edge_color(graphname, newcolor, mod, neighbor)
 
                     # Add the destination node to nodes_todo
-                    nodes_todo.append(neighbor)
-
-                    # Adjust overall_color_counter
-                    Overall_Color_Counter[oldcolor] -= 1
-                    Overall_Color_Counter[newcolor] += 1
+                    modules_todo.append(neighbor)
 
 
-def find_color_for_edge_without_tricky(graphname, node_a, node_b):
-    if modules_free_count(graphname, node_a) > 0:
-        if modules_free_count(graphname, node_b) > 0:
-            # Is there a color used by neither node_a nor node_b?
-            colors_not_used_by_node_a = get_colors_not_used_for_node(graphname, node_a)
-            colors_not_used_by_node_b = get_colors_not_used_for_node(graphname, node_b)
-            colors_unused_by_both = [i for i in colors_not_used_by_node_a if i in colors_not_used_by_node_b]
-            if colors_unused_by_both:
-                best_color = get_best_color_in(graphname, colors_unused_by_both, node_a, node_b)
-                set_edge_color(graphname, best_color, node_a, node_b)
-            else:
-                # Is there a color, which has at least not been used by one of the two nodes?
-                colors_not_used_by_either_node_a_or_node_b = list(set(colors_not_used_by_node_a + colors_not_used_by_node_b))
-                if colors_not_used_by_either_node_a_or_node_b:
-                    best_color = get_best_color_in(graphname, colors_not_used_by_either_node_a_or_node_b, node_a, node_b)
-                    set_edge_color(graphname, best_color, node_a, node_b)
-                else:
-                    # Pick the best one in the already used ones by the nodes
-                    colors_used_by_either_node_a_or_node_b = get_colors_used_for_nodes(graphname, node_a, node_b)
-                    if colors_used_by_either_node_a_or_node_b:
-                        best_color = get_best_color_in(graphname, colors_used_by_either_node_a_or_node_b, node_a, node_b)
-                        set_edge_color(graphname, best_color, node_a, node_b)
-                    else:
-                        # Pick the best color of all general available colors
-                        best_color = get_best_color_in(graphname, Assignable_Colors, node_a, node_b)
-                        set_edge_color(graphname, best_color, node_a, node_b)
-    else:
-        if modules_free_count(graphname, node_b) > 0:
-            # Use one of A's colors, which has been used the least there
-            # This works, since we have still unused modules at A
-            colors_used_for_node_a = get_colors_used_for_node(graphname, node_a)
-            best_color = get_best_color_in(graphname, colors_used_for_node_a, node_a, node_b)
-            set_edge_color(graphname, best_color, node_a, node_b)
+def find_color_for_edge_without_tricky(graphname, module_a, module_b):
+    node_of_module_a = get_node_for_module(graphname, module_a)
+    node_of_module_b = get_node_for_module(graphname, module_b)
+
+    if not module_is_already_colored(graphname, module_a):
+        if not module_is_already_colored(graphname, module_b):
+            best_color = get_best_color_in(graphname, Assignable_Colors, module_a, module_b)
+            set_edge_color(graphname, best_color, module_a, module_b)
         else:
-            # We dont have any free modules at A or B
-            # Is there an intersection of colors which A and B already use? => Use one of those
-            colors_used_by_node_a = get_colors_used_for_node(graphname, node_a)
-            colors_used_by_node_b = get_colors_used_for_node(graphname, node_b)
-            colors_used_by_both = [i for i in colors_used_by_node_a if i in colors_used_by_node_b]
-            if colors_used_by_both:
-                # Chose the best from them
-                best_color = get_best_color_in(graphname, colors_used_by_both, node_a, node_b)
-                set_edge_color(graphname, best_color, node_a, node_b)
+            # We have to take the color of module_b
+            best_color = graphname.node[module_b]["color"]
+            set_edge_color(graphname, best_color, module_a, module_b)
+
+    else:
+        # we have to take the color of module_a, lets see if this is a problem
+        # and check if b is not colored, or we can use the color there
+        color_of_module_a = graphname.node[module_a]["color"]
+        if not module_is_already_colored(graphname, module_b):
+            best_color = color_of_module_a
+            set_edge_color(graphname, best_color, module_a, module_b)
+
+        else:
+            # Now we have a problem if the colors are not by accident the same
+            color_of_module_b = graphname.node[module_b]["color"]
+            if color_of_module_a != color_of_module_b:
+                # We are lucky, they are the same
+                best_color = color_of_module_a
+                set_edge_color(graphname, best_color, module_a, module_b)
+
             else:
+                # Tricky case
                 return False
     return True
 
 
 # Find the best color for an edge
-def find_color_for_edge(graphname, node_a, node_b):
-    if not find_color_for_edge_without_tricky(graphname, node_a, node_b):
-        # There is also no intersection of colors in A and B
+def find_color_for_edge(graphname, module_a, module_b):
+    if not find_color_for_edge_without_tricky(graphname, module_a, module_b):
+        # Module A and B are differently colored but we have to establish a link between them
         # This is the most costly case
         # The solution here is based on a paper called hycint-mcr2 and works like described in the following:
-        # Find the color which occurs the least connected at A and B,
-        # then find the second least used color at A and B = newcolor
+        # Take the color from module_a or module_b which occurs less at both sides (connected!) and repaint it with the other one
+        #todo: here we could also look for another link outside the mst, instead of enforcing one color
         # Then replace the least connected colors at A and B with the newcolor and also use it for the edge
         # between A and B
 
         # Get the colorcounts for both nodes and combine them
-        combined_color_counter = get_color_count_for_node(graphname, node_a) + get_color_count_for_node(graphname, node_b)
+        color_of_module_a = graphname.node[module_a]["color"]
+        color_of_module_b = graphname.node[module_b]["color"]
+        nr_of_occurrences_for_color_at_module_a = get_connected_color_count_for_module(graphname, module_a, color_of_module_a)
+        nr_of_occurrences_for_color_at_module_b = get_connected_color_count_for_module(graphname, module_b, color_of_module_b)
 
-        # Find the color which is the least common
-        least_common_color = combined_color_counter.most_common()[-1][0]
+        if nr_of_occurrences_for_color_at_module_a > nr_of_occurrences_for_color_at_module_b:
+            winning_color = nr_of_occurrences_for_color_at_module_a
+            losing_color = nr_of_occurrences_for_color_at_module_b
+        else:
+            winning_color = nr_of_occurrences_for_color_at_module_b
+            losing_color = nr_of_occurrences_for_color_at_module_a
 
-        # Find the color we will use for this edge (This is then the second "best")
-        # Replace the second rarest used color with the rarest used
-        # Meaning we take all colors from both nodes A and B, in order to find the best in this set
-        colors_used_by_node_a = get_colors_used_for_node(graphname, node_a)
-        colors_used_by_node_b = get_colors_used_for_node(graphname, node_b)
-        colors_used_by_either_node_a_or_node_b = list(set(colors_used_by_node_a + colors_used_by_node_b))
-
-        # Remove the least common color from this set, because then this color would always be chosen,
-        # because of its rare usage
-        if least_common_color in colors_used_by_either_node_a_or_node_b:
-            colors_used_by_either_node_a_or_node_b.remove(least_common_color)
-
-        second_best_color = get_best_color_in(graphname, colors_used_by_either_node_a_or_node_b, node_a, node_b)
-
-        # Recolor all other connected edges for both nodes, means recolor all second_best_colors with the least_common_color
-        recolor_edges_for_node(graphname, node_a, second_best_color, least_common_color)
-        recolor_edges_for_node(graphname, node_b, second_best_color, least_common_color)
+        # Recolor all other connected edges for both modules
+        recolor_edges_for_module(graphname, module_a, losing_color, winning_color)
+        recolor_edges_for_module(graphname, module_b, losing_color, winning_color)
 
         # Color the edge from node_a to node_b with this the best color available at node a
-        # Now the tricky case is solved and continue with the normal procedure
+        set_edge_color(graphname, winning_color, module_a, module_b)
 
-        if not find_color_for_edge_without_tricky(graphname, node_a, node_b):
-            print("ERROR: tricky case has not been solved correctly, could not assign color")
-            exit(1)
 
 # Check if the coloring is valid (does ever node only use a number of colors = his modules and Are all edges colored?)
 def graph_is_valid(graphname):
+    #todo: some edges dont have a color, why is that so?
     print("Checking the graph for validity")
 
-    # First check if every edge has a color
+    # First check if every edge is colored
     for edge in graphname.edges():
         if not edge[0] in lan_nodes and not edge[1] in lan_nodes:
             if not edge:
@@ -439,39 +449,29 @@ def graph_is_valid(graphname):
                     print("Graph is NOT valid")
                     return False
 
+    # Check if every module is colored
+    for module in wlan_modules:
+        if not module_is_already_colored(graphname, module):
+            print("Module has no color assigned. This is probably just an algorithm error since all the edges seem to be colored")
+            print("It's Module " + str(module))
+
     # Now check if every node has only so many attached colors/channels as the number of modules it has
-    debug_sum_modules_used = 0
-    debug_sum_modules_overall = 0
-    for node in graphname.nodes():
-        if node in wlan_modules:
-            color_set = set()
-            nr_of_modules = graphname.node[node]["modules"]
-            for neighbor in graphname.neighbors(node):
-                if not neighbor in lan_nodes:
-                    color = graphname.edge[node][neighbor]["color"]
-                    color_set.add(color)
-            debug_sum_modules_used += len(color_set)
-            debug_sum_modules_overall += nr_of_modules
+    for node in lan_nodes:
+        nr_of_modules = graphname.node[node]["modules"]
+        nr_of_colors = len(graphname.node[node]["used-colors"])
+        if nr_of_colors > nr_of_modules:
+            print("Node " + str(node) + " has more colors attached than it has modules:" + str(nr_of_colors) + " > " + str(nr_of_modules) + ")")
+            print(graphname.node[node]["used-colors"])
+            print("Graph is NOT valid")
+            return False
 
-            if len(color_set) > nr_of_modules:
-                print("Node " + str(node) + " has more colors attached than it has modules:" + str(len(color_set)) + " > " + str(nr_of_modules) + ")")
-                print(color_set)
-                print("Graph is NOT valid")
-                return False
-        else:
-            if not node in lan_nodes:
-                print("something is wrong, node is neither lannode nor wlan module")
-                return False
-
-
-    print("Graph is valid with usage of: " + str(1.0*debug_sum_modules_used/debug_sum_modules_overall))
     return True
 
 
 # Transform networkxgraph to pydot graph, for displaying purposes
 def transform_graph(networkxgraph):
     for (A, B) in networkxgraph.edges():
-        edge_data = networkxgraph.get_edge_data(A, B)
+        edge_data = networkxgraph.edge[A][B]
         edge_weight = edge_data["weight"]
         penwidth = str(Edge_Thickness/edge_weight)
         pydotgraph.add_edge(pydot.Edge(str(A), str(B), style="dotted", penwidth=penwidth))
@@ -567,22 +567,28 @@ basic_connectivity_graph = nx.Graph()
 #generate node to interface edges
 for ap_name, ap_lan_mac, ap_wlan_interface_mac, ap_interface_nr in active_radios:
     basic_connectivity_graph.add_edge(ap_lan_mac, ap_wlan_interface_mac)
-    basic_connectivity_graph[ap_lan_mac][ap_wlan_interface_mac]["weight"] = 1
+    basic_connectivity_graph.edge[ap_lan_mac][ap_wlan_interface_mac]["weight"] = 1
     #initialize actually seen counters for wlan modules:
     actually_seen_colors = collections.Counter()
     for color in Assignable_Colors:
         actually_seen_colors[color] = 0
     basic_connectivity_graph.node[ap_wlan_interface_mac]["seen_channels"] = actually_seen_colors
     basic_connectivity_graph.node[ap_wlan_interface_mac]["interface-nr"] = ap_interface_nr
-    basic_connectivity_graph.node[ap_wlan_interface_mac]["module-of"] = ap_name
+    basic_connectivity_graph.node[ap_wlan_interface_mac]["module-of"] = ap_lan_mac
     basic_connectivity_graph.node[ap_lan_mac]["name"] = ap_name
+    basic_connectivity_graph.node[ap_wlan_interface_mac]["color"] = None
     #initialize nr of modules for wlan module
     basic_connectivity_graph.node[ap_wlan_interface_mac]["modules"] = 1
     #initialize nr of modules for lan_mac
     basic_connectivity_graph.node[ap_lan_mac]["modules"] = len(basic_connectivity_graph.neighbors(ap_lan_mac))
+    #initialize empty counter "used colors" for node
+    used_colors = collections.Counter()
+    for color in Assignable_Colors:
+        used_colors[color] = 0
+    basic_connectivity_graph.node[ap_lan_mac]["used-colors"] = used_colors
 
 
-#add all possible links from scan-results-table (interface to interface)
+#add all possible links from scan-results-table (module to module)
 for ap_name, ap_lan_mac, dest_wlan_mac, channel, signal_strength, ap_wlan_mac in scan_results:
     #check if we see one of our autowds aps or another wlan
     if dest_wlan_mac in active_radios_ap_bssid_mac:
@@ -591,7 +597,10 @@ for ap_name, ap_lan_mac, dest_wlan_mac, channel, signal_strength, ap_wlan_mac in
 
         # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
         # because lower values are better there
-        basic_connectivity_graph[ap_wlan_mac][dest_wlan_mac]["weight"] = 1 + 100.0 / int(signal_strength)
+        basic_connectivity_graph.edge[ap_wlan_mac][dest_wlan_mac]["weight"] = 1 + 100.0 / int(signal_strength)
+
+        # Initialize each edge with empty color
+        basic_connectivity_graph.edge[ap_wlan_mac][dest_wlan_mac]["color"] = None
     else:
         #its not one of our connections => add to interference list of this wlan module-node
         basic_connectivity_graph.node[ap_wlan_mac]["seen_channels"][channel] += 1
@@ -631,9 +640,11 @@ for node in nodelist:
     neighbors = mst_graph.neighbors(node)
     for neighbor in neighbors:
         if (node, neighbor) not in Edges_Done:
-            find_color_for_edge(mst_graph, node, neighbor)
+            # We just want to color the module-edges and not
+            # the edges between node and module, since they dont need a coloring
+            if node in wlan_modules and neighbor in wlan_modules and not edge_has_color(mst_graph, node, neighbor):
+                find_color_for_edge(mst_graph, node, neighbor)
             nodelist.append(neighbor)
-            #write_image()
 
 write_image()
 print(Overall_Color_Counter)
