@@ -473,11 +473,124 @@ def translate_lan_mac_to_wlan_mac(lanmac, interfacenr, active_radios_table):
         return results[0]
 
 
+# Get the data from the wlc, returns a networkx basic graph
+def get_basic_graph_from_wlc():
+    #
+    # Get data from WLC
+    #
+    snmp_session = netsnmp.Session(DestHost=wlc_address, Version=snmp_version, Community=snmp_community)
+    scan_results_ap_name = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.2'))
+    scan_results_ap_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.4'))
+    scan_results_ap_mac = [i.encode("hex") for i in scan_results_ap_mac_hex]
+    scan_results_seen_bssid_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.1'))
+    scan_results_seen_bssid = [i.encode("hex") for i in scan_results_seen_bssid_hex]
+    scan_results_channel = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.9'))
+    scan_results_signal_strengh = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.11'))
+    scan_results_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.5'))
+
+    # First create the interfaces-graph
+    # That means we create a node for each WLAN-interface of a node
+    # and connect each of those of a node with a link with quality 0(best)(so the MST takes this edge always)
+    # Therefore we use the Status/WLAN-Management/AP-Status/Active-Radios/ Table of the WLC
+    # This gives us the interfaces of each node (identified by the MACs (LAN/WLAN)
+    active_radios_ap_name = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.3'))
+    active_radios_ap_lan_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.1'))
+    active_radios_ap_lan_mac = [i.encode("hex") for i in active_radios_ap_lan_mac_hex]
+    active_radios_ap_bssid_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.6'))
+    active_radios_ap_bssid_mac = [i.encode("hex") for i in active_radios_ap_bssid_mac_hex]
+    active_radios_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.7'))  # 0=1, 1=2, ...
+    active_radios = zip(active_radios_ap_name, active_radios_ap_lan_mac, active_radios_ap_bssid_mac, active_radios_interface_nr)
+    scan_results_wlan_mac = [translate_lan_mac_to_wlan_mac(i[0], i[1], active_radios) for i in zip(scan_results_ap_mac, scan_results_interface_nr)]
+    scan_results = zip(scan_results_ap_name, scan_results_ap_mac, scan_results_seen_bssid, scan_results_channel, scan_results_signal_strengh, scan_results_wlan_mac)
+
+    wlan_modules = set(active_radios_ap_bssid_mac)
+    lan_nodes = set(active_radios_ap_lan_mac)
+    basic_graph = nx.Graph()
+
+    #
+    # Generate the basic graph from data
+    #
+
+    # Set default values for nodes
+    for node in lan_nodes:
+
+        # Add the node
+        basic_graph.add_node(node)
+
+        # Initialize used colors with 0
+        used_colors = collections_enhanced.Counter()
+        for color in Assignable_Colors:
+            used_colors[color] = 0
+        basic_graph.node[node]["used-colors"] = used_colors
+
+        # Set number of modules initally to 0
+        basic_graph.node[node]["modules"] = 0
+
+    # Set default values for modules
+    for module in wlan_modules:
+
+        # Add the module-node
+        basic_graph.add_node(module)
+
+        # Set the default color
+        basic_graph.node[module]["color"] = None
+
+        # Initialize actually seen counters for wlan modules with 0
+        actually_seen_colors = collections_enhanced.Counter()
+        for color in Assignable_Colors:
+            actually_seen_colors[color] = 0
+        basic_graph.node[module]["seen_channels"] = actually_seen_colors
+
+        # Initialize nr of modules for wlan module
+        basic_graph.node[module]["modules"] = 1
+
+    # Fill edges/nodes with data from wlc
+    for ap_name, ap_lan_mac, ap_wlan_interface_mac, ap_interface_nr in active_radios:
+
+        # Add the edge
+        basic_graph.add_edge(ap_lan_mac, ap_wlan_interface_mac)
+
+        # Module-edge data
+        basic_graph.edge[ap_lan_mac][ap_wlan_interface_mac]["weight"] = 1
+
+        # Module-node data
+        basic_graph.node[ap_wlan_interface_mac]["interface-nr"] = ap_interface_nr
+        basic_graph.node[ap_wlan_interface_mac]["module-of"] = ap_lan_mac
+
+        # Node data
+        basic_graph.node[ap_lan_mac]["name"] = ap_name
+        basic_graph.node[ap_lan_mac]["modules"] += 1
+
+    # Add all possible links from scan-results-table (module to module and seen-channels)
+    for ap_name, ap_lan_mac, dest_wlan_mac, channel, signal_strength, ap_wlan_mac in scan_results:
+        # Test if the seen SSID is one of ours or a foreign one
+        if dest_wlan_mac in active_radios_ap_bssid_mac:
+
+            # Its one of our connections in autowds
+            basic_graph.add_edge(ap_wlan_mac, dest_wlan_mac)
+
+            # Set the score of this edge
+            # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
+            # because lower values are better there
+            basic_graph.edge[ap_wlan_mac][dest_wlan_mac]["weight"] = 1 + 100.0 / int(signal_strength)
+
+            # Initialize each edge with empty color
+            basic_graph.edge[ap_wlan_mac][dest_wlan_mac]["color"] = None
+        else:
+            # Its not one of our connections => add to interference list of this wlan module-node
+            # Only consider the channels we have in Assignable colors, since the others are useless
+            if channel in Assignable_Colors:
+                basic_graph.node[ap_wlan_mac]["seen_channels"][channel] += 1
+
+    return basic_graph, wlan_modules, lan_nodes
+
+#
 # Configuration
+#
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
 Graph_Layout = "dot"                                    # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
-mst_mode = "edge"                                       # This variable sets the mode for the MST creation:
+mst_mode = "node"                                       # This variable sets the mode for the MST creation:
                                                         # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
                                                         # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
                                                         # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
@@ -487,82 +600,16 @@ colortable["1"] = "red"
 colortable["3"] = "green"
 colortable["6"] = "blue"
 colortable["11"] = "orange"
-
+wlc_address = "172.16.40.100"
+snmp_community = "public"
+snmp_version = 2
 Edges_Done = set()                                      # List of edges which have been visited (empty at beginning)
 Overall_Color_Counter = collections_enhanced.Counter()  # This counts how often each color has been used overall, initially fill with 0
 for color in Assignable_Colors:
     Overall_Color_Counter[color] = 0
 
 # Getting Data from WLC per SNMP
-wlc_address = "172.16.40.100"
-snmp_community = "public"
-snmp_session = netsnmp.Session(DestHost=wlc_address, Version=2, Community=snmp_community)
-scan_results_ap_name = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.2'))
-scan_results_ap_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.4'))
-scan_results_ap_mac = [i.encode("hex") for i in scan_results_ap_mac_hex]
-scan_results_seen_bssid_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.1'))
-scan_results_seen_bssid = [i.encode("hex") for i in scan_results_seen_bssid_hex]
-scan_results_channel = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.9'))
-scan_results_signal_strengh = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.11'))
-scan_results_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.5'))
-
-# First create the interfaces-graph
-# That means we create a node for each WLAN-interface of a node
-# and connect each of those of a node with a link with quality 0(best)(so the MST takes this edge always)
-# Therefore we use the Status/WLAN-Management/AP-Status/Active-Radios/ Table of the WLC
-# This gives us the interfaces of each node (identified by the MACs (LAN/WLAN)
-active_radios_ap_name = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.3'))
-active_radios_ap_lan_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.1'))
-active_radios_ap_lan_mac = [i.encode("hex") for i in active_radios_ap_lan_mac_hex]
-active_radios_ap_bssid_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.6'))
-active_radios_ap_bssid_mac = [i.encode("hex") for i in active_radios_ap_bssid_mac_hex]
-active_radios_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.7'))  # 0=1, 1=2, ...
-active_radios = zip(active_radios_ap_name, active_radios_ap_lan_mac, active_radios_ap_bssid_mac, active_radios_interface_nr)
-scan_results_wlan_mac = [translate_lan_mac_to_wlan_mac(i[0], i[1], active_radios) for i in zip(scan_results_ap_mac, scan_results_interface_nr)]
-scan_results = zip(scan_results_ap_name, scan_results_ap_mac, scan_results_seen_bssid, scan_results_channel, scan_results_signal_strengh, scan_results_wlan_mac)
-wlan_modules = set(active_radios_ap_bssid_mac)
-lan_nodes = set(active_radios_ap_lan_mac)
-basic_connectivity_graph = nx.Graph()
-# Generate node to interface edges
-for ap_name, ap_lan_mac, ap_wlan_interface_mac, ap_interface_nr in active_radios:
-    basic_connectivity_graph.add_edge(ap_lan_mac, ap_wlan_interface_mac)
-    basic_connectivity_graph.edge[ap_lan_mac][ap_wlan_interface_mac]["weight"] = 1
-    #initialize actually seen counters for wlan modules:
-    actually_seen_colors = collections_enhanced.Counter()
-    for color in Assignable_Colors:
-        actually_seen_colors[color] = 0
-    basic_connectivity_graph.node[ap_wlan_interface_mac]["seen_channels"] = actually_seen_colors
-    basic_connectivity_graph.node[ap_wlan_interface_mac]["interface-nr"] = ap_interface_nr
-    basic_connectivity_graph.node[ap_wlan_interface_mac]["module-of"] = ap_lan_mac
-    basic_connectivity_graph.node[ap_lan_mac]["name"] = ap_name
-    basic_connectivity_graph.node[ap_wlan_interface_mac]["color"] = None
-    #initialize nr of modules for wlan module
-    basic_connectivity_graph.node[ap_wlan_interface_mac]["modules"] = 1
-    #initialize nr of modules for lan_mac
-    basic_connectivity_graph.node[ap_lan_mac]["modules"] = len(basic_connectivity_graph.neighbors(ap_lan_mac))
-    #initialize empty counter "used colors" for node
-    used_colors = collections_enhanced.Counter()
-    for color in Assignable_Colors:
-        used_colors[color] = 0
-    basic_connectivity_graph.node[ap_lan_mac]["used-colors"] = used_colors
-# Add all possible links from scan-results-table (module to module and seen-channels)
-for ap_name, ap_lan_mac, dest_wlan_mac, channel, signal_strength, ap_wlan_mac in scan_results:
-    #check if we see one of our autowds aps or another wlan
-    if dest_wlan_mac in active_radios_ap_bssid_mac:
-        #its one of our connections in autowds
-        basic_connectivity_graph.add_edge(ap_wlan_mac, dest_wlan_mac)
-
-        # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
-        # because lower values are better there
-        basic_connectivity_graph.edge[ap_wlan_mac][dest_wlan_mac]["weight"] = 1 + 100.0 / int(signal_strength)
-
-        # Initialize each edge with empty color
-        basic_connectivity_graph.edge[ap_wlan_mac][dest_wlan_mac]["color"] = None
-    else:
-        #its not one of our connections => add to interference list of this wlan module-node
-        # Only consider the channels we have in Assignable colors, since the others are useless
-        if channel in Assignable_Colors:
-            basic_connectivity_graph.node[ap_wlan_mac]["seen_channels"][channel] += 1
+basic_connectivity_graph, wlan_modules, lan_nodes = get_basic_graph_from_wlc()
 
 # Show basic Connectivity and channelquality
 show_graph(basic_connectivity_graph)
