@@ -17,7 +17,22 @@ Wie kann man das ganze testen?
 Was ist wahrscheinlicher: Link kaputt oder Node kaputt? (Erfahrungswerte?)
 
 Anmkerungen/Ideen:
-CAA: in pick_best_channel-fkt: prioritätsliste (störer-aps/ bei den nachbarn im wer-sieht-wen-grap benutzte channel beachten)
+Neue idee: MST auch selbst berechnen
+	Angefangen mit root	 knoten
+		adde alle ausgehenden edges von diesem knoten zu einer menge, mit entsprechendem Modul
+		wähle aus dieser menge die kanten, welche:
+			zu einem modul gehören welches noch nicht gefärbt ist &&
+				darunter die, welche noch neue knoten erreichen &&
+					best_edge = darunter die, welche das minimal gewicht haben
+			alternativ, + menge der kanten, deren zugehörigen module bereits gefärbt sind
+				darunter die, welche noch neue knoten erreichen &&
+					daraus die kanten, deren module noch am wenigsten genutzt wurden
+						best_edge = daraus die kante mit dem minimalsten gewicht
+	füge best_edge zu mst hinzu und adde für den neuen knoten alle neuen edges zur Menge der kanten
+	Jetzt noch die backuprouten finden:
+		welche kante würde man denn da nehmen wollen?
+
+
 Evtl. kann man bei der initialen Abfrage der aps auch noch auf die bereits belegten channel achten (andere aps die evtl stören?) und versuchen diese zu umgehen?
 Für die Link-erzeugung kann man auf dem zugrundeliegenden (wer sieht wen)-graph den minimalen spannbaum berechnen und das verfahren n(Anzahl der knoten) mal widerholen, nur dass man dabei immer jeweils einen knoten wegnimmt(simuliert dessen ausfall). Am ende fasst man alle diese graphen zu einem zusammen und man hat einen 2-connected-graph
 Variable Anzahl von Netzwerkinterfaces wichtig
@@ -103,17 +118,6 @@ Minimum Interference Channel Assignment in Multiradio Wireless Mesh networks sub
 	7,8.9.10.11,13
 
 Todo:
-Antrittsvortrag erstellen:
-	umfang 10min
-	intention: feedback/ideen einsammeln
-	Dauer: 10 min / +5 min Diskuession
-	Aufbau:
-		2slides motivation
-		2 slides wissenschaftliche ansatz/channel assignment
-		was sind ideen, ansätze
-		prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden)
-		wie koennte man das evaluieren? QoS violation zb
-		Zzeitplan
 networkx spring layout position an graphviz weitergeben (damit man die tatsächliche position und wer sieht wen besser sieht)
 graph mit allen sichtbarkeiten (grau) zeichnen -> christop (warum sehen die Aps mehr ssids als der WLC)
 channel assignment algorithmen lesen vergleichen
@@ -138,6 +142,18 @@ evaluation
 
 
 Done:
+Antrittsvortrag erstellen:
+	umfang 10min
+	intention: feedback/ideen einsammeln
+	Dauer: 10 min / +5 min Diskuession
+	Aufbau:
+		2slides motivation
+		2 slides wissenschaftliche ansatz/channel assignment
+		was sind ideen, ansätze
+		prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden)
+		wie koennte man das evaluieren? QoS violation zb
+		Zzeitplan
+CAA: in pick_best_channel-fkt: prioritätsliste (störer-aps/ bei den nachbarn im wer-sieht-wen-grap benutzte channel beachten)
 programm jabref installieren (sehe den vorteil davon nicht)
 mail an joe : graphviz images/python scripts
 basisalgo implementieren (dazu zunächst entscheiden welchen algo einsetzen?)
