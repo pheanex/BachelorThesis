@@ -49,6 +49,16 @@ def get_used_colors_for_nodes(graphname, modula_a, module_b, allowed_colors):
     return returncounter
 
 
+# Checks if the module_a of an edge is already used for a connection
+def module_is_used(graphname, module):
+    for neighbor in graphname.neighbors(module):
+        module_con = graphname.edge[module][neighbor]["module-connection"]
+        if module_con is False:
+            used = True
+            return True
+    return False
+
+
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
 def calculate_survival_graph(graphname):
     mst_graph = nx.minimum_spanning_tree(graphname).copy()
@@ -94,6 +104,97 @@ def calculate_survival_graph(graphname):
         print()
     elif mst_mode == "none":
         mst_graph = graphname
+    elif mst_mode == "equal_module":
+        mst_graph = nx.Graph()
+        visited_nodes = set()
+        # Edge list contains quadruple with (source,target,edgeweigth,module-connections)
+        edge_list = list()
+        all_nodes = set()
+
+        # Copy nodes from graphname to mst_graph and fill all_nodes-set
+        for node in graphname.nodes():
+            all_nodes.add(node)
+            mst_graph.add_node(node)
+            for key in graphname.node[node].keys():
+                mst_graph.node[node][key] = graphname.node[node][key]
+
+        # Add the root node and initialize edge_list
+        visited_nodes.add(root_node)
+        for neighbor in graphname.neighbors(root_node):
+            edge_weight = graphname.edge[root_node][neighbor]["weight"]
+            module_con = graphname.edge[root_node][neighbor]["module-connection"]
+            edge_list.append((root_node, neighbor, edge_weight, module_con))
+
+        while True:
+            # Pick all edges from edge_list, which are module-connections
+            for (a, b, weight, module_con) in edge_list:
+                if module_con:
+                    # Mark node as visited
+                    visited_nodes.add(b)
+                    # Remove the edge from edge_list, since we are using it
+                    edge_list.remove((a, b, weight, module_con))
+                    # Add only new edges
+                    for neighbor in graphname.neighbors(b):
+                        if neighbor not in visited_nodes:
+                            edge_weight = graphname.edge[b][neighbor]["weight"]
+                            module_con = graphname.edge[b][neighbor]["module-connection"]
+                            edge_list.append((b, neighbor, edge_weight, module_con))
+
+            # Pick all edges which are attached to a module, which has not been used so far (for equal usage of modules)
+            unused_modules = list()
+            for (a, b, weight, module_con) in edge_list:
+                if not module_is_used(graphname, a):
+                    unused_modules.append((a, b, weight, module_con))
+            if unused_modules:
+                # Only take those with which we can visit new nodes
+                see_new_nodes = collections_enhanced.Counter()
+                for (a, b, weight, module_con) in unused_modules:
+                    if b not in visited_nodes:
+                        see_new_nodes[(a, b)] = weight
+                if see_new_nodes:
+                    # Take the edge with the least cost and add it to mst-graph
+                    (module_a, module_b), weight = see_new_nodes.least_common(1)[0]
+                    mst_graph.add_edge(module_a, module_b)
+                    for key in graphname.edge[module_a][module_b].keys():
+                        mst_graph.edge[module_a][module_b][key] = graphname.edge[module_a][module_b][key]
+                    # Remove the edge from edge_list, since we are using it (would speed up things)
+                    # Todo
+                else:
+                    # There are no edges, which see new nodes
+                    if len(visited_nodes) != graphname.number_of_nodes():
+                        print("Error: Something is wrong, could not connect all nodes")
+                        exit(1)
+                    else:
+                        break
+            else:
+                # There are no edges which have unused modules left => also consider used modules now
+                # Only take those with which we can visit new nodes
+                see_new_nodes = collections_enhanced.Counter()
+                for (a, b, weight, module_con) in edge_list:
+                    if b not in visited_nodes:
+                        see_new_nodes[(a, b)] = weight
+                if see_new_nodes:
+                    # Since we expect the load to be the same on every edge => try to distribute the connections equally on all modules =>
+                    # Get the modules, which have the least nr of connections
+                    underutilized_modules = see_new_nodes.least_common_all()
+                    if underutilized_modules:
+                         # Take the edge with the least cost and add it to mst-graph
+                        (module_a, module_b), weight = underutilized_modules.least_common(1)[0]
+                        mst_graph.add_edge(module_a, module_b)
+                        for key in graphname.edge[module_a][module_b].keys():
+                            mst_graph.edge[module_a][module_b][key] = graphname.edge[module_a][module_b][key]
+                        # Remove the edge from edge_list, since we are using it
+                        # Todo
+                    else:
+                        print("Error: sth is wrong, could not find least utilized module")
+                        exit(1)
+                else:
+                    # There are no edges, which see new nodes
+                    if len(visited_nodes) != graphname.number_of_nodes():
+                        print("Error: Something is wrong, could not visit all nodes")
+                        exit(1)
+                    else:
+                        break
     else:
         print("Unknown Mode: Please Chose one out of 'node', 'edge' or 'single'")
         exit(1)
@@ -503,6 +604,10 @@ def get_basic_graph_from_wlc():
     scan_results_wlan_mac = [translate_lan_mac_to_wlan_mac(i[0], i[1], active_radios) for i in zip(scan_results_ap_mac, scan_results_interface_nr)]
     scan_results = zip(scan_results_ap_name, scan_results_ap_mac, scan_results_seen_bssid, scan_results_channel, scan_results_signal_strengh, scan_results_wlan_mac)
 
+    if len(scan_results) == 0:
+        print("Error: Scan Results table was empty, WLC Error")
+        exit(1)
+
     wlan_modules = set(active_radios_ap_bssid_mac)
     lan_nodes = set(active_radios_ap_lan_mac)
     basic_graph = nx.Graph()
@@ -552,6 +657,8 @@ def get_basic_graph_from_wlc():
 
         # Module-edge data
         basic_graph.edge[ap_lan_mac][ap_wlan_interface_mac]["weight"] = 1
+        basic_graph.edge[ap_lan_mac][ap_wlan_interface_mac]["module-connection"] = True
+
 
         # Module-node data
         basic_graph.node[ap_wlan_interface_mac]["interface-nr"] = ap_interface_nr
@@ -576,6 +683,8 @@ def get_basic_graph_from_wlc():
 
             # Initialize each edge with empty color
             basic_graph.edge[ap_wlan_mac][dest_wlan_mac]["color"] = None
+            basic_graph.edge[ap_wlan_mac][dest_wlan_mac]["module-connection"] = False
+
         else:
             # Its not one of our connections => add to interference list of this wlan module-node
             # Only consider the channels we have in Assignable colors, since the others are useless
@@ -590,16 +699,18 @@ def get_basic_graph_from_wlc():
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
 Graph_Layout = "dot"                                    # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
-mst_mode = "node"                                       # This variable sets the mode for the MST creation:
+mst_mode = "equal_module"                               # This variable sets the mode for the MST creation:
                                                         # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
                                                         # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
                                                         # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
+                                                        # equal_module = equally distribute the
 Assignable_Colors = ["1", "3", "6", "11"]               # List of all channels/colors which can be used for assignment
 colortable = dict()
 colortable["1"] = "red"
 colortable["3"] = "green"
 colortable["6"] = "blue"
 colortable["11"] = "orange"
+root_node = "ece555748695"
 wlc_address = "172.16.40.100"
 snmp_community = "public"
 snmp_version = 2
@@ -620,7 +731,7 @@ show_graph(mst_graph)
 
 # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
 nodelist = list()   # This is the list of nodes over which we iterate
-nodelist.append("ece555ffd63a")  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
+nodelist.append(root_node)  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
 #todo: automate the line above
 
 # Go through all nodes (main loop)
