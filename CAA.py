@@ -50,18 +50,27 @@ def get_used_colors_for_nodes(graphname, modula_a, module_b, allowed_colors):
 
 
 # Checks if the module_a of an edge is already used for a connection
-def module_is_used(graphname, module):
-    for neighbor in graphname.neighbors(module):
-        module_con = graphname.edge[module][neighbor]["module-connection"]
+# Go through all neighbors, and if there is one neighbor, which is not reached over a module-connection, then this module is used
+def module_is_used(mst_graphname, module):
+    for neighbor in mst_graphname.neighbors(module):
+        module_con = mst_graphname.edge[module][neighbor]["module-connection"]
         if module_con is False:
-            used = True
             return True
     return False
 
 
+# Returns the number of non module connections for a module
+def nr_of_non_module_connections(graphname, module):
+    connection_counter = 0
+    for neighbor in graphname.neighbors(module):
+        if not graphname.edge[module][neighbor]["module-connection"]:
+            connection_counter += 1
+    return connection_counter
+
+
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
 def calculate_survival_graph(graphname):
-    mst_graph = nx.minimum_spanning_tree(graphname).copy()
+    mst = nx.minimum_spanning_tree(graphname).copy()
     if mst_mode == "node":
         for node in graphname.nodes():
 
@@ -76,8 +85,8 @@ def calculate_survival_graph(graphname):
 
             # Add the now necessary edges to the resulting graph
             for From, To, Attributes in mst_work_graph.edges(data=True):
-                if not mst_graph.has_edge(From, To):
-                    mst_graph.add_edge(From, To, weight=Attributes['weight'])
+                if not mst.has_edge(From, To):
+                    mst.add_edge(From, To, weight=Attributes['weight'])
     elif mst_mode == "edge":
         # We have to note here, that we still could get less edges in the end
         # (we get here more edges than necessary for a 2-connected graph), but you really may not only want to use
@@ -97,26 +106,26 @@ def calculate_survival_graph(graphname):
 
             # Add all of the edges from the MST_Work_Graph of this round to the final Graph
             for From, To, Attributes in mst_work_graph.edges(data=True):
-                if not mst_graph.has_edge(From, To):
-                    mst_graph.add_edge(From, To, Attributes)
+                if not mst.has_edge(From, To):
+                    mst.add_edge(From, To, Attributes)
     elif mst_mode == "single":
         #Just fall through, since we already calculated the plain mst
         print()
     elif mst_mode == "none":
-        mst_graph = graphname
+        mst = graphname
     elif mst_mode == "equal_module":
-        mst_graph = nx.Graph()
+        mst = nx.Graph()
         visited_nodes = set()
         # Edge list contains quadruple with (source,target,edgeweigth,module-connections)
         edge_list = list()
         all_nodes = set()
 
-        # Copy nodes from graphname to mst_graph and fill all_nodes-set
+        # Copy nodes from graphname to mst and fill all_nodes-set
         for node in graphname.nodes():
             all_nodes.add(node)
-            mst_graph.add_node(node)
+            mst.add_node(node)
             for key in graphname.node[node].keys():
-                mst_graph.node[node][key] = graphname.node[node][key]
+                mst.node[node][key] = graphname.node[node][key]
 
         # Add the root node and initialize edge_list
         visited_nodes.add(root_node)
@@ -126,79 +135,77 @@ def calculate_survival_graph(graphname):
             edge_list.append((root_node, neighbor, edge_weight, module_con))
 
         while True:
+            # Debugging
+            show_graph(mst)
+
             # Pick all edges from edge_list, which are module-connections
-            for (a, b, weight, module_con) in edge_list:
+            for index, (a, b, weight, module_con) in enumerate(edge_list):
                 if module_con:
                     # Mark node as visited
                     visited_nodes.add(b)
-                    # Remove the edge from edge_list, since we are using it
-                    edge_list.remove((a, b, weight, module_con))
-                    # Add only new edges
+
+                    # Add module-edge to mst
+                    mst.add_edge(a, b)
+                    for key in graphname.edge[a][b].keys():
+                        mst.edge[a][b][key] = graphname.edge[a][b][key]
+
+                    # Add only new edges to edge_list
                     for neighbor in graphname.neighbors(b):
                         if neighbor not in visited_nodes:
                             edge_weight = graphname.edge[b][neighbor]["weight"]
                             module_con = graphname.edge[b][neighbor]["module-connection"]
                             edge_list.append((b, neighbor, edge_weight, module_con))
 
-            # Pick all edges which are attached to a module, which has not been used so far (for equal usage of modules)
-            unused_modules = list()
+            # Debugging
+            show_graph(mst)
+
+            # Pick only those Modules, which see new nodes
+            see_new_nodes = list()
             for (a, b, weight, module_con) in edge_list:
-                if not module_is_used(graphname, a):
-                    unused_modules.append((a, b, weight, module_con))
-            if unused_modules:
-                # Only take those with which we can visit new nodes
-                see_new_nodes = collections_enhanced.Counter()
-                for (a, b, weight, module_con) in unused_modules:
-                    if b not in visited_nodes:
-                        see_new_nodes[(a, b)] = weight
-                if see_new_nodes:
-                    # Take the edge with the least cost and add it to mst-graph
-                    (module_a, module_b), weight = see_new_nodes.least_common(1)[0]
-                    mst_graph.add_edge(module_a, module_b)
-                    for key in graphname.edge[module_a][module_b].keys():
-                        mst_graph.edge[module_a][module_b][key] = graphname.edge[module_a][module_b][key]
-                    # Remove the edge from edge_list, since we are using it (would speed up things)
-                    # Todo
-                else:
-                    # There are no edges, which see new nodes
-                    if len(visited_nodes) != graphname.number_of_nodes():
-                        print("Error: Something is wrong, could not connect all nodes")
-                        exit(1)
-                    else:
-                        break
+                if b not in visited_nodes:
+                    see_new_nodes.append((a, b, weight, module_con))
+            if see_new_nodes:
+                # Pick the modules, which are used least (0 connections if possible)
+                module_usage_counter = collections_enhanced.Counter()
+                for (a, b, weight, module_con) in see_new_nodes:
+                    module_usage_counter[a] = nr_of_non_module_connections(mst, a)
+
+                # Get a list of the least used modules
+                least_used_modules = set(module_usage_counter.least_common_all())
+
+                # From the list of least used modules, take all edges
+                least_used_modules_counter = collections_enhanced.Counter()
+                for (a, b, weight, module_con) in see_new_nodes:
+                    if a in least_used_modules:
+                        least_used_modules_counter[(a, b)] = weight
+
+                # Pick the edge with the least costs
+                (least_cost_module_a, least_cost_module_b), least_cost_weight = least_used_modules_counter.least_common(1)[0]
+
+                # Mark node as visited
+                visited_nodes.add(least_cost_module_b)
+
+                # Add the edge to mst
+                mst.add_edge(least_cost_module_a, least_cost_module_b)
+                for key in graphname.edge[least_cost_module_a][least_cost_module_b].keys():
+                    mst.edge[least_cost_module_a][least_cost_module_b][key] = graphname.edge[least_cost_module_a][least_cost_module_b][key]
+
+                # Add its edges to the edge_list
+                for neighbor in graphname.neighbors(least_cost_module_b):
+                    if neighbor not in visited_nodes:
+                        edge_weight = graphname.edge[least_cost_module_b][neighbor]["weight"]
+                        module_con = graphname.edge[least_cost_module_b][neighbor]["module-connection"]
+                        edge_list.append((least_cost_module_b, neighbor, edge_weight, module_con))
             else:
-                # There are no edges which have unused modules left => also consider used modules now
-                # Only take those with which we can visit new nodes
-                see_new_nodes = collections_enhanced.Counter()
-                for (a, b, weight, module_con) in edge_list:
-                    if b not in visited_nodes:
-                        see_new_nodes[(a, b)] = weight
-                if see_new_nodes:
-                    # Since we expect the load to be the same on every edge => try to distribute the connections equally on all modules =>
-                    # Get the modules, which have the least nr of connections
-                    underutilized_modules = see_new_nodes.least_common_all()
-                    if underutilized_modules:
-                         # Take the edge with the least cost and add it to mst-graph
-                        (module_a, module_b), weight = underutilized_modules.least_common(1)[0]
-                        mst_graph.add_edge(module_a, module_b)
-                        for key in graphname.edge[module_a][module_b].keys():
-                            mst_graph.edge[module_a][module_b][key] = graphname.edge[module_a][module_b][key]
-                        # Remove the edge from edge_list, since we are using it
-                        # Todo
-                    else:
-                        print("Error: sth is wrong, could not find least utilized module")
-                        exit(1)
+                if len(visited_nodes) != graphname.number_of_nodes():
+                    print("Error: Could not connect all nodes")
+                    exit(1)
                 else:
-                    # There are no edges, which see new nodes
-                    if len(visited_nodes) != graphname.number_of_nodes():
-                        print("Error: Something is wrong, could not visit all nodes")
-                        exit(1)
-                    else:
-                        break
+                    break
     else:
         print("Unknown Mode: Please Chose one out of 'node', 'edge' or 'single'")
         exit(1)
-    return mst_graph
+    return mst
 
 
 # Returns list of colors which are used the least over all edges in the graph and are in the allowed_colors list
@@ -257,7 +264,7 @@ def get_best_color_in(graphname, colorset, module_a, module_b):
 # Sets the color for an edge
 def set_edge_color(graphname, edgecolor, module_a, module_b):
     edge_data = graphname.edge[module_a][module_b]
-    edge_weight = edge_data["weight"]
+    #edge_weight = edge_data["weight"]
 
     # Check if the edge had a color before,
     # so it would be recoloring and we have to adapt the counters correspondingly
@@ -536,9 +543,19 @@ def graph_is_valid(graphname):
 
 
 # Transform networkxgraph to pydot graph, for displaying purposes
-def show_graph(networkxgraph):
+def show_graph(networkxgraph, filename="caa.svg"):
     pydotgraphname = pydot.Dot(graph_type='graph', layout=Graph_Layout)
     edges_done = set()
+    for node in networkxgraph.nodes():
+        node_shape = "oval"
+        if node in lan_nodes:
+            node_shape = "oval"
+        elif node in wlan_modules:
+            node_shape = "box"
+        else:
+            print("Error: Node " + str(node) + " is neither in lan_nodes nor in wlan_modules. It has to be in one of those.")
+            exit(1)
+        pydotgraphname.add_node(pydot.Node(node, shape=node_shape))
     for (A, B) in networkxgraph.edges():
         if (A, B) not in edges_done:
             edge_data = networkxgraph.edge[A][B]
@@ -559,19 +576,19 @@ def show_graph(networkxgraph):
             pydotgraphname.add_edge(pydot.Edge(str(A), str(B), style=edge_style, penwidth=edge_penwidth, color=edge_color))
 
             edges_done.add((A, B))
-    pydotgraphname.write("caa.svg", format="svg")
+    pydotgraphname.write(filename, format="svg")
 
 
-#translate a lan_mac + interface nr to wlan_mac
-def translate_lan_mac_to_wlan_mac(lanmac, interfacenr, active_radios_table):
+# Translate a lan_mac + interface nr to wlan_mac
+# Returns the wlan_mac, or nothing if not found
+def translate_lan_mac_to_wlan_mac(lanmac, interfacenr, active_radios_dict):
     # Interfacenr is of the form "WLAN-ID"
-    #look for the combination lanmac + interfacenr in the table active radios and return the wlan_mac for it
-    results = [i[2] for i in active_radios_table if i[1] == lanmac and i[3] == interfacenr]
-    if len(results) != 1:
-        print "Error: Could not find lanmac and interfacenr for " + str(lanmac) + "," + str(interfacenr) + " in active_radios"
-        exit(1)
-    else:
-        return results[0]
+    # Look for the combination lanmac + interfacenr in the table active radios and return the wlan_mac for it
+    for id in active_radios_dict.keys():
+        if active_radios_dict[id]["lan_mac"] == lanmac and active_radios_dict[id]["interface_nr"] == interfacenr:
+            return active_radios_dict[id]["bssid_mac"]
+    print("Warning: Got inconsistent data from WLC")
+    print("         Could not translate lanmac: " + str(lanmac) + " and interfacenr: " + str(interfacenr) + " to wlan_mac from Scanresults and Active Radios.")
 
 
 # Get the data from the wlc, returns a networkx basic graph
@@ -589,6 +606,23 @@ def get_basic_graph_from_wlc():
     scan_results_signal_strengh = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.11'))
     scan_results_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.120.1.5'))
 
+    # Create the dict of dicts for scan results
+    # Example entry: scan_results[<name>]["lan_mac"] = <value>
+    #                scan_results[<name>]["channel"] = <value>
+    #                ...
+    scan_results = dict()
+    scan_results_index = 0
+    for name, lan_mac, seen_bssid, channel, signal_strength, interface_nr in zip(scan_results_ap_name, scan_results_ap_mac, scan_results_seen_bssid, scan_results_channel, scan_results_signal_strengh, scan_results_interface_nr):
+        entry_dict = dict()
+        entry_dict["name"] = name
+        entry_dict["lan_mac"] = lan_mac
+        entry_dict["seen_bssid"] = seen_bssid
+        entry_dict["channel"] = channel
+        entry_dict["signal_strength"] = signal_strength
+        entry_dict["interface_nr"] = interface_nr
+        scan_results[scan_results_index] = entry_dict
+        scan_results_index += 1
+
     # First create the interfaces-graph
     # That means we create a node for each WLAN-interface of a node
     # and connect each of those of a node with a link with quality 0(best)(so the MST takes this edge always)
@@ -600,16 +634,59 @@ def get_basic_graph_from_wlc():
     active_radios_ap_bssid_mac_hex = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.6'))
     active_radios_ap_bssid_mac = [i.encode("hex") for i in active_radios_ap_bssid_mac_hex]
     active_radios_interface_nr = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1.7'))  # 0=1, 1=2, ...
-    active_radios = zip(active_radios_ap_name, active_radios_ap_lan_mac, active_radios_ap_bssid_mac, active_radios_interface_nr)
-    scan_results_wlan_mac = [translate_lan_mac_to_wlan_mac(i[0], i[1], active_radios) for i in zip(scan_results_ap_mac, scan_results_interface_nr)]
-    scan_results = zip(scan_results_ap_name, scan_results_ap_mac, scan_results_seen_bssid, scan_results_channel, scan_results_signal_strengh, scan_results_wlan_mac)
 
-    if len(scan_results) == 0:
-        print("Error: Scan Results table was empty, WLC Error")
+    # Create the dict of dicts for active radios
+    # Example entry: active_radios[<name>]["lan_mac"] = <value>
+    #                active_radios[<name>]["bssid_mac"] = <value>
+    #                ...
+    active_radios = dict()
+    active_radios_index = 0
+    for name, lan_mac, bssid_mac, interface_nr in zip(active_radios_ap_name, active_radios_ap_lan_mac, active_radios_ap_bssid_mac, active_radios_interface_nr):
+        entry_dict = dict()
+        entry_dict["name"] = name
+        entry_dict["lan_mac"] = lan_mac
+        entry_dict["bssid_mac"] = bssid_mac
+        entry_dict["interface_nr"] = interface_nr
+        active_radios[active_radios_index] = entry_dict
+        active_radios_index += 1
+
+    # Enhance the our_connections with the column: wlan_mac, if found
+    # (Data from WLC may be inconsistent, like no corresponding entry in active radio, but still in scan_results)
+    for id in scan_results.keys():
+        transresult = translate_lan_mac_to_wlan_mac(scan_results[id]["lan_mac"], scan_results[id]["interface_nr"], active_radios)
+        if transresult:
+            scan_results[id]["wlan_mac"] = transresult
+        else:
+            # Delete this entry, since we have no consistent data for it (its in scan_results but not found in active_radios)
+            del scan_results[id]
+
+    # Separate our connections from foreigners
+    our_connections = dict()
+    foreign_connections = dict()
+    for id in scan_results.keys():
+        if scan_results[id]["seen_bssid"] in active_radios_ap_bssid_mac:
+            our_connections[id] = scan_results[id]
+        else:
+            foreign_connections[id] = scan_results[id]
+
+    # Safety check
+    if len(our_connections) == 0:
+        print("Error: Our connection list is empty. The APs don't see each other")
         exit(1)
+    if len(foreign_connections) == 0:
+        print("Warning: Foreign connection list is empty. The APs don't foreign networks.")
+        print("         This is unlikely, except there are really no other wireless lan networks around")
 
-    wlan_modules = set(active_radios_ap_bssid_mac)
-    lan_nodes = set(active_radios_ap_lan_mac)
+    # Create set of nodes, which are modules
+    wlan_modules = set()
+    for id in active_radios.keys():
+        wlan_modules.add(active_radios[id]["bssid_mac"])
+
+    # Create set of nodes, which are not modules (=>actual devices)
+    lan_nodes = set()
+    for id in active_radios.keys():
+        lan_nodes.add(active_radios[id]["lan_mac"])
+
     basic_graph = nx.Graph()
 
     #
@@ -650,46 +727,54 @@ def get_basic_graph_from_wlc():
         basic_graph.node[module]["modules"] = 1
 
     # Fill edges/nodes with data from wlc
-    for ap_name, ap_lan_mac, ap_wlan_interface_mac, ap_interface_nr in active_radios:
+    for id in active_radios.keys():
+        name = active_radios[id]["name"]
+        lan_mac = active_radios[id]["lan_mac"]
+        wlan_interface_mac = active_radios[id]["bssid_mac"]
+        interface_nr =  active_radios[id]["interface_nr"]
 
         # Add the edge
-        basic_graph.add_edge(ap_lan_mac, ap_wlan_interface_mac)
+        basic_graph.add_edge(lan_mac, wlan_interface_mac)
 
         # Module-edge data
-        basic_graph.edge[ap_lan_mac][ap_wlan_interface_mac]["weight"] = 1
-        basic_graph.edge[ap_lan_mac][ap_wlan_interface_mac]["module-connection"] = True
+        basic_graph.edge[lan_mac][wlan_interface_mac]["weight"] = 1
+        basic_graph.edge[lan_mac][wlan_interface_mac]["module-connection"] = True
 
 
         # Module-node data
-        basic_graph.node[ap_wlan_interface_mac]["interface-nr"] = ap_interface_nr
-        basic_graph.node[ap_wlan_interface_mac]["module-of"] = ap_lan_mac
+        basic_graph.node[wlan_interface_mac]["interface-nr"] = interface_nr
+        basic_graph.node[wlan_interface_mac]["module-of"] = lan_mac
 
         # Node data
-        basic_graph.node[ap_lan_mac]["name"] = ap_name
-        basic_graph.node[ap_lan_mac]["modules"] += 1
+        basic_graph.node[lan_mac]["name"] = name
+        basic_graph.node[lan_mac]["modules"] += 1
 
     # Add all possible links from scan-results-table (module to module and seen-channels)
-    for ap_name, ap_lan_mac, dest_wlan_mac, channel, signal_strength, ap_wlan_mac in scan_results:
-        # Test if the seen SSID is one of ours or a foreign one
-        if dest_wlan_mac in active_radios_ap_bssid_mac:
+    for id in our_connections.keys():
+        dest_wlan_mac = our_connections[id]["seen_bssid"]
+        signal_strength = our_connections[id]["signal_strength"]
+        wlan_mac = our_connections[id]["wlan_mac"]
 
-            # Its one of our connections in autowds
-            basic_graph.add_edge(ap_wlan_mac, dest_wlan_mac)
+        # Its one of our connections in autowds
+        basic_graph.add_edge(wlan_mac, dest_wlan_mac)
 
-            # Set the score of this edge
-            # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
-            # because lower values are better there
-            basic_graph.edge[ap_wlan_mac][dest_wlan_mac]["weight"] = 1 + 100.0 / int(signal_strength)
+        # Set the score of this edge
+        # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
+        # because lower values are better there
+        basic_graph.edge[wlan_mac][dest_wlan_mac]["weight"] = 1 + 100.0 / int(signal_strength)
 
-            # Initialize each edge with empty color
-            basic_graph.edge[ap_wlan_mac][dest_wlan_mac]["color"] = None
-            basic_graph.edge[ap_wlan_mac][dest_wlan_mac]["module-connection"] = False
+        # Initialize each edge with empty color
+        basic_graph.edge[wlan_mac][dest_wlan_mac]["color"] = None
+        basic_graph.edge[wlan_mac][dest_wlan_mac]["module-connection"] = False
 
-        else:
-            # Its not one of our connections => add to interference list of this wlan module-node
-            # Only consider the channels we have in Assignable colors, since the others are useless
-            if channel in Assignable_Colors:
-                basic_graph.node[ap_wlan_mac]["seen_channels"][channel] += 1
+    # Fill interference list
+    for id in foreign_connections.keys():
+        channel = foreign_connections[id]["channel"]
+        wlan_mac = foreign_connections[id]["wlan_mac"]
+        # Add to interference list of this wlan module-node
+        # Only consider the channels we have in Assignable colors, since the others are useless
+        if channel in Assignable_Colors:
+            basic_graph.node[wlan_mac]["seen_channels"][channel] += 1
 
     return basic_graph, wlan_modules, lan_nodes
 
@@ -723,11 +808,16 @@ for color in Assignable_Colors:
 basic_connectivity_graph, wlan_modules, lan_nodes = get_basic_graph_from_wlc()
 
 # Show basic Connectivity and channelquality
+show_graph(basic_connectivity_graph, "full.svg")
 show_graph(basic_connectivity_graph)
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 mst_graph = calculate_survival_graph(basic_connectivity_graph)
 show_graph(mst_graph)
+
+#debugexit
+print("exitted normally")
+exit(0)
 
 # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
 nodelist = list()   # This is the list of nodes over which we iterate
