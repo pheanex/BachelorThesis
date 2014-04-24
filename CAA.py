@@ -84,9 +84,12 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
             mst_work_graph = nx.minimum_spanning_tree(work_graph)
 
             # Add the now necessary edges to the resulting graph
-            for From, To, Attributes in mst_work_graph.edges(data=True):
-                if not mst.has_edge(From, To):
-                    mst.add_edge(From, To, weight=Attributes['weight'])
+            for a, b in mst_work_graph.edges():
+                if not mst.has_edge(a, b):
+                    # Add module-edge to mst
+                    mst.add_edge(a, b)
+                    for key in graphname.edge[a][b].keys():
+                        mst.edge[a][b][key] = graphname.edge[a][b][key]
     elif mst_mode == "edge":
         # We have to note here, that we still could get less edges in the end
         # (we get here more edges than necessary for a 2-connected graph), but you really may not only want to use
@@ -105,12 +108,15 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
             mst_work_graph = nx.minimum_spanning_tree(work_graph)
 
             # Add all of the edges from the MST_Work_Graph of this round to the final Graph
-            for From, To, Attributes in mst_work_graph.edges(data=True):
-                if not mst.has_edge(From, To):
-                    mst.add_edge(From, To, Attributes)
+            for a, b in mst_work_graph.edges():
+                if not mst.has_edge(a, b):
+                    # Add module-edge to mst
+                    mst.add_edge(a, b)
+                    for key in graphname.edge[a][b].keys():
+                        mst.edge[a][b][key] = graphname.edge[a][b][key]
     elif mst_mode == "single":
         #Just fall through, since we already calculated the plain mst
-        print()
+        pass
     elif mst_mode == "none":
         mst = graphname
     elif mst_mode == "equal_module":
@@ -136,7 +142,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
 
         while True:
             # Debugging
-            show_graph(mst, wlan_modules, lan_nodes)
+            #show_graph(mst, wlan_modules, lan_nodes)
 
             # Pick all edges from edge_list, which are module-connections
             for index, (a, b, weight, module_con) in enumerate(edge_list):
@@ -157,7 +163,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
                             edge_list.append((b, neighbor, edge_weight, module_con))
 
             # Debugging
-            show_graph(mst, wlan_modules, lan_nodes)
+            #show_graph(mst, wlan_modules, lan_nodes)
 
             # Pick only those Modules, which see new nodes
             see_new_nodes = list()
@@ -702,7 +708,7 @@ def get_basic_graph_from_wlc():
             used_colors[color] = 0
         basic_graph.node[node]["used-colors"] = used_colors
 
-        # Set number of modules initally to 0
+        # Set number of modules initially to 0
         basic_graph.node[node]["modules"] = 0
 
     # Set default values for modules
@@ -806,7 +812,7 @@ def calculate_colored_graph(graphname, wlan_modules):
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
 Graph_Layout = "dot"                                    # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
-mst_mode = "equal_module"                               # This variable sets the mode for the MST creation:
+mst_mode = "single"                                       # This variable sets the mode for the MST creation:
                                                         # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
                                                         # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
                                                         # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
@@ -826,19 +832,19 @@ snmp_version = 2
 basic_connectivity_graph, modules, devices = get_basic_graph_from_wlc()
 
 # DEBUG: Show basic Connectivity and channelquality
-show_graph(basic_connectivity_graph, modules, devices)
+#show_graph(basic_connectivity_graph, modules, devices)
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices)
 
 # DEBUG: Show Minimal Spanning Tree graph
-show_graph(mst_graph, modules, devices)
+#show_graph(mst_graph, modules, devices)
 
 # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
 colored_graph = calculate_colored_graph(mst_graph, modules)
 
 # DEBUG: Show colored Graph
-show_graph(colored_graph, modules, devices)
+#show_graph(colored_graph, modules, devices)
 
 # Finally check the graph for validity
 if not graph_is_valid(mst_graph, devices):
