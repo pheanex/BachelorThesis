@@ -101,7 +101,7 @@ def convert_to_undirected_graph(directed_graph):
 def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
     mst = nx.minimum_spanning_tree(graphname).copy()
     if mst_mode == "node":
-        for node in graphname.nodes():
+        for node in lan_nodes:
 
             # Create new temp Graph to work with
             work_graph = graphname.copy()
@@ -126,6 +126,11 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
         # links (Like you could get from A to C over B with : A->(0.1)->B->(0.1)->C, but you would rather take an edge like
         # A->(0.5)->C instead
         for edge in graphname.edges():
+
+            # Only consider cases, where real-connections are cut
+            # Cutting module-node connections does not make sense, since a module can't live on its own ;-)
+            if edge[0] in lan_nodes or edge[1] in lan_nodes:
+                continue
 
             # Create new temp Graph to work with
             work_graph = graphname.copy()
@@ -155,7 +160,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
         edge_list = list()
         all_nodes = set()
 
-        # Copy nodes from graphname to mst and fill all_nodes-set
+        # Copy nodes from graphname to mst and fill the set: all_nodes
         for node in graphname.nodes():
             all_nodes.add(node)
             mst.add_node(node)
@@ -171,7 +176,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
 
         while True:
             # Debugging
-            #show_graph(mst, wlan_modules, lan_nodes)
+            show_graph(mst, wlan_modules, lan_nodes)
 
             # Pick all edges from edge_list, which are real-connections
             for index, (a, b, weight, module_con) in enumerate(edge_list):
@@ -192,7 +197,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
                             edge_list.append((b, neighbor, edge_weight, module_con))
 
             # Debugging
-            #show_graph(mst, wlan_modules, lan_nodes)
+            show_graph(mst, wlan_modules, lan_nodes)
 
             # Pick only those Modules, which see new nodes
             see_new_nodes = list()
@@ -200,7 +205,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
                 if b not in visited_nodes:
                     see_new_nodes.append((a, b, weight, module_con))
             if see_new_nodes:
-                # Pick the modules, which are used least (0 connections if possible)
+                # Pick the modules, which are used least (those that have 0 connections if possible)
                 module_usage_counter = collections_enhanced.Counter()
                 for (a, b, weight, module_con) in see_new_nodes:
                     module_usage_counter[a] = nr_of_non_module_connections(mst, a)
@@ -496,10 +501,9 @@ def find_color_for_edge_without_tricky(graphname, overall_color_counter, module_
         else:
             # Now we have a problem if the colors are not by accident the same
             color_of_module_b = graphname.node[module_b]["color"]
-            if color_of_module_a != color_of_module_b:
+            if color_of_module_a == color_of_module_b:
                 # We are lucky, they are the same
                 set_edge_color(graphname, overall_color_counter, color_of_module_a, module_a, module_b)
-
             else:
                 # Tricky case
                 return False
@@ -524,11 +528,11 @@ def find_color_for_edge(graphname, overall_color_counter, module_a, module_b, wl
         nr_of_occurrences_for_color_at_module_b = get_connected_color_count_for_module(graphname, module_b, color_of_module_b, wlan_modules)
 
         if nr_of_occurrences_for_color_at_module_a > nr_of_occurrences_for_color_at_module_b:
-            winning_color = nr_of_occurrences_for_color_at_module_a
-            losing_color = nr_of_occurrences_for_color_at_module_b
+            winning_color = color_of_module_a
+            losing_color = color_of_module_b
         else:
-            winning_color = nr_of_occurrences_for_color_at_module_b
-            losing_color = nr_of_occurrences_for_color_at_module_a
+            winning_color = color_of_module_b
+            losing_color = color_of_module_a
 
         # Recolor all other connected edges for both modules
         recolor_edges_for_module(graphname, overall_color_counter, module_a, losing_color, winning_color, wlan_modules)
@@ -539,7 +543,7 @@ def find_color_for_edge(graphname, overall_color_counter, module_a, module_b, wl
 
 
 # Check if the coloring is valid (does ever node only use a number of colors = his modules and Are all edges colored?)
-def graph_is_valid(graphname, lan_nodes):
+def graph_is_valid(graphname, lan_nodes, wlan_modules):
     print("Checking the graph for validity")
 
     # First check if every edge is colored
@@ -554,6 +558,26 @@ def graph_is_valid(graphname, lan_nodes):
                     print("Edge has no color: " + str(edge[0]) + "<->" + str(edge[1]))
                     print("Graph is NOT valid")
                     return False
+                else:
+                    # Check if the color is in one of the assignable colors
+                    if graphname.edge[edge[0]][edge[1]]["color"] not in Assignable_Colors:
+                        print("The color for edge: " + str(edge[0]) + "," + str(edge[1]) + "is not an assignable color.")
+                        print("Graph is NOT valid")
+                        return False
+                # Check if there are only connections between modules of different nodes
+                if graphname.node[edge[0]]["module-of"] == graphname.node[edge[1]]["module-of"]:
+                    print("The modules " + str(edge[0]) + "," + str(edge[1]) + " are both connected to node " + graphname.node[edge[0]]["module-of"])
+                    print("This does not make sense")
+                    print("Graph is NOT valid")
+                    return False
+
+    for module in wlan_modules:
+        corresponding_module = graphname.node[module]["module-of"]
+        if not graphname.has_edge(corresponding_module, module):
+            print("Module " + module + " is attached to " + corresponding_module + " but, has no direct connection to it.")
+            print("Graph is NOT valid")
+            return False
+
 
     # Now check if every node has only so many attached colors/channels as the number of modules it has
     for node in lan_nodes:
@@ -598,7 +622,7 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
             else:
                 # For debugging set to std penwidth
                 #edge_penwidth = str(Edge_Thickness/edge_weight)
-                edge_penwidth = 1
+                edge_penwidth = 3
                 edge_color = networkxgraph.edge[A][B]["color"]
                 edge_style = "dotted"
                 if edge_color is None:
@@ -891,7 +915,7 @@ def get_basic_graph_from_wlc():
 
 
 # Create a random Graph for testing
-def get_basic_random_graph(nr_of_nodes):
+def get_basic_random_graph(nr_of_nodes=10, max_nr_modules=3, max_nr_connections=4):
     basic_graph = nx.DiGraph()
     wlan_modules = set()
     lan_nodes = set()
@@ -909,7 +933,7 @@ def get_basic_random_graph(nr_of_nodes):
 
         # Set number of modules initially to 0
         basic_graph.node[nodename]["modules"] = 0
-        for nr_mod in range(0, random.choice([1, 2, 3])):
+        for nr_mod in range(0, random.choice(range(1, max_nr_modules))):
             module = str(nr) + "_" + str(nr_mod)
 
             wlan_modules.add(module)
@@ -929,6 +953,8 @@ def get_basic_random_graph(nr_of_nodes):
             # Initialize nr of modules for wlan module
             basic_graph.node[module]["modules"] = 1
 
+            basic_graph.node[module]["module-of"] = nodename
+
             basic_graph.add_edge(nodename, module)
 
              # Module-edge data
@@ -938,7 +964,7 @@ def get_basic_random_graph(nr_of_nodes):
             # Also count here the number of modules each node has
             basic_graph.node[nodename]["modules"] += 1
 
-            for nr_con in range(0, random.choice(range(1, 8))):
+            for nr_con in range(0, random.choice(range(1,max_nr_connections))):
                 random_module = random.choice(list(wlan_modules))
                 if not random_module == module:
                     basic_graph.add_edge(module, random_module)
@@ -986,7 +1012,7 @@ def calculate_colored_graph(graphname, wlan_modules):
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
 Graph_Layout = "dot"                                    # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
-mst_mode = "single"                                       # This variable sets the mode for the MST creation:
+#mst_mode = "single"                                    # This variable sets the mode for the MST creation:
                                                         # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
                                                         # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
                                                         # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
@@ -997,35 +1023,41 @@ colortable["1"] = "red"
 colortable["3"] = "green"
 colortable["6"] = "blue"
 colortable["11"] = "orange"
-root_node = "ece555748695"                              # TODO: automatically select root node somehow
 wlc_address = "172.16.40.100"
 snmp_community = "public"
 snmp_version = 2
 
 # Getting Data from WLC per SNMP
-basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
+#basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
+while True:
+    # Alternatively for debugging/testing, generate Random Graph
+    nr_nodes = random.choice(range(5, 25))
+    nr_modules = random.choice(range(2, 5))
+    nr_max_connections = random.choice(range(2, 6))
+    basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_nodes, nr_modules, nr_max_connections)
+    root_node = random.choice(list(devices))
+    #mst_mode = random.choice(["node", "edge", "single", "equal_module"])
+    #todo: for debugging used only equal remove later
+    mst_mode = "equal_module"
 
-# Alternatively for debugging/testing, generate Random Graph
-basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(11)
+    # Convert to undirected graph
+    basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
 
-# Convert to undirected graph
-basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
+    # DEBUG: Show basic Connectivity and channelquality
+    show_graph(basic_connectivity_graph, modules, devices)
 
-# DEBUG: Show basic Connectivity and channelquality
-show_graph(basic_connectivity_graph, modules, devices)
+    # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
+    mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices)
 
-# First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
-mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices)
+    # DEBUG: Show Minimal Spanning Tree graph
+    show_graph(mst_graph, modules, devices)
 
-# DEBUG: Show Minimal Spanning Tree graph
-show_graph(mst_graph, modules, devices)
+    # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
+    colored_graph = calculate_colored_graph(mst_graph, modules)
 
-# Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
-colored_graph = calculate_colored_graph(mst_graph, modules)
+    # DEBUG: Show colored Graph
+    show_graph(colored_graph, modules, devices)
 
-# DEBUG: Show colored Graph
-show_graph(colored_graph, modules, devices)
-
-# Finally check the graph for validity
-if not graph_is_valid(mst_graph, devices):
-    exit(1)
+    # Finally check the graph for validity
+    if not graph_is_valid(colored_graph, devices):
+        exit(1)
