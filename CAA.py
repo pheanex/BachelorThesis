@@ -36,7 +36,7 @@ def get_used_colors_for_nodes(graphname, modula_a, module_b, allowed_colors):
     node_b = get_node_for_module(graphname, module_b)
     common_color_counter = graphname.node[node_a]["used-colors"] + graphname.node[node_b]["used-colors"]
 
-    #safetly check
+    #safety check
     if not common_color_counter:
         print("Error here")
         common_color_counter = graphname.node[node_a]["used-colors"] + graphname.node[node_b]["used-colors"]
@@ -63,7 +63,7 @@ def module_is_used(mst_graphname, module):
 def nr_of_non_module_connections(graphname, module):
     connection_counter = 0
     for neighbor in graphname.neighbors(module):
-        if not graphname.edge[module][neighbor]["real-connection"]:
+        if graphname.edge[module][neighbor]["real-connection"]:
             connection_counter += 1
     return connection_counter
 
@@ -88,17 +88,25 @@ def convert_to_undirected_graph(directed_graph):
         else:
             if directed_graph.has_edge(a, b) and directed_graph.has_edge(b, a):
                 undirected_graph.add_edge(a, b)
-                undirected_graph[a][b]["weight"] = (directed_graph.edge[a][b]["weight"] + directed_graph.edge[b][a]["weight"]) / 2.0
-                undirected_graph[a][b]["real-connection"] = True
-                undirected_graph[a][b]["color"] = None
+                undirected_graph.edge[a][b]["weight"] = (directed_graph.edge[a][b]["weight"] + directed_graph.edge[b][a]["weight"]) / 2.0
+                undirected_graph.edge[a][b]["real-connection"] = True
+                undirected_graph.edge[a][b]["color"] = None
             else:
                 # Ignore this edge
-                print("Warning: Onesided link deteced: " + a + "-" + b + " -> Can't use link for undirected graph ")
+                if directed_graph.has_edge(a, b):
+                    print("Warning: Ignoring Onesided link: " + a + "(" + undirected_graph.node[a]["module-of-name"] + ") -> " + b + "(" + undirected_graph.node[b]["module-of-name"] + ")")
+                else:
+                    print("Warning: Ignoring Onesided link: " + b + "(" + undirected_graph.node[b]["module-of-name"] + ") -> " + a + "(" + undirected_graph.node[a]["module-of-name"] + ")")
     return undirected_graph
 
 
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
-def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
+# mst_mode is the variable for MST creation mode, it can have the following values:
+    # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
+    # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
+    # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
+    # equal_module = equally distribute the
+def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
     mst = nx.minimum_spanning_tree(graphname).copy()
     if mst_mode == "node":
         for node in lan_nodes:
@@ -167,66 +175,72 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
             for key in graphname.node[node].keys():
                 mst.node[node][key] = graphname.node[node][key]
 
-        # Add the root node and initialize edge_list
+        # Start with root node
+        # Add the edges originating from root node to new nodes to edge_list
         visited_nodes.add(root_node)
+        print("Starting with root-node: " + str(root_node))
         for neighbor in graphname.neighbors(root_node):
-            edge_weight = graphname.edge[root_node][neighbor]["weight"]
-            module_con = graphname.edge[root_node][neighbor]["real-connection"]
-            edge_list.append((root_node, neighbor, edge_weight, module_con))
+            edge_list.append((root_node, neighbor, graphname.edge[root_node][neighbor]["weight"], graphname.edge[root_node][neighbor]["real-connection"]))
+            #print("Added edge " + str(root_node) + "," + str(neighbor) + " to edge_list, because it sees new node")
+
+        # Debugging
+        show_graph(mst, wlan_modules, lan_nodes)
 
         while True:
-            # Debugging
-            show_graph(mst, wlan_modules, lan_nodes)
-
-            # Pick all edges from edge_list, which are real-connections
+            # Add all the node-module edges to the mst until there are no more new node-module edges
             for index, (a, b, weight, module_con) in enumerate(edge_list):
-                if module_con:
-                    # Mark node as visited
-                    visited_nodes.add(b)
-
-                    # Add module-edge to mst
+                if not module_con and (a and b) not in visited_nodes:
                     mst.add_edge(a, b)
+                    print("Added " + str(a) + "," + str(b) + " to MST, because its a node-module connection")
                     for key in graphname.edge[a][b].keys():
                         mst.edge[a][b][key] = graphname.edge[a][b][key]
 
-                    # Add only new edges to edge_list
+                    visited_nodes.add(b)
+
+                    # For this new node, add all the edges, which reach new nodes to the edge_list
                     for neighbor in graphname.neighbors(b):
                         if neighbor not in visited_nodes:
-                            edge_weight = graphname.edge[b][neighbor]["weight"]
-                            module_con = graphname.edge[b][neighbor]["real-connection"]
-                            edge_list.append((b, neighbor, edge_weight, module_con))
+                            edge_list.append((b, neighbor, graphname.edge[b][neighbor]["weight"], graphname.edge[b][neighbor]["real-connection"]))
 
             # Debugging
             show_graph(mst, wlan_modules, lan_nodes)
 
-            # Pick only those Modules, which see new nodes
-            see_new_nodes = list()
+            # Now find the best new edge and add it to the mst
+            # Therefore, pick only Modules, which see new nodes
+            edges_seeing_new_nodes = list()
             for (a, b, weight, module_con) in edge_list:
                 if b not in visited_nodes:
-                    see_new_nodes.append((a, b, weight, module_con))
-            if see_new_nodes:
-                # Pick the modules, which are used least (those that have 0 connections if possible)
+                    edges_seeing_new_nodes.append((a, b, weight, module_con))
+            print("Edges that see new nodes: " + str(edges_seeing_new_nodes))
+            if edges_seeing_new_nodes:
+                # From those, pick the modules, which are used the least number of times for connections
                 module_usage_counter = collections_enhanced.Counter()
-                for (a, b, weight, module_con) in see_new_nodes:
-                    module_usage_counter[a] = nr_of_non_module_connections(mst, a)
+                modules_of_edges_seeing_new_nodes = set()
+                for (a, b, weight, module_con) in edges_seeing_new_nodes:
+                    if a not in modules_of_edges_seeing_new_nodes:
+                        modules_of_edges_seeing_new_nodes.add(a)
+                        module_usage_counter[a] = nr_of_non_module_connections(mst, a)
 
                 # Get a list of the least used modules
                 least_used_modules = set(module_usage_counter.least_common_all())
+                print("Least used modules: " + str(least_used_modules))
 
                 # From the list of least used modules, take all edges
                 least_used_modules_counter = collections_enhanced.Counter()
-                for (a, b, weight, module_con) in see_new_nodes:
+                for (a, b, weight, module_con) in edges_seeing_new_nodes:
                     if a in least_used_modules:
                         least_used_modules_counter[(a, b)] = weight
 
-                # Pick the edge with the least costs
+                # Pick the edge with the least costs and add it to mst
                 (least_cost_module_a, least_cost_module_b), least_cost_weight = least_used_modules_counter.least_common(1)[0]
+                print("Least costly edge was: " + str(least_cost_module_a) + "," + str(least_cost_module_b) + " with cost: " + str(least_cost_weight))
 
                 # Mark node as visited
                 visited_nodes.add(least_cost_module_b)
 
                 # Add the edge to mst
                 mst.add_edge(least_cost_module_a, least_cost_module_b)
+                print("Added edge " + str(least_cost_module_a) + "," + str(least_cost_module_b) + " to MST, because its the least costly")
                 for key in graphname.edge[least_cost_module_a][least_cost_module_b].keys():
                     mst.edge[least_cost_module_a][least_cost_module_b][key] = graphname.edge[least_cost_module_a][least_cost_module_b][key]
 
@@ -236,6 +250,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes):
                         edge_weight = graphname.edge[least_cost_module_b][neighbor]["weight"]
                         module_con = graphname.edge[least_cost_module_b][neighbor]["real-connection"]
                         edge_list.append((least_cost_module_b, neighbor, edge_weight, module_con))
+                        #print("Added edge " + str(least_cost_module_b) + "," + str(neighbor) + " to edge_list, because it sees new node")
             else:
                 if len(visited_nodes) != graphname.number_of_nodes():
                     print("Error: Could not connect all nodes")
@@ -578,7 +593,6 @@ def graph_is_valid(graphname, lan_nodes, wlan_modules):
             print("Graph is NOT valid")
             return False
 
-
     # Now check if every node has only so many attached colors/channels as the number of modules it has
     for node in lan_nodes:
         nr_of_modules = graphname.node[node]["modules"]
@@ -614,7 +628,7 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
         pydotgraphname.add_node(pydot.Node(node, shape=node_shape))
     for (A, B) in networkxgraph.edges():
         if (A, B) not in edges_done:
-            edge_weight = networkxgraph.edge[A][B]["weight"]
+            #edge_weight = networkxgraph.edge[A][B]["weight"]
             if A in lan_nodes or B in lan_nodes:
                 edge_style = "solid"
                 edge_color = "black"
@@ -622,7 +636,7 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
             else:
                 # For debugging set to std penwidth
                 #edge_penwidth = str(Edge_Thickness/edge_weight)
-                edge_penwidth = 3
+                edge_penwidth = 5
                 edge_color = networkxgraph.edge[A][B]["color"]
                 edge_style = "dotted"
                 if edge_color is None:
@@ -656,26 +670,26 @@ def get_basic_graph_from_wlc():
     snmp_session = netsnmp.Session(DestHost=wlc_address, Version=snmp_version, Community=snmp_community)
 
     # These are our intern connections
-    AutoWDS_Topology_Scan_Results = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.122'))
-    AutoWDS_Topology_Scan_Results_length = len(AutoWDS_Topology_Scan_Results) / 6
-    AutoWDS_Topology_Scan_Results_target_wlan_mac_hex = AutoWDS_Topology_Scan_Results[0:AutoWDS_Topology_Scan_Results_length]
-    AutoWDS_Topology_Scan_Results_target_wlan_mac = [i.encode("hex") for i in AutoWDS_Topology_Scan_Results_target_wlan_mac_hex]
-    AutoWDS_Topology_Scan_Results_source_wlan_mac_hex = AutoWDS_Topology_Scan_Results[AutoWDS_Topology_Scan_Results_length:2*AutoWDS_Topology_Scan_Results_length]
-    AutoWDS_Topology_Scan_Results_source_wlan_mac = [i.encode("hex") for i in AutoWDS_Topology_Scan_Results_source_wlan_mac_hex]
-    AutoWDS_Topology_Scan_Results_radio_channel = AutoWDS_Topology_Scan_Results[2*AutoWDS_Topology_Scan_Results_length:3*AutoWDS_Topology_Scan_Results_length]
-    AutoWDS_Topology_Scan_Results_phy_signal = AutoWDS_Topology_Scan_Results[3*AutoWDS_Topology_Scan_Results_length:4*AutoWDS_Topology_Scan_Results_length]
-    AutoWDS_Topology_Scan_Results_noise_level = AutoWDS_Topology_Scan_Results[4*AutoWDS_Topology_Scan_Results_length:5*AutoWDS_Topology_Scan_Results_length]
-    AutoWDS_Topology_Scan_Results_age = AutoWDS_Topology_Scan_Results[5*AutoWDS_Topology_Scan_Results_length:6*AutoWDS_Topology_Scan_Results_length]
+    autowds_topology_scan_results = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.122'))
+    autowds_topology_scan_results_length = len(autowds_topology_scan_results) / 6
+    autowds_topology_scan_results_target_wlan_mac_hex = autowds_topology_scan_results[0:autowds_topology_scan_results_length]
+    autowds_topology_scan_results_target_wlan_mac = [i.encode("hex") for i in autowds_topology_scan_results_target_wlan_mac_hex]
+    autowds_topology_scan_results_source_wlan_mac_hex = autowds_topology_scan_results[autowds_topology_scan_results_length:2*autowds_topology_scan_results_length]
+    autowds_topology_scan_results_source_wlan_mac = [i.encode("hex") for i in autowds_topology_scan_results_source_wlan_mac_hex]
+    autowds_topology_scan_results_radio_channel = autowds_topology_scan_results[2*autowds_topology_scan_results_length:3*autowds_topology_scan_results_length]
+    autowds_topology_scan_results_phy_signal = autowds_topology_scan_results[3*autowds_topology_scan_results_length:4*autowds_topology_scan_results_length]
+    autowds_topology_scan_results_noise_level = autowds_topology_scan_results[4*autowds_topology_scan_results_length:5*autowds_topology_scan_results_length]
+    autowds_topology_scan_results_age = autowds_topology_scan_results[5*autowds_topology_scan_results_length:6*autowds_topology_scan_results_length]
     # Create the dict of dicts for scan results
     # Example entry: scan_results[<name>]["lan_mac"] = <value>
     #                scan_results[<name>]["channel"] = <value>
     #                ...
-    AutoWDS_Topology_Scan_Results = dict()
-    AutoWDS_Topology_Scan_Results_Index = 0
+    autowds_topology_scan_results = dict()
+    autowds_topology_scan_results_index = 0
     for wlan_source_mac, wlan_dest_mac, channel, signal_strength, noise_level, age \
-            in zip(AutoWDS_Topology_Scan_Results_source_wlan_mac, AutoWDS_Topology_Scan_Results_target_wlan_mac,
-                   AutoWDS_Topology_Scan_Results_radio_channel, AutoWDS_Topology_Scan_Results_phy_signal,
-                   AutoWDS_Topology_Scan_Results_noise_level, AutoWDS_Topology_Scan_Results_age):
+            in zip(autowds_topology_scan_results_source_wlan_mac, autowds_topology_scan_results_target_wlan_mac,
+                   autowds_topology_scan_results_radio_channel, autowds_topology_scan_results_phy_signal,
+                   autowds_topology_scan_results_noise_level, autowds_topology_scan_results_age):
         entry_dict = dict()
         entry_dict["source_mac"] = wlan_source_mac
         entry_dict["wlan_dest_mac"] = wlan_dest_mac
@@ -683,72 +697,72 @@ def get_basic_graph_from_wlc():
         entry_dict["signal_strength"] = signal_strength
         entry_dict["noise_level"] = noise_level
         entry_dict["age"] = age
-        AutoWDS_Topology_Scan_Results[AutoWDS_Topology_Scan_Results_Index] = entry_dict
-        AutoWDS_Topology_Scan_Results_Index += 1
+        autowds_topology_scan_results[autowds_topology_scan_results_index] = entry_dict
+        autowds_topology_scan_results_index += 1
 
-    del AutoWDS_Topology_Scan_Results_target_wlan_mac_hex, AutoWDS_Topology_Scan_Results_target_wlan_mac, \
-        AutoWDS_Topology_Scan_Results_source_wlan_mac_hex, AutoWDS_Topology_Scan_Results_source_wlan_mac, \
-        AutoWDS_Topology_Scan_Results_radio_channel, AutoWDS_Topology_Scan_Results_phy_signal, \
-        AutoWDS_Topology_Scan_Results_noise_level, AutoWDS_Topology_Scan_Results_age, \
-        AutoWDS_Topology_Scan_Results_length, AutoWDS_Topology_Scan_Results_Index
+    del autowds_topology_scan_results_target_wlan_mac_hex, autowds_topology_scan_results_target_wlan_mac, \
+        autowds_topology_scan_results_source_wlan_mac_hex, autowds_topology_scan_results_source_wlan_mac, \
+        autowds_topology_scan_results_radio_channel, autowds_topology_scan_results_phy_signal, \
+        autowds_topology_scan_results_noise_level, autowds_topology_scan_results_age, \
+        autowds_topology_scan_results_length, autowds_topology_scan_results_index
 
     # First create the interfaces-graph
     # That means we create a node for each WLAN-interface of a node
     # and connect each of those of a node with a link with quality 0(best)(so the MST takes this edge always)
     # Therefore we use the Status/WLAN-Management/AP-Status/Active-Radios/ Table of the WLC
     # This gives us the interfaces of each node (identified by the MACs (LAN/WLAN)
-    Active_Radios = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1'))
-    Active_Radios_length = len(Active_Radios) / 30
-    Active_Radios_lan_mac_hex = Active_Radios[0:1*Active_Radios_length]
-    Active_Radios_lan_mac = [j.encode("hex") for j in Active_Radios_lan_mac_hex]
-    Active_Radios_ip = Active_Radios[1*Active_Radios_length:2*Active_Radios_length]
-    Active_Radios_name = Active_Radios[2*Active_Radios_length:3*Active_Radios_length]
-    Active_Radios_location = Active_Radios[3*Active_Radios_length:4*Active_Radios_length]
-    Active_Radios_unknown5 = Active_Radios[4*Active_Radios_length:5*Active_Radios_length]
-    Active_Radios_wlan_mac_hex = Active_Radios[5*Active_Radios_length:6*Active_Radios_length]
-    Active_Radios_wlan_mac = [j.encode("hex") for j in Active_Radios_wlan_mac_hex]
-    Active_Radios_ifc = Active_Radios[6*Active_Radios_length:7*Active_Radios_length]
-    Active_Radios_radio_band = Active_Radios[7*Active_Radios_length:8*Active_Radios_length]
-    Active_Radios_channel = Active_Radios[8*Active_Radios_length:9*Active_Radios_length]
-    Active_Radios_client_count = Active_Radios[9*Active_Radios_length:10*Active_Radios_length]
-    Active_Radios_background_scan = Active_Radios[10*Active_Radios_length:11*Active_Radios_length]
-    Active_Radios_card_id = Active_Radios[11*Active_Radios_length:12*Active_Radios_length]
-    Active_Radios_fw_version = Active_Radios[12*Active_Radios_length:13*Active_Radios_length]
-    Active_Radios_card_serial_nr = Active_Radios[13*Active_Radios_length:14*Active_Radios_length]
-    Active_Radios_operating = Active_Radios[14*Active_Radios_length:15*Active_Radios_length]
-    Active_Radios_transmit_power = Active_Radios[15*Active_Radios_length:16*Active_Radios_length]
-    Active_Radios_eirp = Active_Radios[16*Active_Radios_length:17*Active_Radios_length]
-    Active_Radios_exc_eirp = Active_Radios[17*Active_Radios_length:18*Active_Radios_length]
-    Active_Radios_internal = Active_Radios[18*Active_Radios_length:19*Active_Radios_length]
-    Active_Radios_nr_radios = Active_Radios[19*Active_Radios_length:20*Active_Radios_length]
-    Active_Radios_module = Active_Radios[20*Active_Radios_length:21*Active_Radios_length]
-    Active_Radios_serial_nr = Active_Radios[21*Active_Radios_length:22*Active_Radios_length]
-    Active_Radios_version = Active_Radios[22*Active_Radios_length:23*Active_Radios_length]
-    Active_Radios_card_state = Active_Radios[23*Active_Radios_length:24*Active_Radios_length]
-    Active_Radios_field_optimization = Active_Radios[24*Active_Radios_length:25*Active_Radios_length]
-    Active_Radios_modem_load_min = Active_Radios[25*Active_Radios_length:26*Active_Radios_length]
-    Active_Radios_modem_load_max = Active_Radios[26*Active_Radios_length:27*Active_Radios_length]
-    Active_Radios_modem_load_avg = Active_Radios[27*Active_Radios_length:28*Active_Radios_length]
-    Active_Radios_unknown29 = Active_Radios[28*Active_Radios_length:29*Active_Radios_length]
-    Active_Radios_groups = Active_Radios[29*Active_Radios_length:30*Active_Radios_length]
+    active_radios = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1'))
+    active_radios_length = len(active_radios) / 30
+    active_radios_lan_mac_hex = active_radios[0:1*active_radios_length]
+    active_radios_lan_mac = [j.encode("hex") for j in active_radios_lan_mac_hex]
+    active_radios_ip = active_radios[1*active_radios_length:2*active_radios_length]
+    active_radios_name = active_radios[2*active_radios_length:3*active_radios_length]
+    active_radios_location = active_radios[3*active_radios_length:4*active_radios_length]
+    active_radios_unknown5 = active_radios[4*active_radios_length:5*active_radios_length]
+    active_radios_wlan_mac_hex = active_radios[5*active_radios_length:6*active_radios_length]
+    active_radios_wlan_mac = [j.encode("hex") for j in active_radios_wlan_mac_hex]
+    active_radios_ifc = active_radios[6*active_radios_length:7*active_radios_length]
+    active_radios_radio_band = active_radios[7*active_radios_length:8*active_radios_length]
+    active_radios_channel = active_radios[8*active_radios_length:9*active_radios_length]
+    active_radios_client_count = active_radios[9*active_radios_length:10*active_radios_length]
+    active_radios_background_scan = active_radios[10*active_radios_length:11*active_radios_length]
+    active_radios_card_id = active_radios[11*active_radios_length:12*active_radios_length]
+    active_radios_fw_version = active_radios[12*active_radios_length:13*active_radios_length]
+    active_radios_card_serial_nr = active_radios[13*active_radios_length:14*active_radios_length]
+    active_radios_operating = active_radios[14*active_radios_length:15*active_radios_length]
+    active_radios_transmit_power = active_radios[15*active_radios_length:16*active_radios_length]
+    active_radios_eirp = active_radios[16*active_radios_length:17*active_radios_length]
+    active_radios_exc_eirp = active_radios[17*active_radios_length:18*active_radios_length]
+    active_radios_internal = active_radios[18*active_radios_length:19*active_radios_length]
+    active_radios_nr_radios = active_radios[19*active_radios_length:20*active_radios_length]
+    active_radios_module = active_radios[20*active_radios_length:21*active_radios_length]
+    active_radios_serial_nr = active_radios[21*active_radios_length:22*active_radios_length]
+    active_radios_version = active_radios[22*active_radios_length:23*active_radios_length]
+    active_radios_card_state = active_radios[23*active_radios_length:24*active_radios_length]
+    active_radios_field_optimization = active_radios[24*active_radios_length:25*active_radios_length]
+    active_radios_modem_load_min = active_radios[25*active_radios_length:26*active_radios_length]
+    active_radios_modem_load_max = active_radios[26*active_radios_length:27*active_radios_length]
+    active_radios_modem_load_avg = active_radios[27*active_radios_length:28*active_radios_length]
+    active_radios_unknown29 = active_radios[28*active_radios_length:29*active_radios_length]
+    active_radios_groups = active_radios[29*active_radios_length:30*active_radios_length]
     # Create the dict of dicts for active radios
     # Example entry: active_radios[<name>]["lan_mac"] = <value>
     #                active_radios[<name>]["bssid_mac"] = <value>
     #                ...
-    Active_Radios = dict()
-    Active_Radios_Index = 0
+    active_radios = dict()
+    active_radios_index = 0
     for lan_mac, ip, name, location, unknown5, wlan_mac, ifc, radio_band, channel, client_count,\
         background_scan, card_id, fw_version, card_serial_nr, operating, transmit_power, eirp,\
         exc_eirp, internal, nr_radios, module, serial_nr, version, card_state, field_optimization,\
         modem_load_min, modem_load_max, modem_load_avg, unknown29, groups\
-        in zip(Active_Radios_lan_mac, Active_Radios_ip, Active_Radios_name, Active_Radios_location,
-               Active_Radios_unknown5, Active_Radios_wlan_mac, Active_Radios_ifc, Active_Radios_radio_band,
-               Active_Radios_channel, Active_Radios_client_count, Active_Radios_background_scan,
-               Active_Radios_card_id, Active_Radios_fw_version, Active_Radios_card_serial_nr, Active_Radios_operating,
-               Active_Radios_transmit_power, Active_Radios_eirp, Active_Radios_exc_eirp, Active_Radios_internal,
-               Active_Radios_nr_radios, Active_Radios_module, Active_Radios_serial_nr, Active_Radios_version,
-               Active_Radios_card_state, Active_Radios_field_optimization, Active_Radios_modem_load_min,
-               Active_Radios_modem_load_max, Active_Radios_modem_load_avg, Active_Radios_unknown29, Active_Radios_groups):
+        in zip(active_radios_lan_mac, active_radios_ip, active_radios_name, active_radios_location,
+               active_radios_unknown5, active_radios_wlan_mac, active_radios_ifc, active_radios_radio_band,
+               active_radios_channel, active_radios_client_count, active_radios_background_scan,
+               active_radios_card_id, active_radios_fw_version, active_radios_card_serial_nr, active_radios_operating,
+               active_radios_transmit_power, active_radios_eirp, active_radios_exc_eirp, active_radios_internal,
+               active_radios_nr_radios, active_radios_module, active_radios_serial_nr, active_radios_version,
+               active_radios_card_state, active_radios_field_optimization, active_radios_modem_load_min,
+               active_radios_modem_load_max, active_radios_modem_load_avg, active_radios_unknown29, active_radios_groups):
         entry_dict = dict()
         entry_dict["lan_mac"] = lan_mac
         entry_dict["ip"] = ip
@@ -780,20 +794,17 @@ def get_basic_graph_from_wlc():
         entry_dict["modem_load_avg"] = modem_load_avg
         entry_dict["unknown29"] = unknown29
         entry_dict["groups"] = groups
-        Active_Radios[Active_Radios_Index] = entry_dict
-        Active_Radios_Index += 1
+        active_radios[active_radios_index] = entry_dict
+        active_radios_index += 1
 
-    del Active_Radios_lan_mac, Active_Radios_ip, Active_Radios_name, Active_Radios_location, Active_Radios_unknown5, \
-        Active_Radios_wlan_mac, Active_Radios_ifc, Active_Radios_radio_band, Active_Radios_channel, Active_Radios_client_count, \
-        Active_Radios_background_scan, Active_Radios_card_id, Active_Radios_fw_version, Active_Radios_card_serial_nr, \
-        Active_Radios_operating, Active_Radios_transmit_power, Active_Radios_eirp, Active_Radios_exc_eirp, Active_Radios_internal, \
-        Active_Radios_nr_radios, Active_Radios_module, Active_Radios_serial_nr, Active_Radios_version, Active_Radios_card_state, \
-        Active_Radios_field_optimization, Active_Radios_modem_load_min, Active_Radios_modem_load_max, Active_Radios_modem_load_avg, \
-        Active_Radios_unknown29, Active_Radios_groups, Active_Radios_lan_mac_hex, Active_Radios_wlan_mac_hex, Active_Radios_length, \
-        Active_Radios_Index
-
-    if len(Active_Radios) != len(AutoWDS_Topology_Scan_Results):
-        print("Warning: Length of Active_Radios and AutoWDS_Topology_Scan_Results are different. Sth is probably wrong.")
+    del active_radios_lan_mac, active_radios_ip, active_radios_name, active_radios_location, active_radios_unknown5, \
+        active_radios_wlan_mac, active_radios_ifc, active_radios_radio_band, active_radios_channel, active_radios_client_count, \
+        active_radios_background_scan, active_radios_card_id, active_radios_fw_version, active_radios_card_serial_nr, \
+        active_radios_operating, active_radios_transmit_power, active_radios_eirp, active_radios_exc_eirp, active_radios_internal, \
+        active_radios_nr_radios, active_radios_module, active_radios_serial_nr, active_radios_version, active_radios_card_state, \
+        active_radios_field_optimization, active_radios_modem_load_min, active_radios_modem_load_max, active_radios_modem_load_avg, \
+        active_radios_unknown29, active_radios_groups, active_radios_lan_mac_hex, active_radios_wlan_mac_hex, active_radios_length, \
+        active_radios_index
 
     # Todo: Foreign table
 
@@ -807,7 +818,7 @@ def get_basic_graph_from_wlc():
     #        foreign_connections[index] = scan_results[index]
 
     # Safety check
-    if len(AutoWDS_Topology_Scan_Results) == 0:
+    if len(autowds_topology_scan_results) == 0:
         print("Error: Our connection list is empty. The APs don't see each other")
         exit(1)
     #if len(foreign_connections) == 0:
@@ -816,13 +827,13 @@ def get_basic_graph_from_wlc():
 
     # Create set of nodes, which are modules
     wlan_modules = set()
-    for index in Active_Radios.keys():
-        wlan_modules.add(Active_Radios[index]["wlan_mac"])
+    for index in active_radios.keys():
+        wlan_modules.add(active_radios[index]["wlan_mac"])
 
     # Create set of nodes, which are not modules (=>actual devices)
     lan_nodes = set()
-    for index in Active_Radios.keys():
-        lan_nodes.add(Active_Radios[index]["lan_mac"])
+    for index in active_radios.keys():
+        lan_nodes.add(active_radios[index]["lan_mac"])
 
     basic_graph = nx.DiGraph()
 
@@ -853,18 +864,19 @@ def get_basic_graph_from_wlc():
         basic_graph.node[module]["color"] = None
 
         # Initialize actually seen counters for wlan modules with 0
-        #actually_seen_colors = collections_enhanced.Counter()
-        #for color in Assignable_Colors:
-        #    actually_seen_colors[color] = 0
-        #basic_graph.node[module]["seen_channels"] = actually_seen_colors
+        actually_seen_colors = collections_enhanced.Counter()
+        for color in Assignable_Colors:
+            actually_seen_colors[color] = 0
+        basic_graph.node[module]["seen_channels"] = actually_seen_colors
 
         # Initialize nr of modules for wlan module
         basic_graph.node[module]["modules"] = 1
 
     # Fill/Add node-module edges with data from wlc
-    for index in Active_Radios.keys():
-        lan_mac = Active_Radios[index]["lan_mac"]
-        wlan_mac = Active_Radios[index]["wlan_mac"]
+    for index in active_radios.keys():
+        lan_mac = active_radios[index]["lan_mac"]
+        name = active_radios[index]["name"]  # todo later remove this
+        wlan_mac = active_radios[index]["wlan_mac"]
 
         # Add the edge
         basic_graph.add_edge(lan_mac, wlan_mac)
@@ -875,28 +887,30 @@ def get_basic_graph_from_wlc():
 
         # Write all data also into graph
         basic_graph.node[wlan_mac]["module-of"] = lan_mac
-        for key in Active_Radios[index].keys():
-            basic_graph.edge[lan_mac][wlan_mac][key] = Active_Radios[index][key]
+        basic_graph.node[wlan_mac]["module-of-name"] = name  # todo later remove this
+        for key in active_radios[index].keys():
+            basic_graph.edge[lan_mac][wlan_mac][key] = active_radios[index][key]
 
         # Also count here the number of modules each node has
         basic_graph.node[lan_mac]["modules"] += 1
 
     # Add all possible module-module links
-    for index in AutoWDS_Topology_Scan_Results.keys():
-        source_mac = AutoWDS_Topology_Scan_Results[index]["source_mac"]
-        wlan_dest_mac = AutoWDS_Topology_Scan_Results[index]["wlan_dest_mac"]
-        channel = AutoWDS_Topology_Scan_Results[index]["channel"]
-        signal_strength = int(AutoWDS_Topology_Scan_Results[index]["signal_strength"])
-        noise_level = int(AutoWDS_Topology_Scan_Results[index]["noise_level"])
-        age = AutoWDS_Topology_Scan_Results[index]["age"]
+    for index in autowds_topology_scan_results.keys():
+        source_mac = autowds_topology_scan_results[index]["source_mac"]
+        wlan_dest_mac = autowds_topology_scan_results[index]["wlan_dest_mac"]
+        #channel = autowds_topology_scan_results[index]["channel"]
+        signal_strength = int(autowds_topology_scan_results[index]["signal_strength"])
+        #noise_level = int(autowds_topology_scan_results[index]["noise_level"])
+        #age = autowds_topology_scan_results[index]["age"]
 
         basic_graph.add_edge(source_mac, wlan_dest_mac)
 
         # Set the score of this edge
         # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
         # because lower values are better there
-        SNR = signal_strength + noise_level
-        basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - SNR
+        # The following isdone, since Alfred Arnold mentioned to me that the Signal-strength value is already the SNR
+        snr = signal_strength
+        basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - snr
 
         # Initialize each edge with empty color
         basic_graph.edge[source_mac][wlan_dest_mac]["color"] = None
@@ -915,7 +929,8 @@ def get_basic_graph_from_wlc():
 
 
 # Create a random Graph for testing
-def get_basic_random_graph(nr_of_nodes=10, max_nr_modules=3, max_nr_connections=4):
+# If no parameters specified, we generate some randomly ourselfes
+def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 25)), max_nr_modules=random.choice(range(2, 5)), max_nr_connections=random.choice(range(2, 6))):
     basic_graph = nx.DiGraph()
     wlan_modules = set()
     lan_nodes = set()
@@ -964,7 +979,7 @@ def get_basic_random_graph(nr_of_nodes=10, max_nr_modules=3, max_nr_connections=
             # Also count here the number of modules each node has
             basic_graph.node[nodename]["modules"] += 1
 
-            for nr_con in range(0, random.choice(range(1,max_nr_connections))):
+            for nr_con in range(0, random.choice(range(1, max_nr_connections))):
                 random_module = random.choice(list(wlan_modules))
                 if not random_module == module:
                     basic_graph.add_edge(module, random_module)
@@ -1012,11 +1027,6 @@ def calculate_colored_graph(graphname, wlan_modules):
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
 Graph_Layout = "dot"                                    # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
-#mst_mode = "single"                                    # This variable sets the mode for the MST creation:
-                                                        # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
-                                                        # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
-                                                        # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
-                                                        # equal_module = equally distribute the
 Assignable_Colors = ["1", "3", "6", "11"]               # List of all channels/colors which can be used for assignment
 colortable = dict()
 colortable["1"] = "red"
@@ -1028,36 +1038,32 @@ snmp_community = "public"
 snmp_version = 2
 
 # Getting Data from WLC per SNMP
-#basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
-while True:
-    # Alternatively for debugging/testing, generate Random Graph
-    nr_nodes = random.choice(range(5, 25))
-    nr_modules = random.choice(range(2, 5))
-    nr_max_connections = random.choice(range(2, 6))
-    basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_nodes, nr_modules, nr_max_connections)
-    root_node = random.choice(list(devices))
-    #mst_mode = random.choice(["node", "edge", "single", "equal_module"])
-    #todo: for debugging used only equal remove later
-    mst_mode = "equal_module"
+basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
 
-    # Convert to undirected graph
-    basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
+# Alternatively for debugging/testing, generate Random Graph
+#basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
 
-    # DEBUG: Show basic Connectivity and channelquality
-    show_graph(basic_connectivity_graph, modules, devices)
+# Set the root node TODO: automate this further later
+root_node = random.choice(list(devices))
 
-    # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
-    mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices)
+# Convert to undirected graph
+basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
 
-    # DEBUG: Show Minimal Spanning Tree graph
-    show_graph(mst_graph, modules, devices)
+# DEBUG: Show basic Connectivity and channelquality
+show_graph(basic_connectivity_graph, modules, devices)
 
-    # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
-    colored_graph = calculate_colored_graph(mst_graph, modules)
+# First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
+mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "equal_module")
 
-    # DEBUG: Show colored Graph
-    show_graph(colored_graph, modules, devices)
+# DEBUG: Show Minimal Spanning Tree graph
+show_graph(mst_graph, modules, devices)
 
-    # Finally check the graph for validity
-    if not graph_is_valid(colored_graph, devices):
-        exit(1)
+# Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
+colored_graph = calculate_colored_graph(mst_graph, modules)
+
+# DEBUG: Show colored Graph
+show_graph(colored_graph, modules, devices)
+
+# Finally check the graph for validity
+if not graph_is_valid(colored_graph, devices, modules):
+    exit(1)
