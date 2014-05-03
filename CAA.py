@@ -8,6 +8,7 @@ import collections_enhanced
 import random
 import pydot
 import netsnmp
+import json
 
 
 # counterlist = dictionary with colors and their number of occurences
@@ -103,7 +104,8 @@ def convert_to_undirected_graph(directed_graph):
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
 # mst_mode is the variable for MST creation mode, it can have the following values:
     # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
-    # edge = We expect only a single edge to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
+    # module_module_edge = We expect only a single edge from a module to antoher module to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
+    # node_module_edge = We expect only a single edge from a node to a module to fail at a time (network still works, even if an edge breaks, less connetions though than "node")
     # single = only calculate ordinary MST (no redundancy, one node or edge breakds => connectivity is gone, least number of connections)
     # equal_module = equally distribute the
 def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
@@ -127,7 +129,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
                     mst.add_edge(a, b)
                     for key in graphname.edge[a][b].keys():
                         mst.edge[a][b][key] = graphname.edge[a][b][key]
-    elif mst_mode == "edge":
+    elif mst_mode == "module_module_edge":
         # We have to note here, that we still could get less edges in the end
         # (we get here more edges than necessary for a 2-connected graph), but you really may not only want to use
         # only the edges, which you get by constructing a 2-connected graph, since this would also depend on bad quality-
@@ -138,6 +140,35 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
             # Only consider cases, where real-connections are cut
             # Cutting module-node connections does not make sense, since a module can't live on its own ;-)
             if edge[0] in lan_nodes or edge[1] in lan_nodes:
+                continue
+
+            # Create new temp Graph to work with
+            work_graph = graphname.copy()
+
+            # Remove the edge
+            work_graph.remove_edge(edge[0], edge[1])
+
+            # Now calculate the mst on the workgraph
+            mst_work_graph = nx.minimum_spanning_tree(work_graph)
+
+            # Add all of the edges from the MST_Work_Graph of this round to the final Graph
+            for a, b in mst_work_graph.edges():
+                if not mst.has_edge(a, b):
+                    # Add module-edge to mst
+                    mst.add_edge(a, b)
+                    for key in graphname.edge[a][b].keys():
+                        mst.edge[a][b][key] = graphname.edge[a][b][key]
+    elif mst_mode == "node_module_edge":
+        # We have to note here, that we still could get less edges in the end
+        # (we get here more edges than necessary for a 2-connected graph), but you really may not only want to use
+        # only the edges, which you get by constructing a 2-connected graph, since this would also depend on bad quality-
+        # links (Like you could get from A to C over B with : A->(0.1)->B->(0.1)->C, but you would rather take an edge like
+        # A->(0.5)->C instead
+        for edge in graphname.edges():
+
+            # Only consider cases, where real-connections are cut
+            # Cutting module-node connections does not make sense, since a module can't live on its own ;-)
+            if not (edge[0] in lan_nodes or edge[1] in lan_nodes):
                 continue
 
             # Create new temp Graph to work with
@@ -178,10 +209,8 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
         # Start with root node
         # Add the edges originating from root node to new nodes to edge_list
         visited_nodes.add(root_node)
-        print("Starting with root-node: " + str(root_node))
         for neighbor in graphname.neighbors(root_node):
             edge_list.append((root_node, neighbor, graphname.edge[root_node][neighbor]["weight"], graphname.edge[root_node][neighbor]["real-connection"]))
-            #print("Added edge " + str(root_node) + "," + str(neighbor) + " to edge_list, because it sees new node")
 
         # Debugging
         show_graph(mst, wlan_modules, lan_nodes)
@@ -191,7 +220,6 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
             for index, (a, b, weight, module_con) in enumerate(edge_list):
                 if not module_con and (a and b) not in visited_nodes:
                     mst.add_edge(a, b)
-                    print("Added " + str(a) + "," + str(b) + " to MST, because its a node-module connection")
                     for key in graphname.edge[a][b].keys():
                         mst.edge[a][b][key] = graphname.edge[a][b][key]
 
@@ -211,7 +239,6 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
             for (a, b, weight, module_con) in edge_list:
                 if b not in visited_nodes:
                     edges_seeing_new_nodes.append((a, b, weight, module_con))
-            print("Edges that see new nodes: " + str(edges_seeing_new_nodes))
             if edges_seeing_new_nodes:
                 # From those, pick the modules, which are used the least number of times for connections
                 module_usage_counter = collections_enhanced.Counter()
@@ -223,7 +250,6 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
 
                 # Get a list of the least used modules
                 least_used_modules = set(module_usage_counter.least_common_all())
-                print("Least used modules: " + str(least_used_modules))
 
                 # From the list of least used modules, take all edges
                 least_used_modules_counter = collections_enhanced.Counter()
@@ -233,14 +259,12 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
 
                 # Pick the edge with the least costs and add it to mst
                 (least_cost_module_a, least_cost_module_b), least_cost_weight = least_used_modules_counter.least_common(1)[0]
-                print("Least costly edge was: " + str(least_cost_module_a) + "," + str(least_cost_module_b) + " with cost: " + str(least_cost_weight))
 
                 # Mark node as visited
                 visited_nodes.add(least_cost_module_b)
 
                 # Add the edge to mst
                 mst.add_edge(least_cost_module_a, least_cost_module_b)
-                print("Added edge " + str(least_cost_module_a) + "," + str(least_cost_module_b) + " to MST, because its the least costly")
                 for key in graphname.edge[least_cost_module_a][least_cost_module_b].keys():
                     mst.edge[least_cost_module_a][least_cost_module_b][key] = graphname.edge[least_cost_module_a][least_cost_module_b][key]
 
@@ -582,7 +606,7 @@ def graph_is_valid(graphname, lan_nodes, wlan_modules):
                 # Check if there are only connections between modules of different nodes
                 if graphname.node[edge[0]]["module-of"] == graphname.node[edge[1]]["module-of"]:
                     print("The modules " + str(edge[0]) + "," + str(edge[1]) + " are both connected to node " + graphname.node[edge[0]]["module-of"])
-                    print("This does not make sense")
+                    print("This does not make sense, but means the modules see each other in the basic graph.")
                     print("Graph is NOT valid")
                     return False
 
@@ -612,9 +636,27 @@ def graph_is_valid(graphname, lan_nodes, wlan_modules):
     return True
 
 
+# Write the given graph to a json file
+def write_json(graph, lan_nodes, wlan_modules):
+    i = 0
+    nodes_dict = dict()
+    for key in lan_nodes.union(wlan_modules):
+        nodes_dict[key] = i
+        i += 1
+
+    connections = list()
+    for (A, B) in graph.edges():
+        connections.append((nodes_dict[A], nodes_dict[B], graph.edge[A][B]["weight"]))
+
+    json_dict = {"nodes": [{'name': key, "index": nodes_dict[key]} for key in nodes_dict.keys()],
+                 "links": [{"source": source, "target": target, "value": value} for source, target, value in connections]}
+    with open('graph.json', 'w') as outfile:
+        json.dump(json_dict, outfile, indent=4)
+
+
 # Transform networkxgraph to pydot graph, for displaying purposes
 def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
-    pydotgraphname = pydot.Dot(graph_type='graph', layout=Graph_Layout)
+    pydotgraphname = pydot.Dot(graph_type='graph', layout="fdp")
     edges_done = set()
     for node in networkxgraph.nodes():
         node_shape = "oval"
@@ -626,6 +668,7 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
             print("Error: Node " + str(node) + " is neither in lan_nodes nor in wlan_modules. It has to be in one of those.")
             exit(1)
         pydotgraphname.add_node(pydot.Node(node, shape=node_shape))
+
     for (A, B) in networkxgraph.edges():
         if (A, B) not in edges_done:
             #edge_weight = networkxgraph.edge[A][B]["weight"]
@@ -643,11 +686,10 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
                     edge_color = "grey"
                 else:
                     edge_color = colortable[edge_color]
-
             pydotgraphname.add_edge(pydot.Edge(str(A), str(B), style=edge_style, penwidth=edge_penwidth, color=edge_color))
-
             edges_done.add((A, B))
     pydotgraphname.write(filename, format="svg")
+    write_json(networkxgraph, lan_nodes, wlan_modules)
 
 
 # Translate a lan_mac + interface nr to wlan_mac
@@ -908,7 +950,7 @@ def get_basic_graph_from_wlc():
         # Set the score of this edge
         # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
         # because lower values are better there
-        # The following isdone, since Alfred Arnold mentioned to me that the Signal-strength value is already the SNR
+        # The following is done, since Alfred Arnold mentioned to me that the Signal-strength value is already the SNR
         snr = signal_strength
         basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - snr
 
@@ -948,7 +990,8 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 25)), max_nr_modul
 
         # Set number of modules initially to 0
         basic_graph.node[nodename]["modules"] = 0
-        for nr_mod in range(0, random.choice(range(1, max_nr_modules))):
+        #for nr_mod in range(0, random.choice(range(1, max_nr_modules))): # todo UNCOMMENT THIS HERE RANDOM MAX MODULES = 2
+        for nr_mod in range(0, 2):
             module = str(nr) + "_" + str(nr_mod)
 
             wlan_modules.add(module)
@@ -981,7 +1024,7 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 25)), max_nr_modul
 
             for nr_con in range(0, random.choice(range(1, max_nr_connections))):
                 random_module = random.choice(list(wlan_modules))
-                if not random_module == module:
+                if basic_graph.node[random_module]["module-of"] != basic_graph.node[module]["module-of"]:
                     basic_graph.add_edge(module, random_module)
                     basic_graph.add_edge(random_module, module)
                     basic_graph.edge[module][random_module]["weight"] = 1 + 100.0 - random.choice(range(-20, 20))
@@ -1026,7 +1069,6 @@ def calculate_colored_graph(graphname, wlan_modules):
 #
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
-Graph_Layout = "dot"                                    # Graphlayout for graphviz (what style to use)(fdp,sfdp,dot,neato,twopi,circo)
 Assignable_Colors = ["1", "3", "6", "11"]               # List of all channels/colors which can be used for assignment
 colortable = dict()
 colortable["1"] = "red"
@@ -1038,10 +1080,10 @@ snmp_community = "public"
 snmp_version = 2
 
 # Getting Data from WLC per SNMP
-basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
+#basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
 
 # Alternatively for debugging/testing, generate Random Graph
-#basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
+basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
 
 # Set the root node TODO: automate this further later
 root_node = random.choice(list(devices))
@@ -1053,7 +1095,7 @@ basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_
 show_graph(basic_connectivity_graph, modules, devices)
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
-mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "equal_module")
+mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "node_module_edge")
 
 # DEBUG: Show Minimal Spanning Tree graph
 show_graph(mst_graph, modules, devices)
