@@ -101,6 +101,33 @@ def convert_to_undirected_graph(directed_graph):
     return undirected_graph
 
 
+# Calculate for a given module and graph the number of connected module-module edges
+def count_connected_module_edges_for_module(graph, module, wlan_modules):
+    connection_counter = 0
+    edges_done = set()
+    modules_todo = list()
+
+    # Add initial node to be able to start from there
+    modules_todo.append(module)
+
+    for mod in modules_todo:
+        neighbors = graph.neighbors(mod)
+        for neighbor in neighbors:
+            if neighbor in wlan_modules:
+                if (mod, neighbor) not in edges_done:
+                    # Increase connection counter
+                    connection_counter += 1
+
+                    # Add edge to done-list
+                    edges_done.add((mod, neighbor))
+                    edges_done.add((neighbor, mod))
+
+                    # Add module to go if not already visited
+                    if neighbor not in modules_todo:
+                        modules_todo.append(neighbor)
+    return connection_counter
+
+
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
 # mst_mode is the variable for MST creation mode, it can have the following values:
     # node = We expect a complete node to fail at a time (network still works, even if a whole node breaks)
@@ -240,6 +267,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
                 if b not in visited_nodes:
                     edges_seeing_new_nodes.append((a, b, weight, module_con))
             if edges_seeing_new_nodes:
+
                 # From those, pick the modules, which are used the least number of times for connections
                 module_usage_counter = collections_enhanced.Counter()
                 modules_of_edges_seeing_new_nodes = set()
@@ -251,14 +279,20 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
                 # Get a list of the least used modules
                 least_used_modules = set(module_usage_counter.least_common_all())
 
-                # From the list of least used modules, take all edges
-                least_used_modules_counter = collections_enhanced.Counter()
+                # From this list of least used modules, take the ones, which have the lowest connection counter
+                lowest_connected_modules_counter = collections_enhanced.Counter()
+                for module in least_used_modules:
+                    lowest_connected_modules_counter[module] = count_connected_module_edges_for_module(mst, module, wlan_modules)
+                least_connected_modules = set(lowest_connected_modules_counter.least_common_all())
+
+                # From the list of least connected modules, take all edges
+                least_used_and_connected_modules = collections_enhanced.Counter()
                 for (a, b, weight, module_con) in edges_seeing_new_nodes:
-                    if a in least_used_modules:
-                        least_used_modules_counter[(a, b)] = weight
+                    if a in least_connected_modules:
+                        least_used_and_connected_modules[(a, b)] = weight
 
                 # Pick the edge with the least costs and add it to mst
-                (least_cost_module_a, least_cost_module_b), least_cost_weight = least_used_modules_counter.least_common(1)[0]
+                (least_cost_module_a, least_cost_module_b), least_cost_weight = least_used_and_connected_modules.least_common(1)[0]
 
                 # Mark node as visited
                 visited_nodes.add(least_cost_module_b)
@@ -639,16 +673,18 @@ def graph_is_valid(graphname, lan_nodes, wlan_modules):
 # Write the given graph to a json file
 def write_json(graph, lan_nodes, wlan_modules):
     i = 0
-    nodes_dict = dict()
+    nodes_dict_index = dict()
+    nodes_dict_name = dict()
     for key in lan_nodes.union(wlan_modules):
-        nodes_dict[key] = i
+        nodes_dict_index[i] = key
+        nodes_dict_name[key] = i
         i += 1
 
     connections = list()
     for (A, B) in graph.edges():
-        connections.append((nodes_dict[A], nodes_dict[B], graph.edge[A][B]["weight"]))
+        connections.append((nodes_dict_name[A], nodes_dict_name[B], graph.edge[A][B]["weight"]))
 
-    json_dict = {"nodes": [{'name': key, "index": nodes_dict[key]} for key in nodes_dict.keys()],
+    json_dict = {"nodes": [{'name': nodes_dict_index[index], "index": index} for index in nodes_dict_index.keys()],
                  "links": [{"source": source, "target": target, "value": value} for source, target, value in connections]}
     with open('graph.json', 'w') as outfile:
         json.dump(json_dict, outfile, indent=4)
@@ -990,8 +1026,7 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 25)), max_nr_modul
 
         # Set number of modules initially to 0
         basic_graph.node[nodename]["modules"] = 0
-        #for nr_mod in range(0, random.choice(range(1, max_nr_modules))): # todo UNCOMMENT THIS HERE RANDOM MAX MODULES = 2
-        for nr_mod in range(0, 2):
+        for nr_mod in range(0, random.choice(range(1, max_nr_modules))):
             module = str(nr) + "_" + str(nr_mod)
 
             wlan_modules.add(module)
@@ -1095,7 +1130,7 @@ basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_
 show_graph(basic_connectivity_graph, modules, devices)
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
-mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "node_module_edge")
+mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "equal_module")
 
 # DEBUG: Show Minimal Spanning Tree graph
 show_graph(mst_graph, modules, devices)
