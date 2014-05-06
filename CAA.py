@@ -90,6 +90,7 @@ def convert_to_undirected_graph(directed_graph):
             if directed_graph.has_edge(a, b) and directed_graph.has_edge(b, a):
                 undirected_graph.add_edge(a, b)
                 undirected_graph.edge[a][b]["weight"] = (directed_graph.edge[a][b]["weight"] + directed_graph.edge[b][a]["weight"]) / 2.0
+                undirected_graph.edge[a][b]["snr"] = (directed_graph.edge[a][b]["snr"] + directed_graph.edge[b][a]["snr"]) / 2.0
                 undirected_graph.edge[a][b]["real-connection"] = True
                 undirected_graph.edge[a][b]["color"] = None
             else:
@@ -111,8 +112,7 @@ def count_connected_module_edges_for_module(graph, module, wlan_modules):
     modules_todo.append(module)
 
     for mod in modules_todo:
-        neighbors = graph.neighbors(mod)
-        for neighbor in neighbors:
+        for neighbor in graph.neighbors(mod):
             if neighbor in wlan_modules:
                 if (mod, neighbor) not in edges_done:
                     # Increase connection counter
@@ -126,6 +126,66 @@ def count_connected_module_edges_for_module(graph, module, wlan_modules):
                     if neighbor not in modules_todo:
                         modules_todo.append(neighbor)
     return connection_counter
+
+
+# Translates the given SNR to a bandwith, so we can use it for calculating the score
+# Returns a bandwidth
+def translate_snr_to_bw(snr):
+    # Todo: later use here the fuction graph from christoph
+    return snr
+
+
+# Get a list of module neighbors for a node in a given graph
+# Returned list only has modules which are actually used in graph for a link
+def get_module_neighbors(graph, basic_con_graph, node, wlan_modules):
+    module_neighbors = list()
+    for neighbor in basic_con_graph.neighbors(node):
+        if neighbor in wlan_modules and neighbor is not node:
+            module_neighbors.append(neighbor)
+    return [i for i in module_neighbors if module_is_used(graph, i)]
+
+
+# Get a list of module neighbors for two nodes in a given graph
+# Returns a list of nodes, that are in the interference range
+def get_interference_modules_for_link(graph, basic_con_graph, node_a, node_b, wlan_modules):
+    interference_modules = list(set(get_module_neighbors(graph, basic_con_graph, node_a, wlan_modules) + get_module_neighbors(graph, basic_con_graph, node_b, wlan_modules)))
+    # Remove our own modules (because the modules see each other)
+    for module in [node_a, node_b]:
+        if module in interference_modules:
+            interference_modules.remove(module)
+    return interference_modules
+
+
+# Calculate the score for an edge
+# A higher score is better
+def calculate_score_for_edge(graph, basic_con_graph, node_a, node_b, wlan_modules):
+    # Check if we want to calc the score of a node-module edge
+    if node_a not in wlan_modules or node_b not in wlan_modules:
+        return edge_max_score
+
+    node_a_connected_count = count_connected_module_edges_for_module(graph, node_a, wlan_modules)
+    node_b_connected_count = count_connected_module_edges_for_module(graph, node_b, wlan_modules)
+    sum_connected_count = node_a_connected_count + node_b_connected_count
+
+    # We can take either the snr of node_a -> node_b or orther way round since we receive a undirected
+    # basic connectivity graph => does not matter which direction, since the averaging has been done before
+    average_snr = basic_con_graph.edge[node_a][node_b]["snr"]
+    expected_bandwidth = translate_snr_to_bw(average_snr)
+
+    interfering_modules = get_interference_modules_for_link(basic_con_graph, graph, node_a, node_b, wlan_modules)
+    nr_interfering_modules = len(interfering_modules)
+
+    # Divide expected bandwidth by the number of interfering channels, since we share the channel with those links
+    if nr_interfering_modules != 0:
+        shared_expected_bandwidth = expected_bandwidth / nr_interfering_modules
+    else:
+        shared_expected_bandwidth = expected_bandwidth
+
+    if sum_connected_count != 0:
+        score = shared_expected_bandwidth / sum_connected_count
+    else:
+        score = shared_expected_bandwidth
+    return score
 
 
 # Calculates for a given graph the survival graph (2-connected graph) and returns it
@@ -223,7 +283,7 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
         mst = nx.Graph()
         visited_nodes = set()
         # Edge list contains quadruple with (source,target,edgeweigth,real-connections)
-        edge_list = list()
+        edge_list = collections_enhanced.Counter()
         all_nodes = set()
 
         # Copy nodes from graphname to mst and fill the set: all_nodes
@@ -237,84 +297,62 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
         # Add the edges originating from root node to new nodes to edge_list
         visited_nodes.add(root_node)
         for neighbor in graphname.neighbors(root_node):
-            edge_list.append((root_node, neighbor, graphname.edge[root_node][neighbor]["weight"], graphname.edge[root_node][neighbor]["real-connection"]))
+            edge_list[(root_node, neighbor, graphname.edge[root_node][neighbor]["weight"], graphname.edge[root_node][neighbor]["real-connection"])] \
+                = calculate_score_for_edge(mst, graphname, root_node, neighbor, wlan_modules)
 
         # Debugging
         show_graph(mst, wlan_modules, lan_nodes)
 
+        # Main loop
+        # Always recalc the scores of corresponding edges if adding new ones
         while True:
-            # Add all the node-module edges to the mst until there are no more new node-module edges
-            for index, (a, b, weight, module_con) in enumerate(edge_list):
-                if not module_con and (a and b) not in visited_nodes:
-                    mst.add_edge(a, b)
-                    for key in graphname.edge[a][b].keys():
-                        mst.edge[a][b][key] = graphname.edge[a][b][key]
+            # Then remove all edges which do not see new nodes (IE keep only productive edges)
+            removed_edge = True
+            while removed_edge:
+                removed_edge = False
+                for (a, b, weight, real_connection) in edge_list:
+                    if a in visited_nodes and b in visited_nodes:
+                        removed_edge = True
+                        del edge_list[(a, b, weight, real_connection)]
+                        break
 
-                    visited_nodes.add(b)
-
-                    # For this new node, add all the edges, which reach new nodes to the edge_list
-                    for neighbor in graphname.neighbors(b):
-                        if neighbor not in visited_nodes:
-                            edge_list.append((b, neighbor, graphname.edge[b][neighbor]["weight"], graphname.edge[b][neighbor]["real-connection"]))
-
-            # Debugging
-            show_graph(mst, wlan_modules, lan_nodes)
-
-            # Now find the best new edge and add it to the mst
-            # Therefore, pick only Modules, which see new nodes
-            edges_seeing_new_nodes = list()
-            for (a, b, weight, module_con) in edge_list:
-                if b not in visited_nodes:
-                    edges_seeing_new_nodes.append((a, b, weight, module_con))
-            if edges_seeing_new_nodes:
-
-                # From those, pick the modules, which are used the least number of times for connections
-                module_usage_counter = collections_enhanced.Counter()
-                modules_of_edges_seeing_new_nodes = set()
-                for (a, b, weight, module_con) in edges_seeing_new_nodes:
-                    if a not in modules_of_edges_seeing_new_nodes:
-                        modules_of_edges_seeing_new_nodes.add(a)
-                        module_usage_counter[a] = nr_of_non_module_connections(mst, a)
-
-                # Get a list of the least used modules
-                least_used_modules = set(module_usage_counter.least_common_all())
-
-                # From this list of least used modules, take the ones, which have the lowest connection counter
-                lowest_connected_modules_counter = collections_enhanced.Counter()
-                for module in least_used_modules:
-                    lowest_connected_modules_counter[module] = count_connected_module_edges_for_module(mst, module, wlan_modules)
-                least_connected_modules = set(lowest_connected_modules_counter.least_common_all())
-
-                # From the list of least connected modules, take all edges
-                least_used_and_connected_modules = collections_enhanced.Counter()
-                for (a, b, weight, module_con) in edges_seeing_new_nodes:
-                    if a in least_connected_modules:
-                        least_used_and_connected_modules[(a, b)] = weight
-
-                # Pick the edge with the least costs and add it to mst
-                (least_cost_module_a, least_cost_module_b), least_cost_weight = least_used_and_connected_modules.least_common(1)[0]
-
-                # Mark node as visited
-                visited_nodes.add(least_cost_module_b)
-
-                # Add the edge to mst
-                mst.add_edge(least_cost_module_a, least_cost_module_b)
-                for key in graphname.edge[least_cost_module_a][least_cost_module_b].keys():
-                    mst.edge[least_cost_module_a][least_cost_module_b][key] = graphname.edge[least_cost_module_a][least_cost_module_b][key]
-
-                # Add its edges to the edge_list
-                for neighbor in graphname.neighbors(least_cost_module_b):
-                    if neighbor not in visited_nodes:
-                        edge_weight = graphname.edge[least_cost_module_b][neighbor]["weight"]
-                        module_con = graphname.edge[least_cost_module_b][neighbor]["real-connection"]
-                        edge_list.append((least_cost_module_b, neighbor, edge_weight, module_con))
-                        #print("Added edge " + str(least_cost_module_b) + "," + str(neighbor) + " to edge_list, because it sees new node")
-            else:
+            # If the edge_list is empty after the removing of unproductive edges, check if we visited all nodes
+            if len(edge_list) == 0:
                 if len(visited_nodes) != graphname.number_of_nodes():
                     print("Error: Could not connect all nodes")
                     exit(1)
                 else:
                     break
+
+            # Now find the best new edge and add it to the mst
+            # Therefore just take the edge with the highest score
+            (bestedge_node_a, bestedge_node_b, weight, real_connection), highest_score = edge_list.most_common(1)[0]
+
+            # Mark node as visited
+            visited_nodes.add(bestedge_node_b)
+
+            # Add the edge to mst
+            mst.add_edge(bestedge_node_a, bestedge_node_b)
+            for key in graphname.edge[bestedge_node_a][bestedge_node_b].keys():
+                mst.edge[bestedge_node_a][bestedge_node_b][key] = graphname.edge[bestedge_node_a][bestedge_node_b][key]
+
+            # Add its edges to the edge_list
+            for neighbor in graphname.neighbors(bestedge_node_b):
+                if neighbor not in visited_nodes:
+                    edge_weight = graphname.edge[bestedge_node_b][neighbor]["weight"]
+                    real_connection_neigh = graphname.edge[bestedge_node_b][neighbor]["real-connection"]
+                    edge_list[(bestedge_node_b, neighbor, edge_weight, real_connection_neigh)] \
+                        = calculate_score_for_edge(mst, graphname, bestedge_node_b, neighbor, wlan_modules)
+
+            # Remove the edge from edgelist, to speed up things and since we dont need it any longer (since we are using it)
+            del edge_list[(bestedge_node_a, bestedge_node_b, weight, real_connection)]
+
+            # Update the scores, because scores might change, since we added new edge => score of others could get decreased
+            # Todo: this could be made more efficient, by just updating those edges, where sth has changed instead of all
+            for (a, b, weight, real_connection) in edge_list:
+                if real_connection:
+                    edge_list[(a, b, weight, real_connection)] = calculate_score_for_edge(mst, graphname, a, b, wlan_modules)
+
     else:
         print("Unknown Mode: Please Chose one out of 'node', 'edge' or 'single'")
         exit(1)
@@ -988,6 +1026,7 @@ def get_basic_graph_from_wlc():
         # because lower values are better there
         # The following is done, since Alfred Arnold mentioned to me that the Signal-strength value is already the SNR
         snr = signal_strength
+        basic_graph.edge[source_mac][wlan_dest_mac]["snr"] = snr
         basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - snr
 
         # Initialize each edge with empty color
@@ -1008,7 +1047,7 @@ def get_basic_graph_from_wlc():
 
 # Create a random Graph for testing
 # If no parameters specified, we generate some randomly ourselfes
-def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 25)), max_nr_modules=random.choice(range(2, 5)), max_nr_connections=random.choice(range(2, 6))):
+def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 18)), max_nr_modules=random.choice(range(2, 5)), max_nr_connections=random.choice(range(2, 6))):
     basic_graph = nx.DiGraph()
     wlan_modules = set()
     lan_nodes = set()
@@ -1063,7 +1102,9 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 25)), max_nr_modul
                     basic_graph.add_edge(module, random_module)
                     basic_graph.add_edge(random_module, module)
                     basic_graph.edge[module][random_module]["weight"] = 1 + 100.0 - random.choice(range(-20, 20))
+                    basic_graph.edge[module][random_module]["snr"] = random.choice(range(10, 100))
                     basic_graph.edge[random_module][module]["weight"] = 1 + 100.0 - random.choice(range(-20, 20))
+                    basic_graph.edge[random_module][module]["snr"] = random.choice(range(10, 100))
 
                     # Initialize each edge with empty color
                     basic_graph.edge[random_module][module]["color"] = None
@@ -1110,15 +1151,16 @@ colortable["1"] = "red"
 colortable["3"] = "green"
 colortable["6"] = "blue"
 colortable["11"] = "orange"
+edge_max_score = 1000                                   # The score for node-module connections, this has to be higher than any possible module-module connection
 wlc_address = "172.16.40.100"
 snmp_community = "public"
 snmp_version = 2
 
 # Getting Data from WLC per SNMP
-#basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
+basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
 
 # Alternatively for debugging/testing, generate Random Graph
-basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
+#basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
 
 # Set the root node TODO: automate this further later
 root_node = random.choice(list(devices))
@@ -1128,6 +1170,7 @@ basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_
 
 # DEBUG: Show basic Connectivity and channelquality
 show_graph(basic_connectivity_graph, modules, devices)
+show_graph(basic_connectivity_graph, modules, devices,filename='caa_basic.svg')
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "equal_module")
