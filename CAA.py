@@ -9,6 +9,7 @@ import random
 import pydot
 import netsnmp
 import json
+import copy
 
 
 # counterlist = dictionary with colors and their number of occurences
@@ -137,23 +138,52 @@ def translate_snr_to_bw(snr):
 
 # Get a list of module neighbors for a node in a given graph
 # Returned list only has modules which are actually used in graph for a link
-def get_module_neighbors(graph, basic_con_graph, node, wlan_modules):
+def get_used_module_neighbors(graph, basic_con_graph, node, wlan_modules):
     module_neighbors = list()
     for neighbor in basic_con_graph.neighbors(node):
         if neighbor in wlan_modules and neighbor is not node:
             module_neighbors.append(neighbor)
+    # Return all neighbors of node in basic_con_graph which are actually used in graph
     return [i for i in module_neighbors if module_is_used(graph, i)]
 
 
-# Get a list of module neighbors for two nodes in a given graph
+# For a given module return the modules connected to this module over a module-module edge in graph
+def get_connected_modules_for_module(graph, module, wlan_modules):
+    connected_modules = list()
+    edges_done = set()
+    modules_todo = list()
+
+    # Add initial node to be able to start from there
+    modules_todo.append(module)
+
+    for mod in modules_todo:
+        for neighbor in graph.neighbors(mod):
+            if neighbor in wlan_modules and (mod, neighbor) not in edges_done:
+                connected_modules.append(neighbor)
+
+                # Add edge to done-list
+                edges_done.add((mod, neighbor))
+                edges_done.add((neighbor, mod))
+
+                # Add module to go if not already visited
+                if neighbor not in modules_todo:
+                    modules_todo.append(neighbor)
+    return connected_modules
+
+
+# Get a list of module neighbors for two nodes in a given graph, which are in the interference range of the two nodes
 # Returns a list of nodes, that are in the interference range
-def get_interference_modules_for_link(graph, basic_con_graph, node_a, node_b, wlan_modules):
-    interference_modules = list(set(get_module_neighbors(graph, basic_con_graph, node_a, wlan_modules) + get_module_neighbors(graph, basic_con_graph, node_b, wlan_modules)))
+def get_used_interference_modules_for_link(graph, basic_con_graph, node_a, node_b, wlan_modules):
+    possibly_interfering_modules = list(set(get_used_module_neighbors(graph, basic_con_graph, node_a, wlan_modules) + get_used_module_neighbors(graph, basic_con_graph, node_b, wlan_modules)))
     # Remove our own modules (because the modules see each other)
     for module in [node_a, node_b]:
-        if module in interference_modules:
-            interference_modules.remove(module)
-    return interference_modules
+        if module in possibly_interfering_modules:
+            possibly_interfering_modules.remove(module)
+    # Take only those modules from this list, which actually interfere,
+    # that means: only modules which use the same channel,
+    # that means: those are connected(ie. those modules i can reach from a module using only module-module edges)
+    actually_interfering_modules = get_connected_modules_for_module(graph, node_a, wlan_modules) + get_connected_modules_for_module(graph, node_b, wlan_modules)
+    return [i for i in possibly_interfering_modules if i in actually_interfering_modules]
 
 
 # Calculate the score for an edge
@@ -167,12 +197,12 @@ def calculate_score_for_edge(graph, basic_con_graph, node_a, node_b, wlan_module
     node_b_connected_count = count_connected_module_edges_for_module(graph, node_b, wlan_modules)
     sum_connected_count = node_a_connected_count + node_b_connected_count
 
-    # We can take either the snr of node_a -> node_b or orther way round since we receive a undirected
+    # We can take either the snr of node_a -> node_b or node_b, since we receive a undirected
     # basic connectivity graph => does not matter which direction, since the averaging has been done before
     average_snr = basic_con_graph.edge[node_a][node_b]["snr"]
     expected_bandwidth = translate_snr_to_bw(average_snr)
 
-    interfering_modules = get_interference_modules_for_link(basic_con_graph, graph, node_a, node_b, wlan_modules)
+    interfering_modules = get_used_interference_modules_for_link(graph, basic_con_graph, node_a, node_b, wlan_modules)
     nr_interfering_modules = len(interfering_modules)
 
     # Divide expected bandwidth by the number of interfering channels, since we share the channel with those links
@@ -319,7 +349,11 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
             # If the edge_list is empty after the removing of unproductive edges, check if we visited all nodes
             if len(edge_list) == 0:
                 if len(visited_nodes) != graphname.number_of_nodes():
-                    print("Error: Could not connect all nodes")
+                    print("Error: Could not connect all nodes. If you are using the random graph generator, it's fine, ")
+                    print("just generate another graph. If you are using the data from the wlc, something is wrong, ")
+                    print("because this cannot really be, except, you used two gatewaynodes and you connected them ")
+                    print("to the wlc per ethernet-cable (This case is not implemented at the moment).")
+                    print("If this isnt the case, then sth is really strange")
                     exit(1)
                 else:
                     break
@@ -356,6 +390,49 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
     else:
         print("Unknown Mode: Please Chose one out of 'node', 'edge' or 'single'")
         exit(1)
+    return mst
+
+
+# Calculate the backup links for a given mst graph and basic connectivity graph
+def calculate_backup_links(mst, basic_con_graph, wlan_modules):
+    mst_edges = copy.copy(mst.edges())
+    for edge in mst_edges:
+        # Simulate each edge failing
+        if edge[0] in wlan_modules and edge[1] in wlan_modules:
+            mst.remove_edge(edge[0], edge[1])
+            # Check if we still have a path to get to edge[1] even if this edge has failed
+            # If we have still a path to edge[1], then we are done
+            # else select second highest rated edge to get there
+            if not nx.has_path(mst, edge[0], edge[1]):
+                edge_list = collections_enhanced.Counter()
+
+                # Edges of node_A
+                for neighbor in basic_con_graph.neighbors(edge[0]):
+                    # Consider only edges, which are productive (with which we get a path to the other node)
+                    if nx.has_path(mst, neighbor, edge[1]):
+                        # Consider only those edges, which are not already used in the mst-graph and are no node-module connections
+                        if (edge[0], neighbor) not in mst_edges and neighbor in wlan_modules and neighbor is not edge[1]:
+                            edge_list[(edge[0], neighbor)] = calculate_score_for_edge(mst, basic_con_graph, edge[0], neighbor, wlan_modules)
+                # Edges of node_B
+                for neighbor in basic_con_graph.neighbors(edge[1]):
+                    # Consider only edges, which are productive (with which we get a route to the other node)
+                    if nx.has_path(mst, neighbor, edge[0]):
+                        # Consider only those edges, which are not already used in the mst-graph and are no node-module connections
+                        if (edge[1], neighbor) not in mst_edges and neighbor in wlan_modules and neighbor is not edge[0]:
+                            edge_list[(edge[1], neighbor)] = calculate_score_for_edge(mst, basic_con_graph, edge[1], neighbor, wlan_modules)
+
+                # Select the highest rated edge
+                if edge_list:
+                    (bestedge_node_a, bestedge_node_b), highest_score = edge_list.most_common(1)[0]
+                    mst.add_edge(bestedge_node_a, bestedge_node_b)
+                    mst.edge[bestedge_node_a][bestedge_node_b]["backup-link"] = True
+                    for key in basic_con_graph.edge[bestedge_node_a][bestedge_node_b].keys():
+                        mst.edge[bestedge_node_a][bestedge_node_b][key] = basic_con_graph.edge[bestedge_node_a][bestedge_node_b][key]
+
+            mst.add_edge(edge[0], edge[1])
+            mst.edge[edge[0]][edge[1]]["backup-link"] = False
+            for key in basic_con_graph.edge[edge[0]][edge[1]].keys():
+                mst.edge[edge[0]][edge[1]][key] = basic_con_graph.edge[edge[0]][edge[1]][key]
     return mst
 
 
@@ -720,7 +797,10 @@ def write_json(graph, lan_nodes, wlan_modules):
 
     connections = list()
     for (A, B) in graph.edges():
-        connections.append((nodes_dict_name[A], nodes_dict_name[B], graph.edge[A][B]["weight"]))
+        if A in wlan_modules and B in wlan_modules:
+            connections.append((nodes_dict_name[A], nodes_dict_name[B], graph.edge[A][B]["snr"]))
+        else:
+            connections.append((nodes_dict_name[A], nodes_dict_name[B], 1))
 
     json_dict = {"nodes": [{'name': nodes_dict_index[index], "index": index} for index in nodes_dict_index.keys()],
                  "links": [{"source": source, "target": target, "value": value} for source, target, value in connections]}
@@ -786,7 +866,7 @@ def get_basic_graph_from_wlc():
     snmp_session = netsnmp.Session(DestHost=wlc_address, Version=snmp_version, Community=snmp_community)
 
     # These are our intern connections
-    autowds_topology_scan_results = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.122'))
+    autowds_topology_scan_results = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.124'))
     autowds_topology_scan_results_length = len(autowds_topology_scan_results) / 6
     autowds_topology_scan_results_target_wlan_mac_hex = autowds_topology_scan_results[0:autowds_topology_scan_results_length]
     autowds_topology_scan_results_target_wlan_mac = [i.encode("hex") for i in autowds_topology_scan_results_target_wlan_mac_hex]
@@ -1157,10 +1237,10 @@ snmp_community = "public"
 snmp_version = 2
 
 # Getting Data from WLC per SNMP
-basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
+#basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
 
 # Alternatively for debugging/testing, generate Random Graph
-#basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
+basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
 
 # Set the root node TODO: automate this further later
 root_node = random.choice(list(devices))
@@ -1170,7 +1250,7 @@ basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_
 
 # DEBUG: Show basic Connectivity and channelquality
 show_graph(basic_connectivity_graph, modules, devices)
-show_graph(basic_connectivity_graph, modules, devices,filename='caa_basic.svg')
+show_graph(basic_connectivity_graph, modules, devices, filename='caa_basic.svg')
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "equal_module")
@@ -1178,8 +1258,14 @@ mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices,
 # DEBUG: Show Minimal Spanning Tree graph
 show_graph(mst_graph, modules, devices)
 
+# Calculate the backup links for a given (optimal) mst
+robust_graph = calculate_backup_links(mst_graph, basic_connectivity_graph, modules)
+
+# DEBUG: Show Robust Minimal Spanning Tree graph
+show_graph(robust_graph, modules, devices)
+
 # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
-colored_graph = calculate_colored_graph(mst_graph, modules)
+colored_graph = calculate_colored_graph(robust_graph, modules)
 
 # DEBUG: Show colored Graph
 show_graph(colored_graph, modules, devices)
