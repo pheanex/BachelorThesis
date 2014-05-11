@@ -2,13 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fdf4ca91-eb91-4a61-93d0-be1a86bec4d4" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/AutoUpdaterCaa.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/index.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/AutoUpdaterCaa_colored.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/caa.svg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/graph.json" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/graph_colored.html" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CAA.py" afterPath="$PROJECT_DIR$/CAA.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa.svg" afterPath="$PROJECT_DIR$/caa.svg" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa_basic.svg" afterPath="$PROJECT_DIR$/caa_basic.svg" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph.json" afterPath="$PROJECT_DIR$/graph.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/christoph_3djs/graph.json" afterPath="$PROJECT_DIR$/christoph_3djs/graph.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa_colored.svg" afterPath="$PROJECT_DIR$/caa_colored.svg" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa_mst.svg" afterPath="$PROJECT_DIR$/caa_mst.svg" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa_robust.svg" afterPath="$PROJECT_DIR$/caa_robust.svg" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph_basic.json" afterPath="$PROJECT_DIR$/graph_basic.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph_colored.json" afterPath="$PROJECT_DIR$/graph_colored.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph_mst.json" afterPath="$PROJECT_DIR$/graph_mst.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph_robust.json" afterPath="$PROJECT_DIR$/graph_robust.json" />
     </list>
     <ignored path="BA.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -34,7 +40,7 @@
       <file leaf-file-name="CAA.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/CAA.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="850" column="0" selection-start="41844" selection-end="41844" vertical-scroll-proportion="0.3329776" vertical-offset="12348" max-vertical-offset="19185">
+            <state line="353" column="0" selection-start="17256" selection-end="17256" vertical-scroll-proportion="0.3329776" vertical-offset="4893" max-vertical-offset="19095">
               <folding />
             </state>
           </provider>
@@ -303,14 +309,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1920" y="376" width="1920" height="1058" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18077324" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.22717842" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" x="3840" y="0" width="838" height="80" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="FLOATING" visible="true" weight="0.22717842" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" x="3840" y="0" width="838" height="80" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -339,7 +345,69 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="64" />
+      <breakpoints>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>353</line>
+          <option name="timeStamp" value="64" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>388</line>
+          <option name="timeStamp" value="65" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>524</line>
+          <option name="timeStamp" value="66" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>651</line>
+          <option name="timeStamp" value="67" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>827</line>
+          <option name="timeStamp" value="68" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>1023</line>
+          <option name="timeStamp" value="69" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>744</line>
+          <option name="timeStamp" value="71" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>739</line>
+          <option name="timeStamp" value="72" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>750</line>
+          <option name="timeStamp" value="73" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>756</line>
+          <option name="timeStamp" value="74" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>763</line>
+          <option name="timeStamp" value="75" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/CAA.py</url>
+          <line>779</line>
+          <option name="timeStamp" value="76" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="81" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -366,7 +434,9 @@
     </entry>
     <entry file="file:///usr/lib/python2.7/random.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680" />
+        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
@@ -378,7 +448,9 @@
     </entry>
     <entry file="file:///usr/lib/python2.7/random.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680" />
+        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
@@ -390,7 +462,9 @@
     </entry>
     <entry file="file:///usr/lib/python2.7/random.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680" />
+        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
@@ -407,7 +481,9 @@
     </entry>
     <entry file="file:///usr/lib/python2.7/random.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680" />
+        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="0.0" vertical-offset="4095" max-vertical-offset="13680">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file:///usr/share/python-support/python-pydot/pydot.py">
@@ -477,7 +553,9 @@
     </entry>
     <entry file="file:///usr/lib/python2.7/random.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="-0.112059765" vertical-offset="4095" max-vertical-offset="13575" />
+        <state line="273" column="0" selection-start="10337" selection-end="10337" vertical-scroll-proportion="-0.112059765" vertical-offset="4095" max-vertical-offset="13575">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file:///usr/local/lib/python2.7/dist-packages/pydot.py">
@@ -489,7 +567,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="850" column="0" selection-start="41844" selection-end="41844" vertical-scroll-proportion="0.3329776" vertical-offset="12348" max-vertical-offset="19185">
+        <state line="353" column="0" selection-start="17256" selection-end="17256" vertical-scroll-proportion="0.3329776" vertical-offset="4893" max-vertical-offset="19095">
           <folding />
         </state>
       </provider>

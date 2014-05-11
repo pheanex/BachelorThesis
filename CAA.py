@@ -1230,12 +1230,14 @@ def calculate_colored_graph(graphname, wlan_modules):
 #
 Number = 0                                              # Image-iterator for debugging
 Edge_Thickness = 9.0                                    # Factor for edge thickness, smaller value => smaller edges
-Assignable_Colors = ["1", "3", "6", "11"]               # List of all channels/colors which can be used for assignment
+Assignable_Colors = ["1", "3", "6"]               # List of all channels/colors which can be used for assignment
 colortable = dict()
 colortable["1"] = "red"
 colortable["3"] = "green"
 colortable["6"] = "blue"
 colortable["11"] = "orange"
+colortable["14"] = "yellow"
+colortable["18"] = "brown"
 edge_max_score = 1000                                   # The score for node-module connections, this has to be higher than any possible module-module connection
 wlc_address = "172.16.40.100"
 snmp_community = "public"
@@ -1245,35 +1247,27 @@ snmp_version = 2
 #basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
 
 # Alternatively for debugging/testing, generate Random Graph
-basic_connectivity_graph_directed, modules, devices = get_basic_random_graph()
+basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_of_nodes=20, max_nr_modules=3, max_nr_connections=3)
 
 # Set the root node TODO: automate this further later
 root_node = random.choice(list(devices))
 
 # Convert to undirected graph
 basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
-
-# DEBUG: Show basic Connectivity and channelquality
 show_graph(basic_connectivity_graph, modules, devices, filename_svg='caa_basic.svg', filename_json="graph_basic.json")
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "equal_module")
-
-# DEBUG: Show Minimal Spanning Tree graph
 show_graph(mst_graph, modules, devices, filename_svg='caa_mst.svg', filename_json="graph_mst.json")
+
+# Color the mst
+colored_mst_graph = calculate_colored_graph(mst_graph, modules)
+show_graph(colored_mst_graph, modules, devices, filename_svg='caa_colored_mst.svg', filename_json="graph_colored_mst.json")
+
+# Finally check the graph for validity
+if not graph_is_valid(colored_mst_graph, devices, modules):
+    exit(1)
 
 # Calculate the backup links for a given (optimal) mst
 robust_graph = calculate_backup_links(mst_graph, basic_connectivity_graph, modules)
-
-# DEBUG: Show Robust Minimal Spanning Tree graph
 show_graph(robust_graph, modules, devices, filename_svg='caa_robust.svg', filename_json="graph_robust.json")
-
-# Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
-colored_graph = calculate_colored_graph(robust_graph, modules)
-
-# DEBUG: Show colored Graph
-show_graph(colored_graph, modules, devices, filename_svg='caa_colored.svg', filename_json="graph_colored.json")
-
-# Finally check the graph for validity
-if not graph_is_valid(colored_graph, devices, modules):
-    exit(1)

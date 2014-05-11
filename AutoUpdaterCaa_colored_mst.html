@@ -6,7 +6,7 @@ var i=0;
 function refreshIt() {
    i = (i+1)%2;
    if (!document.images) return;
-   document.getElementById("img"+i).src = 'caa_colored.svg?' + Math.random();
+   document.getElementById("img"+i).src = 'caa_colored_mst.svg?' + Math.random();
 
    /* document.images['graph'].src = 'caa_colored.svg?' + Math.random(); */
    setTimeout('refreshIt()',500); // refresh every 0.5 secs
