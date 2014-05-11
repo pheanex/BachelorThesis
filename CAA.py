@@ -330,9 +330,6 @@ def calculate_survival_graph(graphname, wlan_modules, lan_nodes, mst_mode="equal
             edge_list[(root_node, neighbor, graphname.edge[root_node][neighbor]["weight"], graphname.edge[root_node][neighbor]["real-connection"])] \
                 = calculate_score_for_edge(mst, graphname, root_node, neighbor, wlan_modules)
 
-        # Debugging
-        show_graph(mst, wlan_modules, lan_nodes)
-
         # Main loop
         # Always recalc the scores of corresponding edges if adding new ones
         while True:
@@ -786,7 +783,7 @@ def graph_is_valid(graphname, lan_nodes, wlan_modules):
 
 
 # Write the given graph to a json file
-def write_json(graph, lan_nodes, wlan_modules):
+def write_json(graph, lan_nodes, wlan_modules, filename="graph.json"):
     i = 0
     nodes_dict_index = dict()
     nodes_dict_name = dict()
@@ -798,18 +795,26 @@ def write_json(graph, lan_nodes, wlan_modules):
     connections = list()
     for (A, B) in graph.edges():
         if A in wlan_modules and B in wlan_modules:
-            connections.append((nodes_dict_name[A], nodes_dict_name[B], graph.edge[A][B]["snr"]))
+            if graph.edge[A][B]["color"]:
+                color = colortable[graph.edge[A][B]["color"]]
+            else:
+                color = "grey"
+            snr = graph.edge[A][B]["snr"]
+            dash = "5,5"
         else:
-            connections.append((nodes_dict_name[A], nodes_dict_name[B], 1))
+            dash = "0,0"
+            snr = 100
+            color = "black"
+        connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, color, dash))
 
-    json_dict = {"nodes": [{'name': nodes_dict_index[index], "index": index} for index in nodes_dict_index.keys()],
-                 "links": [{"source": source, "target": target, "value": value} for source, target, value in connections]}
-    with open('graph.json', 'w') as outfile:
+    json_dict = {"nodes": [{'name': nodes_dict_index[index], "index": index, "color": "black", "label": nodes_dict_index[index]} for index in nodes_dict_index.keys()],
+                 "links": [{"source": source, "target": target, "value": value, "color": color, "dash": dash} for source, target, value, color, dash in connections]}
+    with open(filename, 'w') as outfile:
         json.dump(json_dict, outfile, indent=4)
 
 
 # Transform networkxgraph to pydot graph, for displaying purposes
-def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
+def show_graph(networkxgraph, wlan_modules, lan_nodes, filename_svg="caa.svg", filename_json="graph.json"):
     pydotgraphname = pydot.Dot(graph_type='graph', layout="fdp")
     edges_done = set()
     for node in networkxgraph.nodes():
@@ -842,8 +847,8 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename="caa.svg"):
                     edge_color = colortable[edge_color]
             pydotgraphname.add_edge(pydot.Edge(str(A), str(B), style=edge_style, penwidth=edge_penwidth, color=edge_color))
             edges_done.add((A, B))
-    pydotgraphname.write(filename, format="svg")
-    write_json(networkxgraph, lan_nodes, wlan_modules)
+    pydotgraphname.write(filename_svg, format="svg")
+    write_json(networkxgraph, lan_nodes, wlan_modules, filename_json)
 
 
 # Translate a lan_mac + interface nr to wlan_mac
@@ -1249,26 +1254,25 @@ root_node = random.choice(list(devices))
 basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
 
 # DEBUG: Show basic Connectivity and channelquality
-show_graph(basic_connectivity_graph, modules, devices)
-show_graph(basic_connectivity_graph, modules, devices, filename='caa_basic.svg')
+show_graph(basic_connectivity_graph, modules, devices, filename_svg='caa_basic.svg', filename_json="graph_basic.json")
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 mst_graph = calculate_survival_graph(basic_connectivity_graph, modules, devices, "equal_module")
 
 # DEBUG: Show Minimal Spanning Tree graph
-show_graph(mst_graph, modules, devices)
+show_graph(mst_graph, modules, devices, filename_svg='caa_mst.svg', filename_json="graph_mst.json")
 
 # Calculate the backup links for a given (optimal) mst
 robust_graph = calculate_backup_links(mst_graph, basic_connectivity_graph, modules)
 
 # DEBUG: Show Robust Minimal Spanning Tree graph
-show_graph(robust_graph, modules, devices)
+show_graph(robust_graph, modules, devices, filename_svg='caa_robust.svg', filename_json="graph_robust.json")
 
 # Second Phase: Find the best channels for every edge in the MST-Graph and assign them to the edges
 colored_graph = calculate_colored_graph(robust_graph, modules)
 
 # DEBUG: Show colored Graph
-show_graph(colored_graph, modules, devices)
+show_graph(colored_graph, modules, devices, filename_svg='caa_colored.svg', filename_json="graph_colored.json")
 
 # Finally check the graph for validity
 if not graph_is_valid(colored_graph, devices, modules):

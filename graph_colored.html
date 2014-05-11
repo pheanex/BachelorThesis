@@ -9,16 +9,16 @@
 
 .link {
   stroke: #999;
-  stroke-opacity: .6;
+  stroke-opacity: .7
 }
 
 </style>
 <body>
-<script src="d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
-var width = 1208,
-    height = 1000;
+var width = 960,
+    height = 500;
 
 var color = d3.scale.category20();
 
@@ -31,7 +31,7 @@ var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-d3.json("graph.json", function(error, graph) {
+d3.json("graph_colored.json", function(error, graph) {
   force
       .nodes(graph.nodes)
       .links(graph.links)
@@ -41,7 +41,9 @@ d3.json("graph.json", function(error, graph) {
       .data(graph.links)
     .enter().append("line")
       .attr("class", "link")
-      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+	  	.style("stroke", function(d) { return(d.color); })
+	  	.style("stroke-width", function(d) { return d.value/15; })
+  		.style("stroke-dasharray", function(d) { return(d.dash); });
 
   var node = svg.selectAll(".node")
       .data(graph.nodes)
@@ -66,4 +68,3 @@ d3.json("graph.json", function(error, graph) {
 });
 
 </script>
-

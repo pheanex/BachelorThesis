@@ -1,0 +1,63 @@
+{
+    "nodes": [
+        {
+            "index": 0, 
+            "name": "00a0571c2f85",
+			"color": "#556677",
+			"radius": 5,
+			"label" : "text1"
+        }, 
+        {
+            "index": 1, 
+            "name": "ece55574a4d5",
+			"color": "#11FF33",
+			"radius": 10,
+			"label" : "text2"
+        },
+        {
+            "index": 2, 
+            "name": "ece55574a421",
+			"color": "#6500FF",
+			"radius": 20,
+			"label" : "text3"
+        },
+        {
+            "index": 3,
+            "name": "ece55574a487",
+			"color": "#FFFF44",
+			"radius": 15,
+			"label" : "text4"
+        }
+    ], 
+    "links": [
+        {
+            "source": 0, 
+            "target": 1, 
+            "value": 99.0,
+			"class": "linkActive",
+			"color": "red"
+        },
+		{
+            "source": 1, 
+            "target": 2, 
+            "value": 50.0,
+			"class": "linkSeen",
+			"color": "red"
+		},
+		{
+            "source": 2, 
+            "target": 3, 
+            "value": 50.0,
+			"class": "linkSeen",
+			"color": "blue"
+		} ,
+		{
+            "source": 0, 
+            "target": 3, 
+            "value": 5.0,
+			"class": "linkActive",
+			"color": "#445566"
+		}   
+
+		]
+}
