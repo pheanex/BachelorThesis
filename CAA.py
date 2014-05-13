@@ -3,13 +3,14 @@
 # date   25.03.2014
 # purpose This script colors a networkx graph (Lancom AutoWDS Channel assignment algorithm)
 
-import networkx as nx
-import collections_enhanced
 import random
-import pydot
-import netsnmp
 import json
 import copy
+
+import networkx as nx
+import pydot
+
+import collections_enhanced
 import testcore.control.ssh
 
 
@@ -878,157 +879,112 @@ def translate_wlan_mac_to_interface_nr(module_wlan_mac):
     exit(1)
 
 
+# Returns list of lists with tabledata from wlc for a given tablename, else empty table
+def get_table_data(tablename, hostname, username, password):
+    connection = testcore.control.ssh.SSH(host=hostname, username=username, password=password)
+    answer = connection.runquery('ls ' + tablename)
+    if answer:
+        answer_lines = answer.splitlines()
+        instring = False
+        position = 0
+        positions = list()
+        for c in answer_lines[2]:
+            if not c.isspace():
+                if not instring:
+                    positions.append(position)
+                    instring = True
+            else:
+                if instring:
+                    instring = False
+            position += 1
+        return_list = list()
+        for line in answer_lines[4:]:
+            line_list = list()
+            last = 0
+            for position in positions[1:]:
+                line_list.append(line[last:position].strip())
+                last = position
+            line_list.append(line[last:].strip())
+            return_list.append(line_list)
+        return return_list
+    else:
+        return list()
+
+
 # Get the data from the wlc, returns a networkx basic graph
-def get_basic_graph_from_wlc():
+def get_basic_graph_from_wlc(hostname, username, password):
     print("Getting Data from WLC...")
     #
     # Get data from WLC
     #
-    snmp_session = netsnmp.Session(DestHost=wlc_address, Version=snmp_version, Community=snmp_community)
-    active_wlan_interfaces = set()
 
-    # These are our intern connections
-    autowds_topology_scan_results = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.124'))
-    autowds_topology_scan_results_length = len(autowds_topology_scan_results) / 6
-    autowds_topology_scan_results_target_wlan_mac_hex = autowds_topology_scan_results[0:autowds_topology_scan_results_length]
-    autowds_topology_scan_results_target_wlan_mac = [i.encode("hex") for i in autowds_topology_scan_results_target_wlan_mac_hex]
-    autowds_topology_scan_results_source_wlan_mac_hex = autowds_topology_scan_results[autowds_topology_scan_results_length:2 * autowds_topology_scan_results_length]
-    autowds_topology_scan_results_source_wlan_mac = [i.encode("hex") for i in autowds_topology_scan_results_source_wlan_mac_hex]
-    autowds_topology_scan_results_radio_channel = autowds_topology_scan_results[2 * autowds_topology_scan_results_length:3 * autowds_topology_scan_results_length]
-    autowds_topology_scan_results_phy_signal = autowds_topology_scan_results[3 * autowds_topology_scan_results_length:4 * autowds_topology_scan_results_length]
-    autowds_topology_scan_results_noise_level = autowds_topology_scan_results[4 * autowds_topology_scan_results_length:5 * autowds_topology_scan_results_length]
-    autowds_topology_scan_results_age = autowds_topology_scan_results[5 * autowds_topology_scan_results_length:6 * autowds_topology_scan_results_length]
     # Create the dict of dicts for scan results
-    # Example entry: scan_results[<name>]["lan_mac"] = <value>
-    #                scan_results[<name>]["channel"] = <value>
+    # Example entry: scan_results[<index>][<name>]["lan_mac"] = <value>
+    #                scan_results[<index>][<name>]["channel"] = <value>
     #                ...
     autowds_topology_scan_results = dict()
     autowds_topology_scan_results_index = 0
-    for wlan_source_mac, wlan_dest_mac, channel, signal_strength, noise_level, age \
-            in zip(autowds_topology_scan_results_source_wlan_mac, autowds_topology_scan_results_target_wlan_mac,
-                   autowds_topology_scan_results_radio_channel, autowds_topology_scan_results_phy_signal,
-                   autowds_topology_scan_results_noise_level, autowds_topology_scan_results_age):
+    for line in get_table_data("/Status/WLAN-Management/Intra-WLAN-Discovery", hostname, username, password):
         entry_dict = dict()
-        entry_dict["source_mac"] = wlan_source_mac
-        entry_dict["wlan_dest_mac"] = wlan_dest_mac
-        entry_dict["channel"] = channel
-        entry_dict["signal_strength"] = signal_strength
-        entry_dict["noise_level"] = noise_level
-        entry_dict["age"] = age
+        entry_dict["source_mac"] = line[0]
+        entry_dict["wlan_dest_mac"] = line[1]
+        entry_dict["channel"] = line[2]
+        entry_dict["signal_strength"] = line[3]
+        entry_dict["noise_level"] = line[4]
+        entry_dict["age"] = line[5]
         autowds_topology_scan_results[autowds_topology_scan_results_index] = entry_dict
         autowds_topology_scan_results_index += 1
-
-    del autowds_topology_scan_results_target_wlan_mac_hex, autowds_topology_scan_results_target_wlan_mac, \
-        autowds_topology_scan_results_source_wlan_mac_hex, autowds_topology_scan_results_source_wlan_mac, \
-        autowds_topology_scan_results_radio_channel, autowds_topology_scan_results_phy_signal, \
-        autowds_topology_scan_results_noise_level, autowds_topology_scan_results_age, \
-        autowds_topology_scan_results_length, autowds_topology_scan_results_index
 
     # First create the interfaces-graph
     # That means we create a node for each WLAN-interface of a node
     # and connect each of those of a node with a link with quality 0(best)(so the MST takes this edge always)
     # Therefore we use the Status/WLAN-Management/AP-Status/Active-Radios/ Table of the WLC
     # This gives us the interfaces of each node (identified by the MACs (LAN/WLAN)
-    active_radios = snmp_session.walk(netsnmp.VarList('.1.3.6.1.4.1.248.32.18.1.73.9.2.1'))
-    active_radios_length = len(active_radios) / 30
-    active_radios_lan_mac_hex = active_radios[0:1 * active_radios_length]
-    active_radios_lan_mac = [j.encode("hex") for j in active_radios_lan_mac_hex]
-    active_radios_ip = active_radios[1 * active_radios_length:2 * active_radios_length]
-    active_radios_name = active_radios[2 * active_radios_length:3 * active_radios_length]
-    active_radios_location = active_radios[3 * active_radios_length:4 * active_radios_length]
-    active_radios_unknown5 = active_radios[4 * active_radios_length:5 * active_radios_length]
-    active_radios_wlan_mac_hex = active_radios[5 * active_radios_length:6 * active_radios_length]
-    active_radios_wlan_mac = [j.encode("hex") for j in active_radios_wlan_mac_hex]
-    active_radios_ifc = active_radios[6 * active_radios_length:7 * active_radios_length]
-    active_radios_radio_band = active_radios[7 * active_radios_length:8 * active_radios_length]
-    active_radios_channel = active_radios[8 * active_radios_length:9 * active_radios_length]
-    active_radios_client_count = active_radios[9 * active_radios_length:10 * active_radios_length]
-    active_radios_background_scan = active_radios[10 * active_radios_length:11 * active_radios_length]
-    active_radios_card_id = active_radios[11 * active_radios_length:12 * active_radios_length]
-    active_radios_fw_version = active_radios[12 * active_radios_length:13 * active_radios_length]
-    active_radios_card_serial_nr = active_radios[13 * active_radios_length:14 * active_radios_length]
-    active_radios_operating = active_radios[14 * active_radios_length:15 * active_radios_length]
-    active_radios_transmit_power = active_radios[15 * active_radios_length:16 * active_radios_length]
-    active_radios_eirp = active_radios[16 * active_radios_length:17 * active_radios_length]
-    active_radios_exc_eirp = active_radios[17 * active_radios_length:18 * active_radios_length]
-    active_radios_internal = active_radios[18 * active_radios_length:19 * active_radios_length]
-    active_radios_nr_radios = active_radios[19 * active_radios_length:20 * active_radios_length]
-    active_radios_module = active_radios[20 * active_radios_length:21 * active_radios_length]
-    active_radios_serial_nr = active_radios[21 * active_radios_length:22 * active_radios_length]
-    active_radios_version = active_radios[22 * active_radios_length:23 * active_radios_length]
-    active_radios_card_state = active_radios[23 * active_radios_length:24 * active_radios_length]
-    active_radios_field_optimization = active_radios[24 * active_radios_length:25 * active_radios_length]
-    active_radios_modem_load_min = active_radios[25 * active_radios_length:26 * active_radios_length]
-    active_radios_modem_load_max = active_radios[26 * active_radios_length:27 * active_radios_length]
-    active_radios_modem_load_avg = active_radios[27 * active_radios_length:28 * active_radios_length]
-    active_radios_unknown29 = active_radios[28 * active_radios_length:29 * active_radios_length]
-    active_radios_groups = active_radios[29 * active_radios_length:30 * active_radios_length]
     # Create the dict of dicts for active radios
-    # Example entry: active_radios[<name>]["lan_mac"] = <value>
-    #                active_radios[<name>]["bssid_mac"] = <value>
+    # Example entry: active_radios[<index>][<name>]["lan_mac"] = <value>
+    #                active_radios[<index>][<name>]["bssid_mac"] = <value>
     #                ...
-    del active_radios
+    active_wlan_interfaces = set()
     global active_radios
     active_radios = dict()
     active_radios_index = 0
-    for lan_mac, ip, name, location, unknown5, wlan_mac, ifc, radio_band, channel, client_count, \
-        background_scan, card_id, fw_version, card_serial_nr, operating, transmit_power, eirp, \
-        exc_eirp, internal, nr_radios, module, serial_nr, version, card_state, field_optimization, \
-        modem_load_min, modem_load_max, modem_load_avg, unknown29, groups \
-            in zip(active_radios_lan_mac, active_radios_ip, active_radios_name, active_radios_location,
-                   active_radios_unknown5, active_radios_wlan_mac, active_radios_ifc, active_radios_radio_band,
-                   active_radios_channel, active_radios_client_count, active_radios_background_scan,
-                   active_radios_card_id, active_radios_fw_version, active_radios_card_serial_nr, active_radios_operating,
-                   active_radios_transmit_power, active_radios_eirp, active_radios_exc_eirp, active_radios_internal,
-                   active_radios_nr_radios, active_radios_module, active_radios_serial_nr, active_radios_version,
-                   active_radios_card_state, active_radios_field_optimization, active_radios_modem_load_min,
-                   active_radios_modem_load_max, active_radios_modem_load_avg, active_radios_unknown29, active_radios_groups):
+    for line in get_table_data("/Status/WLAN-Management/AP-Status/Active-Radios", hostname, username, password):
         entry_dict = dict()
-        entry_dict["lan_mac"] = lan_mac
-        entry_dict["ip"] = ip
-        entry_dict["name"] = name
-        if not name:
-            print("Error: Name for AP: " + str(lan_mac) + " not set!")
+        entry_dict["lan_mac"] = line[0]
+        entry_dict["ifc"] = line[1]
+        entry_dict["ip"] = line[2]
+        entry_dict["name"] = line[3]
+        if not line[3]:
+            print("Error: Name for AP: " + str(line[0]) + " not set!")
             exit(1)
-        entry_dict["location"] = location
-        entry_dict["unknown5"] = unknown5
-        entry_dict["wlan_mac"] = wlan_mac
-        entry_dict["ifc"] = ifc
-        entry_dict["radio_band"] = radio_band
-        entry_dict["channel"] = channel
-        entry_dict["client_count"] = client_count
-        entry_dict["background_scan"] = background_scan
-        entry_dict["card_id"] = card_id
-        entry_dict["fw_version"] = fw_version
-        entry_dict["card_serial_nr"] = card_serial_nr
-        entry_dict["operating"] = operating
-        entry_dict["transmit_power"] = transmit_power
-        entry_dict["eirp"] = eirp
-        entry_dict["exc_eirp"] = exc_eirp
-        entry_dict["internal"] = internal
-        entry_dict["nr_radios"] = nr_radios
-        entry_dict["module"] = module
-        entry_dict["serial_nr"] = serial_nr
-        entry_dict["version"] = version
-        entry_dict["card_state"] = card_state
-        entry_dict["field_optimization"] = field_optimization
-        entry_dict["modem_load_min"] = modem_load_min
-        entry_dict["modem_load_max"] = modem_load_max
-        entry_dict["modem_load_avg"] = modem_load_avg
-        entry_dict["unknown29"] = unknown29
-        entry_dict["groups"] = groups
-        active_wlan_interfaces.add(wlan_mac)
+        entry_dict["location"] = line[4]
+        entry_dict["wlan_mac"] = line[5]
+        entry_dict["radio_band"] = line[6]
+        entry_dict["channel"] = line[7]
+        entry_dict["modem_load_min"] = line[8]
+        entry_dict["modem_load_max"] = line[9]
+        entry_dict["modem_load_avg"] = line[10]
+        entry_dict["client_count"] = line[11]
+        entry_dict["background_scan"] = line[12]
+        entry_dict["card_id"] = line[13]
+        entry_dict["fw_version"] = line[14]
+        entry_dict["card_serial_nr"] = line[15]
+        entry_dict["operating"] = line[16]
+        entry_dict["transmit_power"] = line[17]
+        entry_dict["eirp"] = line[18]
+        entry_dict["exc_eirp"] = line[19]
+        entry_dict["internal"] = line[20]
+        entry_dict["nr_radios"] = line[21]
+        entry_dict["module"] = line[22]
+        entry_dict["serial_nr"] = line[23]
+        entry_dict["version"] = line[24]
+        entry_dict["card_state"] = line[25]
+        entry_dict["field_optimization"] = line[26]
+        entry_dict["ap-connections"] = line[27]
+        entry_dict["groups"] = line[28]
+        active_wlan_interfaces.add(line[5])
         active_radios[active_radios_index] = entry_dict
         active_radios_index += 1
-
-    del active_radios_lan_mac, active_radios_ip, active_radios_name, active_radios_location, active_radios_unknown5, \
-        active_radios_wlan_mac, active_radios_ifc, active_radios_radio_band, active_radios_channel, active_radios_client_count, \
-        active_radios_background_scan, active_radios_card_id, active_radios_fw_version, active_radios_card_serial_nr, \
-        active_radios_operating, active_radios_transmit_power, active_radios_eirp, active_radios_exc_eirp, active_radios_internal, \
-        active_radios_nr_radios, active_radios_module, active_radios_serial_nr, active_radios_version, active_radios_card_state, \
-        active_radios_field_optimization, active_radios_modem_load_min, active_radios_modem_load_max, active_radios_modem_load_avg, \
-        active_radios_unknown29, active_radios_groups, active_radios_lan_mac_hex, active_radios_wlan_mac_hex, active_radios_length, \
-        active_radios_index
 
     # Todo: Foreign table
 
@@ -1054,7 +1010,7 @@ def get_basic_graph_from_wlc():
     for index in autowds_topology_scan_results.keys():
         if not autowds_topology_scan_results[index]["source_mac"] in active_wlan_interfaces or not autowds_topology_scan_results[index]["wlan_dest_mac"] in active_wlan_interfaces:
             print("Info: Ignoring link {0},{1}, since at least one is not in active Radios.".format(str(autowds_topology_scan_results[index]["source_mac"]),
-                                                                                                       str(autowds_topology_scan_results[index]["wlan_dest_mac"])))
+                                                                                                    str(autowds_topology_scan_results[index]["wlan_dest_mac"])))
             del autowds_topology_scan_results[index]
 
     # Create set of nodes, which are modules
@@ -1143,7 +1099,7 @@ def get_basic_graph_from_wlc():
         # The following is done, since Alfred Arnold mentioned to me that the Signal-strength value is already the SNR
         snr = signal_strength
         basic_graph.edge[source_mac][wlan_dest_mac]["snr"] = snr
-        basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - snr
+        basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - snr  # todo is this still necessary?
 
         # Initialize each edge with empty color
         basic_graph.edge[source_mac][wlan_dest_mac]["color"] = None
@@ -1319,9 +1275,9 @@ def write_graph_to_wlc(wlan_modules, address, username, password):
             band = "2"
         lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} {4}'.format(module_name, module_number_name, band, module_channel_list_name, channel))
 
-        # Really write it now
-        wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
-        wlc_connection.runscript(lcos_script)
+    # Really write it now
+    wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
+    #wlc_connection.runscript(lcos_script)
 
 
 #
@@ -1337,15 +1293,16 @@ colortable["6"] = "blue"
 colortable["11"] = "orange"
 colortable["14"] = "yellow"
 colortable["18"] = "brown"
+wlc_hostname = "172.16.40.100"
+wlc_username = "admin"
+wlc_password = "private"
 edge_max_score = 1000  # The score for node-module connections, this has to be higher than any possible module-module connection
-snmp_community = "public"
-snmp_version = 2
 color_counter = collections_enhanced.Counter()  # This counts how often each color has been used overall, initially fill with 0
 for color_entry in Assignable_Colors:
     color_counter[color_entry] = 0
 
 # Getting Data from WLC per SNMP
-basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc()
+basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc(wlc_hostname, wlc_username, wlc_password)
 
 # Alternatively for debugging/testing, generate Random Graph
 #basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_of_nodes=20, max_nr_modules=3, max_nr_connections=3)
@@ -1375,4 +1332,4 @@ if not graph_is_valid(colored_mst_graph, devices, modules):
 #show_graph(robust_graph, modules, devices, filename_svg='caa_robust.svg', filename_json="graph_robust.json")
 
 # In the wlc set the links and channels
-write_graph_to_wlc(modules, "172.16.40.100", "admin", "private")
+write_graph_to_wlc(modules, wlc_hostname, wlc_username, wlc_password)
