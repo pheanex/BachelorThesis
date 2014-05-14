@@ -184,3 +184,37 @@ Wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder se
 	nach der anforderung des survival paths, sollte jeweils eine backuproute vorhanden sein
 Noise level als grundrauschen miteinbeziehen? Inwiefern war das gemeint?:
 	wenn nacher noch zeit ist, zunächst nicht(vorallem da auch nicht so ohne weiteres an die daten heranzukommen ist (aps))
+
+
+zuvor autowdstopology auf semi setzen, damit die tabbel auch berücksichtigt wird
+[1.3.6.1.4.1.248.32.18][2.37.1.3] conf delay auf 5 setzen
+[1.3.6.1.4.1.248.32.18][2.37.1.15.1].8 (Topology Management) semi dh 1
+
+zum setzen eines links dementsprechend in eine neue tabelle die von christoph noch angelegt wird schreiben
+[1.3.6.1.4.1.248.32.18][2.37.1.16]
+über namen eintragen:
+apname1 - ifc1 - apname2 - ifc2
+add AUTOWDS_PROFILE 0 TESTAP1 WLAN-1 TESTAP2 WLAN-2
+löschen mit del *
+
+configuration strecken setzen [1.3.6.1.4.1.248.32.18][2.37.1.16] zeilen existieren immer
+um ein modul mit einem channel zu konfigurieren muss man folgendes in diese tabelle eintragen:
+wlan-module1: 7   (band 5ghz/2,4ghz) oder evtl funktioniert heir auch Auto -> christoph martin
+module-1-channel-list: nr 9: string mit channel nr zb 7
+module-2-channel-list dementsprechend für das zweite modul
+
+
+set {9} "" {10} "" {8} 0 {7} 0
+set 00a0571d6864 {9} "" {10} "" {8} 0 {7} 0
+set 00a0571d6865 {9} "" {10} "" {8} 0 {7} 0
+set 00a0571d6867 {9} "" {10} "" {8} 0 {7} 0
+set 00a0571da012 {9} "" {10} "" {8} 0 {7} 0
+set 00a0571da017 {9} "" {10} "" {8} 0 {7} 0
+set 00a0571da270 {9} "" {10} "" {8} 0 {7} 0
+set ece55571dca0 {9} "" {10} "" {8} 0 {7} 0
+set ece55571dcd0 {9} "" {10} "" {8} 0 {7} 0
+set ece55571dd00 {9} "" {10} "" {8} 0 {7} 0
+set ece555748695 {9} "" {10} "" {8} 0 {7} 0
+set ece55574a4a5 {9} "" {10} "" {8} 0 {7} 0
+set ece55574a4d5 {9} "" {10} "" {8} 0 {7} 0
+
