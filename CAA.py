@@ -6,6 +6,7 @@
 import random
 import json
 import copy
+import os
 
 import networkx as nx
 import pydot
@@ -810,7 +811,7 @@ def write_json(graph, lan_nodes, wlan_modules, filename="graph.json"):
             dash = "5,5"
         else:
             dash = "0,0"
-            snr = 100
+            snr = 1000
             color = "black"
         connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, color, dash))
 
@@ -891,6 +892,11 @@ def get_basic_graph_from_wlc(hostname, username, password):
     #
     # Get data from WLC
     #
+
+    # First check if we get a connection to the wlc
+    if not os.system("ping -c 1 " + hostname + " > /dev/null") == 0:
+        print(hostname + " is down!")
+        exit(1)
 
     # Create the dict of dicts for scan results
     # Example entry: scan_results[<index>][<name>]["lan_mac"] = <value>
