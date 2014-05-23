@@ -1206,18 +1206,15 @@ def calculate_colored_graph(graphname, wlan_modules, overall_color_counter):
 # Write the connections back to the WLC
 def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colored):
     lcos_script = list()
-    lcos_clear_script = list()
 
     # Set the configuration delay to a good value (5Seconds is enough in our case)
     lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Commonprofiles/WLAN_PROF {Configuration-Delay} 3')
 
     # Tell the WLC to use the connections we give them for the APs
     lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Profiles/AUTOWDS_PROFILE {Topology-Management} 2')
-    lcos_clear_script.append('set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Profiles/AUTOWDS_PROFILE {Topology-Management} 0')
 
     # Delete the old connection-table
     lcos_script.append('rm /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/*')
-    lcos_clear_script.append('rm /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/*')
 
     # Add the links for the connection
     prio_counter = 1000
@@ -1238,7 +1235,7 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
         #if not wlc_connection.runscript(['set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE 0 ' + module_a_device + ' ' + module_a + ' ' + module_b_device + ' ' + module_b]):
         #    print("Error: Could not write a link to table")
         #    exit(1)
-        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} {{continuation}} 0 {{key}} 12345678 {{enabled}} yes'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name))
+        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * 0'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name))
         prio_counter += 1
 
     # Assign channels to the modules
@@ -1271,12 +1268,10 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
             band = "2"
         corresponding_device_name = mst_graph_colored.node[module_name]["module-of"]
         lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} {4}'.format(corresponding_device_name, module_number_name, band, module_channel_list_name, channel))
-        lcos_clear_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} ""'.format(corresponding_device_name, module_number_name, 0, module_channel_list_name))
 
     # Really write it now
     wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
     wlc_connection.runscript(lcos_script)
-    wlc_connection.runscript(lcos_clear_script)
 
 
 #
