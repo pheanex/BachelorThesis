@@ -135,9 +135,20 @@ def count_connected_module_edges_for_module(graph, module, wlan_modules):
 
 # Translates the given SNR to a bandwith, so we can use it for calculating the score
 # Returns a bandwidth
-def translate_snr_to_bw(snr):
-    # Todo: later use here the fuction graph from christoph
-    return snr
+def translate_snr_to_bw(snrlancomvalue):
+    snr = snrlancomvalue / 100 * 46
+    if snr <= 0:
+        return 0
+    elif 0 < snr <= 10:
+        return snr
+    elif 10 < snr <= 20:
+        return 2 * snr - 10
+    elif 20 < snr <= 25:
+        return 3 * snr - 30
+    elif 25 < snr <= 30:
+        return 2 * snr - 5
+    else:
+        return 56
 
 
 # Get a list of module neighbors for a node in a given graph
@@ -811,7 +822,7 @@ def write_json(graph, lan_nodes, wlan_modules, filename="graph.json"):
             dash = "5,5"
         else:
             dash = "0,0"
-            snr = 1000
+            snr = 200
             color = "black"
         connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, color, dash))
 
@@ -1209,7 +1220,7 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
     lcos_clear_script.append('rm /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/*')
 
     # Add the links for the connection
-    prio_counter = 1
+    prio_counter = 1000
     for a, b in mst_graph_colored.edges():
         if not a in wlan_modules or not b in wlan_modules:
             continue
@@ -1260,7 +1271,7 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
             band = "2"
         corresponding_device_name = mst_graph_colored.node[module_name]["module-of"]
         lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} {4}'.format(corresponding_device_name, module_number_name, band, module_channel_list_name, channel))
-        lcos_clear_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} ""'.format(corresponding_device_name, module_number_name, band, module_channel_list_name))
+        lcos_clear_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} ""'.format(corresponding_device_name, module_number_name, 0, module_channel_list_name))
 
     # Really write it now
     wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
