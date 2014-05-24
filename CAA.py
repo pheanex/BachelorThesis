@@ -1301,7 +1301,7 @@ colortable["18"] = "brown"
 wlc_hostname = "172.16.40.100"
 wlc_username = "admin"
 wlc_password = "private"
-show_graph_enabled = False
+show_graph_enabled = True
 edge_max_score = 1000  # The score for node-module connections, this has to be higher than any possible module-module connection
 color_counter = collections_enhanced.Counter()  # This counts how often each color has been used overall, initially fill with 0
 for color_entry in Assignable_Colors:
