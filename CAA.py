@@ -71,7 +71,7 @@ def nr_of_non_module_connections(graphname, module):
 # Converts a given directed graph to a undirected graph
 # At the moment we just take the average of both edges
 # Returns the undirected graph
-def convert_to_undirected_graph(directed_graph, middle="average"):
+def convert_to_undirected_graph(directed_graph, middle="lower"):
     logger.info("Converting directed Graph to undirected Graph")
     undirected_graph = nx.Graph()
     for node in directed_graph.nodes():
@@ -110,7 +110,7 @@ def convert_to_undirected_graph(directed_graph, middle="average"):
                     else:
                         undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
                 else:
-                    logger.error("converting directed graph to undirected grpah failed, because '" + str(middle) + "' is not a valid setting.")
+                    logger.error("converting directed graph to undirected graph failed, because '" + str(middle) + "' is not a valid setting.")
                     exit(1)
 
                 undirected_graph.edge[a][b]["real-connection"] = True
@@ -1331,7 +1331,7 @@ basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_
 root_node = random.choice(list(devices))
 
 # Convert to undirected graph
-basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed, middle="average")
+basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
 show_graph(basic_connectivity_graph, modules, devices, filename_svg='caa_basic.svg', filename_json="graph_basic.json")
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
