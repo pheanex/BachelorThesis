@@ -33,6 +33,8 @@ def wlc_is_up(hostname):
     else:
         return True
 
+if not wlc_is_up(wlc_address):
+    exit(1)
 
 Active_Radios = get_table_data("/status/wlan-management/ap-status/active-radios", wlc_address, wlc_username, wlc_password)
 Accesspoints = get_table_data("/Status/WLAN-Management/AP-Configuration/Accesspoints/", wlc_address, wlc_username, wlc_password)

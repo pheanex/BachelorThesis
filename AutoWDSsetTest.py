@@ -15,7 +15,7 @@ wlc_address = sys.argv[1]
 wlc_username = sys.argv[2]
 wlc_password = sys.argv[3]
 Background_scan_interval = sys.argv[4]
-Channel = int(sys.argv[4])
+Channel = int(sys.argv[5])
 lcos_script = list()
 
 
@@ -34,10 +34,13 @@ def wlc_is_up(hostname):
         return True
 
 
+if not wlc_is_up(wlc_address):
+    exit(1)
+
 # Get the table: /Setup/WLAN-Management/AP-Configuration/Accesspoints and from it the mac addresses of the wlan-modules
 mac_list = list()
 for line in get_table_data("/Setup/WLAN-Management/AP-Configuration/Accesspoints", wlc_address, wlc_username, wlc_password):
-    if not line[0] is "ffffffffffff":
+    if not line[0] == 'ffffffffffff':
         mac_list.append(str(line[0]))
 
 # Set Channel and BGscaninterval

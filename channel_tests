@@ -1,3 +1,5 @@
+# Die ganzen tests sind aufgrund der fehlenden multiroute/flow implementierung im lcos nur auf dem mst möglich
+
 # setzt den zu nutzenden channel auf 1
 set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} 1
 
