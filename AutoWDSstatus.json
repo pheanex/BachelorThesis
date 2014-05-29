@@ -1,0 +1,659 @@
+{
+    "nodes": [
+        {
+            "index": 0, 
+            "mac": "00a0571c2f85", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 1, 
+            "mac": "ece5555fd601", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "BAT-AP8"
+        }, 
+        {
+            "index": 2, 
+            "mac": "ece55574a4d5", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "BAT-AP1"
+        }, 
+        {
+            "index": 3, 
+            "mac": "ece555ffd28b", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 4, 
+            "mac": "ece555ffd650", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 5, 
+            "mac": "00a0571c363f", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 6, 
+            "mac": "ece555ffd5da", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 7, 
+            "mac": "ece555ffd5bf", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 8, 
+            "mac": "00a0571c3501", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 9, 
+            "mac": "ece555ffd5c1", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 10, 
+            "mac": "00a0571c373e", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 11, 
+            "mac": "ece55571dca0", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "BAT-AP5"
+        }, 
+        {
+            "index": 12, 
+            "mac": "00a0571c3641", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 13, 
+            "mac": "00a0571d6864", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "L452-AP2"
+        }, 
+        {
+            "index": 14, 
+            "mac": "00a0571d6865", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "L452-AP3"
+        }, 
+        {
+            "index": 15, 
+            "mac": "00a0571d6867", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "L452-AP1"
+        }, 
+        {
+            "index": 16, 
+            "mac": "00a0571c2b52", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 17, 
+            "mac": "00a0571c2c44", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 18, 
+            "mac": "ece555ffd2b0", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 19, 
+            "mac": "00a0571da012", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "L322-AP2"
+        }, 
+        {
+            "index": 20, 
+            "mac": "00a0571da017", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "L322-AP1"
+        }, 
+        {
+            "index": 21, 
+            "mac": "ece55571dd00", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "BAT-AP6"
+        }, 
+        {
+            "index": 22, 
+            "mac": "ece555ffd61e", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 23, 
+            "mac": "00a0571c2c0d", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 24, 
+            "mac": "ece55571dcd0", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "BAT-AP4"
+        }, 
+        {
+            "index": 25, 
+            "mac": "ece555ffd642", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 26, 
+            "mac": "00a0571c3511", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 27, 
+            "mac": "ece555ffd63a", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 28, 
+            "mac": "ece55574a4a5", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "BAT-AP2"
+        }, 
+        {
+            "index": 29, 
+            "mac": "00a0571da270", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "L322-AP3"
+        }, 
+        {
+            "index": 30, 
+            "mac": "ece555ffd667", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 31, 
+            "mac": "ece555ffd5d6", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 32, 
+            "mac": "ece555ffd6cc", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 33, 
+            "mac": "ece555ffd5af", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 34, 
+            "mac": "00a0571de370", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-2"
+        }, 
+        {
+            "index": 35, 
+            "mac": "ece555ffd5b9", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 36, 
+            "mac": "00a0571de372", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }, 
+        {
+            "index": 37, 
+            "mac": "ece555748695", 
+            "type": "AP", 
+            "channel": "", 
+            "label": "BAT-AP3"
+        }, 
+        {
+            "index": 38, 
+            "mac": "00a0571c3732", 
+            "type": "IFC", 
+            "channel": "1", 
+            "label": "WLAN-1"
+        }
+    ], 
+    "links": [
+        {
+            "source": 0, 
+            "state": "Active", 
+            "target": 23, 
+            "channel": "", 
+            "sourcemac": "00a0571c2f85", 
+            "targetstrength": "", 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 1, 
+            "state": "Active", 
+            "target": 18, 
+            "channel": "", 
+            "sourcemac": "ece5555fd601", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd2b0", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 1, 
+            "state": "Active", 
+            "target": 3, 
+            "channel": "", 
+            "sourcemac": "ece5555fd601", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd28b", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 2, 
+            "state": "Active", 
+            "target": 22, 
+            "channel": "", 
+            "sourcemac": "ece55574a4d5", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd61e", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 2, 
+            "state": "Active", 
+            "target": 32, 
+            "channel": "", 
+            "sourcemac": "ece55574a4d5", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd6cc", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 3, 
+            "state": "Active", 
+            "target": 0, 
+            "channel": "", 
+            "sourcemac": "ece555ffd28b", 
+            "targetstrength": "", 
+            "targetmac": "00a0571c2f85", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 4, 
+            "state": "Active", 
+            "target": 30, 
+            "channel": "", 
+            "sourcemac": "ece555ffd650", 
+            "targetstrength": "", 
+            "targetmac": "ece555ffd667", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 5, 
+            "state": "Active", 
+            "target": 4, 
+            "channel": "", 
+            "sourcemac": "00a0571c363f", 
+            "targetstrength": "", 
+            "targetmac": "ece555ffd650", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 6, 
+            "state": "Active", 
+            "target": 31, 
+            "channel": "", 
+            "sourcemac": "ece555ffd5da", 
+            "targetstrength": "", 
+            "targetmac": "ece555ffd5d6", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 7, 
+            "state": "Active", 
+            "target": 35, 
+            "channel": "", 
+            "sourcemac": "ece555ffd5bf", 
+            "targetstrength": "", 
+            "targetmac": "ece555ffd5b9", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 8, 
+            "state": "Active", 
+            "target": 23, 
+            "channel": "", 
+            "sourcemac": "00a0571c3501", 
+            "targetstrength": "", 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 11, 
+            "state": "Active", 
+            "target": 33, 
+            "channel": "", 
+            "sourcemac": "ece55571dca0", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd5af", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 11, 
+            "state": "Active", 
+            "target": 7, 
+            "channel": "", 
+            "sourcemac": "ece55571dca0", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd5bf", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 28, 
+            "state": "Active", 
+            "target": 25, 
+            "channel": "", 
+            "sourcemac": "ece55574a4a5", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd642", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 28, 
+            "state": "Active", 
+            "target": 30, 
+            "channel": "", 
+            "sourcemac": "ece55574a4a5", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd667", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 14, 
+            "state": "Active", 
+            "target": 5, 
+            "channel": "", 
+            "sourcemac": "00a0571d6865", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c363f", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 14, 
+            "state": "Active", 
+            "target": 26, 
+            "channel": "", 
+            "sourcemac": "00a0571d6865", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c3511", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 15, 
+            "state": "Active", 
+            "target": 10, 
+            "channel": "", 
+            "sourcemac": "00a0571d6867", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c373e", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 15, 
+            "state": "Active", 
+            "target": 38, 
+            "channel": "", 
+            "sourcemac": "00a0571d6867", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c3732", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 19, 
+            "state": "Active", 
+            "target": 23, 
+            "channel": "", 
+            "sourcemac": "00a0571da012", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 19, 
+            "state": "Active", 
+            "target": 17, 
+            "channel": "", 
+            "sourcemac": "00a0571da012", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c2c44", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 20, 
+            "state": "Active", 
+            "target": 16, 
+            "channel": "", 
+            "sourcemac": "00a0571da017", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c2b52", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 20, 
+            "state": "Active", 
+            "target": 0, 
+            "channel": "", 
+            "sourcemac": "00a0571da017", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c2f85", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 21, 
+            "state": "Active", 
+            "target": 35, 
+            "channel": "", 
+            "sourcemac": "ece55571dd00", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd5b9", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 21, 
+            "state": "Active", 
+            "target": 31, 
+            "channel": "", 
+            "sourcemac": "ece55571dd00", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd5d6", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 24, 
+            "state": "Active", 
+            "target": 9, 
+            "channel": "", 
+            "sourcemac": "ece55571dcd0", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd5c1", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 24, 
+            "state": "Active", 
+            "target": 6, 
+            "channel": "", 
+            "sourcemac": "ece55571dcd0", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd5da", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 13, 
+            "state": "Active", 
+            "target": 12, 
+            "channel": "", 
+            "sourcemac": "00a0571d6864", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c3641", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 13, 
+            "state": "Active", 
+            "target": 8, 
+            "channel": "", 
+            "sourcemac": "00a0571d6864", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571c3501", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 29, 
+            "state": "Active", 
+            "target": 34, 
+            "channel": "", 
+            "sourcemac": "00a0571da270", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571de370", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 29, 
+            "state": "Active", 
+            "target": 36, 
+            "channel": "", 
+            "sourcemac": "00a0571da270", 
+            "targetstrength": 9000, 
+            "targetmac": "00a0571de372", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 30, 
+            "state": "Active", 
+            "target": 23, 
+            "channel": "", 
+            "sourcemac": "ece555ffd667", 
+            "targetstrength": "", 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 22, 
+            "state": "Active", 
+            "target": 23, 
+            "channel": "", 
+            "sourcemac": "ece555ffd61e", 
+            "targetstrength": "", 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 35, 
+            "state": "Active", 
+            "target": 22, 
+            "channel": "", 
+            "sourcemac": "ece555ffd5b9", 
+            "targetstrength": "", 
+            "targetmac": "ece555ffd61e", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 36, 
+            "state": "Active", 
+            "target": 23, 
+            "channel": "", 
+            "sourcemac": "00a0571de372", 
+            "targetstrength": "", 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": ""
+        }, 
+        {
+            "source": 37, 
+            "state": "Active", 
+            "target": 4, 
+            "channel": "", 
+            "sourcemac": "ece555748695", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd650", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 37, 
+            "state": "Active", 
+            "target": 27, 
+            "channel": "", 
+            "sourcemac": "ece555748695", 
+            "targetstrength": 9000, 
+            "targetmac": "ece555ffd63a", 
+            "sourcestrength": 9000
+        }, 
+        {
+            "source": 38, 
+            "state": "Active", 
+            "target": 7, 
+            "channel": "", 
+            "sourcemac": "00a0571c3732", 
+            "targetstrength": "", 
+            "targetmac": "ece555ffd5bf", 
+            "sourcestrength": ""
+        }
+    ]
+}

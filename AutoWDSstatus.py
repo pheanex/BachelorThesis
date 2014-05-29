@@ -43,58 +43,83 @@ Autowds_auto_topology = get_table_data("/status/wlan-management/ap-configuration
 
 devices = set()
 modules = set()
-device_modules = list()
+# Aufbau: device[lan_mac][ifc_id][wlan_mac] (Dient als lookuptable/dict)
+device_modules = dict()
 nodes = dict()
 links = dict()
 source_target = set()
 
-# Fill nodes
+# Fill nodes from active radios
 for line in Active_Radios:
     devices.add(line[0])
-    modules.add(line[6])
-    device_modules.append((line[0], line[6]))
+    modules.add(line[5])
+    if not line[0] in device_modules.keys():
+        device_modules[line[0]] = dict()
+
+    if line[1] == '0':
+        device_modules[line[0]][0] = line[5]
+    else:
+        device_modules[line[0]][1] = line[5]
+
     if not line[0] in nodes:
         d = dict()
-        d["label"] = line[4]
+        d["label"] = line[3]
         d["type"] = "AP"
         d["channel"] = ""
+        d["mac"] = line[0]
         nodes[line[0]] = d
 
-    if not line[6] in nodes:
+    if not line[5] in nodes:
         d = dict()
         d["label"] = "WLAN-" + str(int(line[1]) + 1)
         d["type"] = "IFC"
         d["id"] = int(line[1])
-        nodes[line[6]] = d
+        d["mac"] = line[5]
+        nodes[line[5]] = d
 
+# Fill nodes channel data from accespoints
 for line in Accesspoints:
-    if line[0] in nodes:
-        if nodes[line[0]]["id"] == 0:
-            nodes[line[0]]["channel"] = line[13]
-        else:
-            nodes[line[0]]["channel"] = line[18]
+    if not line[0] in device_modules.keys():
+        continue
+    wlan_mac_ifc0 = device_modules[line[0]][0]
+    wlan_mac_ifc1 = device_modules[line[0]][1]
+    wlan_channel_ifc0 = line[12]
+    wlan_channel_ifc1 = line[17]
+    nodes[wlan_mac_ifc0]["channel"] = wlan_channel_ifc0
+    nodes[wlan_mac_ifc1]["channel"] = wlan_channel_ifc1
 
 # Fill links
-modus = Autowds_Profile[6]
-if modus is "Automatic":
+modus = Autowds_Profile[0][6]
+Autowds_table = []
+if modus == "Automatic":
+    # Consider only data from Autowds_auto_topology
+    Autowds_table = Autowds_auto_topology
+elif modus == "Manual":
     # Consider only data from Autowds_topology
-    for line in Autowds_topology:
-        links[line[5]] = dict()
-        links[line[5]][line[8]] = dict()
-        links[line[5]][line[8]]["state"] = line[15]
-        links[line[5]][line[8]]["state"]["connectiontype"] = "real"
-        source_target.add((line[5], line[8]))
-elif modus is "Manual":
-    # Consider only data from Autowds_Auto_topology
-    for line in Autowds_auto_topology:
-        links[line[5]] = dict()
-        links[line[5]][line[8]] = dict()
-        links[line[5]][line[8]]["state"] = line[15]
-        links[line[5]][line[8]]["state"]["connectiontype"] = "real"
-        source_target.add((line[5], line[8]))
+    Autowds_table = Autowds_topology
 else:
     print("Modus is neither Automatic nor Manual => probably Semi -> Don't know what to do.")
     exit(1)
+
+for line in Autowds_table:
+    if line[4] not in nodes:
+        # Node is in autowds_(auto)_topology but not in nodes => would cause errors
+        continue
+    links[line[4]] = dict()
+    links[line[4]][line[7]] = dict()
+    links[line[4]][line[7]]["state"] = line[15]
+    links[line[4]][line[7]]["connectiontype"] = "real"
+    links[line[4]][line[7]]["sourcemac"] = line[4]
+    links[line[4]][line[7]]["targetmac"] = line[7]
+    links[line[4]][line[7]]["sourcestrength"] = ""
+    links[line[4]][line[7]]["sourcechannel"] = ""
+    links[line[4]][line[7]]["sourceage"] = ""
+    links[line[4]][line[7]]["targetstrength"] = ""
+    links[line[4]][line[7]]["targetchannel"] = ""
+    links[line[4]][line[7]]["targetage"] = ""
+    links[line[4]][line[7]]["channel"] = ""
+
+    source_target.add((line[4], line[7]))
 
 for line in Intra_Wlan_Discovery:
     if (line[0], line[1]) in source_target:
@@ -106,16 +131,26 @@ for line in Intra_Wlan_Discovery:
         links[line[0]][line[1]]["targetchannel"] = line[2]
         links[line[0]][line[1]]["targetage"] = line[5]
 
-for (source, target) in device_modules:
-    links[source] = dict()
-    links[source][target] = dict()
-    links[source][target]["sourcemac"] = source
-    links[source][target]["targetmac"] = target
-    links[source][target]["sourcestrength"] = 9000
-    links[source][target]["targetstrength"] = 9000
-    links[source][target]["state"] = "Active"
-    links[source][target]["connectiontype"] = "fake"
-    links[source][target]["channel"] = ""
+for lan_mac in device_modules.keys():
+    wlan_module0 = device_modules[lan_mac][0]
+    wlan_module1 = device_modules[lan_mac][1]
+    links[lan_mac] = dict()
+    links[lan_mac][wlan_module0] = dict()
+    links[lan_mac][wlan_module1] = dict()
+    links[lan_mac][wlan_module0]["sourcemac"] = lan_mac
+    links[lan_mac][wlan_module0]["targetmac"] = wlan_module0
+    links[lan_mac][wlan_module0]["sourcestrength"] = 9000
+    links[lan_mac][wlan_module0]["targetstrength"] = 9000
+    links[lan_mac][wlan_module0]["state"] = "Active"
+    links[lan_mac][wlan_module0]["connectiontype"] = "fake"
+    links[lan_mac][wlan_module0]["channel"] = ""
+    links[lan_mac][wlan_module1]["sourcemac"] = lan_mac
+    links[lan_mac][wlan_module1]["targetmac"] = wlan_module1
+    links[lan_mac][wlan_module1]["sourcestrength"] = 9000
+    links[lan_mac][wlan_module1]["targetstrength"] = 9000
+    links[lan_mac][wlan_module1]["state"] = "Active"
+    links[lan_mac][wlan_module1]["connectiontype"] = "fake"
+    links[lan_mac][wlan_module1]["channel"] = ""
 
 # Write stuff to json
 i = 0
@@ -140,7 +175,7 @@ for source in links:
 
 json_dict = {"nodes": [{'index': index,
                         'label': nodes[nodes_dict_index[index]]["label"],
-                        'mac': nodes[nodes_dict_index[index]]["label"],
+                        'mac': nodes[nodes_dict_index[index]]["mac"],
                         'type': nodes[nodes_dict_index[index]]["type"],
                         'channel': nodes[nodes_dict_index[index]]["channel"]} for index in nodes_dict_index.keys()],
              "links": [{"source": source,
