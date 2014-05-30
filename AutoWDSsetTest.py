@@ -46,15 +46,10 @@ for line in get_table_data("/Setup/WLAN-Management/AP-Configuration/Accesspoints
 # Set Channel and BGscaninterval
 lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} ' + str(Channel) + ' {Background-Scan} ' + str(Background_scan_interval))
 
-if Channel > 11:
-    # Set Modules to 5 Ghz
-    # default (0), 2.4GHz (1), 5GHz (2), Off (3), Auto (255)
-    for entry in mac_list:
-        lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/' + entry + ' {WLAN-Module-1} 2 {WLAN-Module-2} 2')
-else:
-    # Set 2,4 Ghz
-    for entry in mac_list:
-        lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/' + entry + ' {WLAN-Module-1} 1 {WLAN-Module-2} 1')
+# Set Modules Auto (this will hopefully automatically set the modules accordingly)
+# default (0), 2.4GHz (1), 5GHz (2), Off (3), Auto (255)
+for entry in mac_list:
+    lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/' + entry + ' {WLAN-Module-1} 255 {WLAN-Module-2} 255')
 
 # Execute the script on the wlc if wlc is up
 if wlc_is_up(wlc_address):
