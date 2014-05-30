@@ -54,7 +54,7 @@ echo "Starting avg calculation and archiving" >&2
 
 overall_overall_ms_sum=0
 overall_overall_pl_sum=0
-testdir="AutoWDStest_${DATE}_${NR_PACKETS}_${bgscan}_${channel}"
+testdir="AutoWDStest_${DATE}_${NR_PACKETS}_${bgscan}_${channel}_${psize}"
 mkdir "$testdir"
 cd "$testdir"
 touch test_report
