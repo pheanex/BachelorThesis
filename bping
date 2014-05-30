@@ -2,6 +2,7 @@
 # This script is executed in the vms
 NUM_PINGS_ORIG=10
 NUM_PINGS=$((NUM_PINGS_ORIG + 1))
+PACKET_SIZE=56
 cd /root
 rm -f bping_data
 rm -f ping_*

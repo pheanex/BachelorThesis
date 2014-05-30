@@ -6,10 +6,12 @@ VM_end=22
 VM_cnt=0
 channel=$2
 bgscan=$3
+psize=$4
 
-if [[ -z "$channel" ]] || [[ -z "$bgscan" ]] || [[ -z "$NR_PACKETS" ]]
+if [[ -z "$channel" ]] || [[ -z "$bgscan" ]] || [[ -z "$NR_PACKETS" ]] || [[ -z "$psize" ]]
 then
-	echo "Error: usage: $0 <nr_packets> <channel> <bgscan>"
+	echo "Error: usage: $0 <nr_packets> <channel> <bgscan> <packet_size>"
+	echo "packetsize max: 1472 normal: 56"
 	exit 1
 fi
 
@@ -30,6 +32,7 @@ echo "Waiting 30 secs until the APs have reconfigured"
 sleep 30
 
 sed -i "s/^NUM_PINGS_ORIG=.*/NUM_PINGS_ORIG=$NR_PACKETS/" bping
+sed -i "s/^PACKET_SIZE=.*/PACKET_SIZE=$psize/" bping
 
 echo "Update bping scripts in vms" >&2
 for i in $(seq $VM_start $VM_end)
