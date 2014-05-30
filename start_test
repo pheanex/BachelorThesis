@@ -1,0 +1,106 @@
+#!/bin/bash
+DATE=$(date +%Y-%m-%d-%H-%M-%S)
+NR_PACKETS=$1
+VM_start=11
+VM_end=22
+VM_cnt=0
+channel=$2
+bgscan=$3
+
+if [[ -z "$channel" ]] || [[ -z "$bgscan" ]] || [[ -z "$NR_PACKETS" ]]
+then
+	echo "Error: usage: $0 <nr_packets> <channel> <bgscan>"
+	exit 1
+fi
+
+echo "Channel: $channel"
+echo "Number of packets: $NR_PACKETS"
+echo "Background scan interval: $bgscan"
+echo "Setting channel: ${channel} and bgscan: ${bgscan}"
+if ! python AutoWDSsetTest.py 172.16.40.100 admin private 0 $channel
+then
+	echo "Error: Setting channel and bgscan failed"  >&2
+	exit 1
+else
+	echo "Setting channel and bgscan OK" >&2
+fi
+
+# Give the aps some time to reconfigurate
+echo "Waiting 30 secs until the APs have reconfigured"
+sleep 30
+
+sed -i "s/^NUM_PINGS_ORIG=.*/NUM_PINGS_ORIG=$NR_PACKETS/" bping
+
+echo "Update bping scripts in vms" >&2
+for i in $(seq $VM_start $VM_end)
+do
+	cp bping /var/lib/vz/root/$i/root/
+done
+
+echo "Start randomly delayed tests on vms" >&2
+for i in $(seq $VM_start $VM_end)
+do
+	let VM_cnt++
+	vzctl exec $i "sleep 0.$RANDOM; /root/bping" &
+done
+
+echo "Wait for all backgroundjobs to finish" >&2
+wait
+
+echo "Starting avg calculation and archiving" >&2
+
+overall_overall_ms_sum=0
+overall_overall_pl_sum=0
+testdir="AutoWDStest_${DATE}_${NR_PACKETS}_${bgscan}_${channel}"
+mkdir "$testdir"
+cd "$testdir"
+touch test_report
+for i in $(seq $VM_start $VM_end)
+do
+	mkdir $i
+	cd $i
+	cp -R /var/lib/vz/root/${i}/root/ping_* .
+	# calc average over values for ${i}
+	for file in $(ls ping*[[:digit:]])
+	do
+		ms_avg=$(awk '{ sum += $2; num_lines += 1 } END { avg=sum/num_lines; print avg }' "$file")
+		echo "$ms_avg" > "${file}_ms_avg"
+		#echo "VM${i} $file avg: $ms_avg"
+	done
+	#calc overall ms average
+	for file in $(ls *_ms_avg)
+	do
+		ms_count=0
+		ms_sum=0
+		for file in $(ls *_ms_avg)
+		do
+			ms_sum="$(echo "${ms_sum}+$(cat $file)" | bc -l)"
+			let ms_count++
+		done
+	done
+	overall_ms_avg=$(echo "${ms_sum}/${ms_count}" | bc -l)
+	echo $overall_ms_avg > overall_ms_avg
+	echo -n "VM${i} overall ms-avg/pl-avg: $overall_ms_avg" | tee -a ../test_report
+	overall_overall_ms_sum=$(echo $overall_overall_ms_sum + $overall_ms_avg | bc -l)
+
+	#calc overall packetloss
+	pl_cnt=0
+	pl_sum=0
+	for file in $(ls *_packetloss)
+	do
+		let pl_cnt++
+		pl_sum="$(echo "${pl_sum} + $(cat $file)" | bc -l)"
+	done
+	overall_pl_avg="$(echo "${pl_sum}/${pl_cnt}" | bc -l)"
+	echo $overall_pl_avg > overall_pl_avg
+	echo -e "\t$overall_pl_avg"  | tee -a ../test_report
+	overall_overall_pl_sum=$(echo $overall_overall_pl_sum + $overall_pl_avg | bc -l)
+	cd ..
+done
+cd ..
+overall_overall_ms_avg=$(echo "$overall_overall_ms_sum / $VM_cnt" | bc -l)
+overall_overall_pl_avg=$(echo "$overall_overall_pl_sum / $VM_cnt" | bc -l)
+echo $overall_overall_ms_avg > overall_overall_ms_avg
+echo $overall_overall_pl_avg > overall_overall_pl_avg
+echo "Overall ms-avg: $overall_overall_ms_avg" | tee -a $testdir/test_report
+echo "Overall pl-avg: $overall_overall_pl_avg" | tee -a $testdir/test_report
