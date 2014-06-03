@@ -31,7 +31,12 @@ fi
 echo "Waiting 3min secs until the APs have reconfigured"
 sleep 300
 
-# check here if all aps are successfully there TODO
+# Check if all aps are active an running
+if ! python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
+then
+        echo "Error: not all APs are active and running" >&2
+        exit 1
+fi
 
 sed -i "s/^NUM_PINGS_ORIG=.*/NUM_PINGS_ORIG=$NR_PACKETS/" bping
 sed -i "s/^PACKET_SIZE=.*/PACKET_SIZE=$psize/" bping

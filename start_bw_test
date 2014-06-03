@@ -1,0 +1,80 @@
+#!/bin/bash
+DATE=$(date +%Y-%m-%d-%H-%M-%S)
+NR_SECS=$1
+VM_start=11
+VM_end=22
+VM_cnt=0
+channel=$2
+bgscan=$3
+bw=$4
+
+if [[ -z "$channel" ]] || [[ -z "$bgscan" ]] || [[ -z "$NR_SECS" ]] || [[ -z "$bw" ]]
+then
+	echo "Error: usage: $0 <nr_secs_iperf(t)> <channel> <bgscan> <bw in Mbit>"
+	exit 1
+fi
+
+echo "Channel: $channel"
+echo "Seconds count (-t for iperf): $NR_SECS"
+echo "Background scan interval: $bgscan"
+echo "Setting channel: ${channel} and bgscan: ${bgscan}"
+if ! python AutoWDSsetTest.py 172.16.40.100 admin private 0 $channel
+then
+	echo "Error: Setting channel and bgscan failed"  >&2
+	exit 1
+else
+	echo "Setting channel and bgscan OK" >&2
+fi
+
+# Give the aps some time to reconfigurate
+echo "Waiting 300 secs until the APs have reconfigured"
+sleep 300
+
+# Check if all aps are active an running
+if ! python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
+then
+	echo "Error: not all APs are active and running" >&2
+	exit 1
+fi
+
+echo "Update iperf script in vms" >&2
+for i in $(seq $VM_start $VM_end)
+do
+	cp iperf-parallel-servers iperf-multiple-clients /var/lib/vz/root/$i/root/
+done
+
+echo "Starting parallel iperf listeners in vms" >&2
+for i in $(seq $VM_start $VM_end)
+do
+	vzctl exec $i "cd /root; ./iperf-parallel-servers $VM_start $VM_end $i"
+done
+
+echo "Starting traffic throughput test in vms" >&2
+for i in $(seq $VM_start $VM_end)
+do
+	vzctl exec $i "cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $NR_SECS $bw"
+done
+
+echo "Wait for test to finish" >&2
+sleep $NR_SECS
+sleep 1
+
+echo "Stopping parallel iperf listeners in vms" >62
+for i in $(seq $VM_start $VM_end)
+do
+	vzctl exec $i "killall iperf"
+done
+
+echo "Copying data from vms to archive" >&2
+testdir="AutoWDStest_bw_${DATE}_${NR_SECS}_${bgscan}_${channel}_${bw}"
+mkdir "$testdir"
+cd "$testdir"
+touch test_report
+for i in $(seq $VM_start $VM_end)
+do
+	mkdir $i
+	cd $i
+	cp -R /var/lib/vz/root/${i}/root/iperf-serverlog_172.16.40.2* .
+	cp -R /var/lib/vz/root/${i}/root/iperf-clientlog_172.16.40.2* .
+done
+cd ..
