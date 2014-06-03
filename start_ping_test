@@ -27,8 +27,8 @@ else
 	echo "Setting channel and bgscan OK" >&2
 fi
 
-# Check every 10 secs if aps are already done or if they still need some time to reconfigure
-for i in $(seq 1 18)
+# Check every 10 secs for 5 minutes if aps are already done or if they still need some time to reconfigure
+for i in $(seq 1 30)
 do
 	sleep 10
 	if python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
