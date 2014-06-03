@@ -37,19 +37,19 @@ def wlc_is_up(hostname):
 if not wlc_is_up(wlc_address):
     exit(1)
 
-# Get the table: /Setup/WLAN-Management/AP-Configuration/Accesspoints and from it the mac addresses of the wlan-modules
-mac_list = list()
-for line in get_table_data("/Setup/WLAN-Management/AP-Configuration/Accesspoints", wlc_address, wlc_username, wlc_password):
-    if not line[0] == 'ffffffffffff':
-        mac_list.append(str(line[0]))
-
 # Set Channel and BGscaninterval
 lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} ' + str(Channel) + ' {Background-Scan} ' + str(Background_scan_interval))
 
-# Set Modules Auto (this will hopefully automatically set the modules accordingly)
+# Set default band and modules to default band
 # default (0), 2.4GHz (1), 5GHz (2), Off (3), Auto (255)
-for entry in mac_list:
-    lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/' + entry + ' {WLAN-Module-1} 255 {WLAN-Module-2} 255')
+if int(Channel) < 14:
+    lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-1-default 2.4G')
+    lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-2-default 2.4G')
+else:
+    lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-1-default 5G')
+    lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-2-default 5G')
+
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} ' + Channel)
 
 # Execute the script on the wlc if wlc is up
 if wlc_is_up(wlc_address):
