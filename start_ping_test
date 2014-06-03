@@ -28,8 +28,10 @@ else
 fi
 
 # Give the aps some time to reconfigurate
-echo "Waiting 30 secs until the APs have reconfigured"
-sleep 30
+echo "Waiting 3min secs until the APs have reconfigured"
+sleep 300
+
+# check here if all aps are successfully there TODO
 
 sed -i "s/^NUM_PINGS_ORIG=.*/NUM_PINGS_ORIG=$NR_PACKETS/" bping
 sed -i "s/^PACKET_SIZE=.*/PACKET_SIZE=$psize/" bping
@@ -54,7 +56,7 @@ echo "Starting avg calculation and archiving" >&2
 
 overall_overall_ms_sum=0
 overall_overall_pl_sum=0
-testdir="AutoWDStest_${DATE}_${NR_PACKETS}_${bgscan}_${channel}_${psize}"
+testdir="AutoWDStest_ping_${DATE}_${NR_PACKETS}_${bgscan}_${channel}_${psize}"
 mkdir "$testdir"
 cd "$testdir"
 touch test_report
