@@ -36,7 +36,7 @@ if not wlc_is_up(wlc_address):
     print("WLC is down")
     exit(1)
 
-ap_list = get_table_data("/Setup/WLAN-Management/AP-Connections", wlc_address, wlc_username, wlc_password)
+ap_list = get_table_data("/Status/WLAN-Management/AP-Connections", wlc_address, wlc_username, wlc_password)
 
 # Check if aps are in table (the right number of aps)
 if len(ap_list) < nr_aps:
