@@ -39,6 +39,11 @@ lcos_script.append('rm /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/
 # Set the Topology management back to Auto(=0) mode
 lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Profiles/AUTOWDS_PROFILE {Topology-Management} 0')
 
+# Reset the radioprofile to default
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-1-default 2.4G')
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-2-default 2.4G')
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} 13')
+
 # Get the table: /Setup/WLAN-Management/AP-Configuration/Accesspoints and from it the mac addresses of the wlan-modules
 mac_list = list()
 for line in get_table_data("/Setup/WLAN-Management/AP-Configuration/Accesspoints", wlc_address, wlc_username, wlc_password):
