@@ -27,16 +27,20 @@ else
 	echo "Setting channel and bgscan OK" >&2
 fi
 
-# Give the aps some time to reconfigurate
-echo "Waiting 3min secs until the APs have reconfigured"
-sleep 180
-
-# Check if all aps are active an running
-if ! python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
-then
-        echo "Error: not all APs are active and running" >&2
-        exit 1
-fi
+# Check every 10 secs if aps are already done or if they still need some time to reconfigure
+for i in $(seq 1 18)
+do
+	sleep 10
+	if python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
+	then
+		break
+	fi
+	if [[ $i == "18" ]]
+	then
+		echo "APs not reconfigured after 180 seconds => sth must be wrong" >&2
+		exit 1
+	fi
+done
 
 sed -i "s/^NUM_PINGS_ORIG=.*/NUM_PINGS_ORIG=$NR_PACKETS/" bping
 sed -i "s/^PACKET_SIZE=.*/PACKET_SIZE=$psize/" bping
