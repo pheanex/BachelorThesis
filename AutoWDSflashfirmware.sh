@@ -9,7 +9,7 @@ l322fw=$1
 l452fw=$2
 batfw=$3
 
-if [[ ! -f "$l322gw" ]] || [[ ! -f "$l452fw" ]] || [[ ! -f "$batfw" ]]
+if [[ ! -f "$l322fw" ]] || [[ ! -f "$l452fw" ]] || [[ ! -f "$batfw" ]]
 then
         echo "Error: usage: $0 <L322 Firmware file> <L452 Firmware file> <BAT firmware file>" >&2
         exit 1
