@@ -49,7 +49,7 @@ else:
     lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-1-default 5G')
     lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-2-default 5G')
 
-lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} ' + Channel)
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} ' + str(Channel))
 
 # Execute the script on the wlc if wlc is up
 if wlc_is_up(wlc_address):
