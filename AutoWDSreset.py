@@ -7,13 +7,15 @@ import testcore.control.ssh
 import os
 import sys
 
-if len(sys.argv) < 3:
-    print("Usage: python AutoWDSreset.py <wlc-address> <wlc-username> <wlc_password>")
+if len(sys.argv) < 5:
+    print("Usage: python AutoWDSreset.py <wlc-address> <wlc-username> <wlc_password> <band(2.4/5)> <channel>")
     exit(1)
 
 wlc_address = sys.argv[1]
 wlc_username = sys.argv[2]
 wlc_password = sys.argv[3]
+default_band = sys.argv[4]
+default_channel = sys.argv[5]
 
 
 # Returns list of lists with tabledata from wlc for a given tablename, else empty table
@@ -40,9 +42,9 @@ lcos_script.append('rm /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/
 lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Profiles/AUTOWDS_PROFILE {Topology-Management} 0')
 
 # Reset the radioprofile to default
-lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-1-default 2.4G')
-lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-2-default 2.4G')
-lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} 13')
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-1-default ' + default_band + 'G')
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/WLAN-Modul-2-default ' + default_band + 'G')
+lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Radioprofiles/RADIO_PROF {Channel-List} ' + default_channel)
 
 # Get the table: /Setup/WLAN-Management/AP-Configuration/Accesspoints and from it the mac addresses of the wlan-modules
 mac_list = list()
