@@ -34,9 +34,9 @@ do
         then
                 break
         fi
-        if [[ $i == "18" ]] 
+        if [[ $i == "30" ]]
         then
-                echo "APs not reconfigured after 180 seconds => sth must be wrong" >&2
+                echo "APs not reconfigured after 5minutes  => sth must be wrong" >&2
                 exit 1
         fi
 done
