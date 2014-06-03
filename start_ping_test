@@ -29,7 +29,7 @@ fi
 
 # Give the aps some time to reconfigurate
 echo "Waiting 3min secs until the APs have reconfigured"
-sleep 300
+sleep 180
 
 # Check if all aps are active an running
 if ! python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
