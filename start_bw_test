@@ -59,7 +59,7 @@ do
 	vzctl exec $i "cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $NR_SECS $bw"
 done
 
-echo "Wait for test to finish" >&2
+echo "Wait for test to finish (${NR_SECS}s)" >&2
 sleep $NR_SECS
 sleep 1
 
@@ -80,5 +80,6 @@ do
 	cd $i
 	cp -R /var/lib/vz/root/${i}/root/iperf-serverlog_172.16.40.2* .
 	cp -R /var/lib/vz/root/${i}/root/iperf-clientlog_172.16.40.2* .
+	cd ..
 done
 cd ..
