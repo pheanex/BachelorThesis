@@ -16,7 +16,6 @@ if len(sys.argv) < 3:
 wlc_address = sys.argv[1]
 wlc_username = sys.argv[2]
 wlc_password = sys.argv[3]
-filename = "AutoWDSstatus.json"
 
 
 # Returns list of lists with tabledata from wlc for a given tablename, else empty table
@@ -49,7 +48,6 @@ modules = set()
 device_modules = dict()
 nodes = dict()
 links = dict()
-source_target = set()
 
 # Fill nodes from active radios
 for line in Active_Radios:
@@ -103,6 +101,8 @@ else:
     print("Modus is neither Automatic nor Manual => probably Semi -> Don't know what to do.")
     exit(1)
 
+# Go Through autowds-connections
+source_target = set()
 for line in Autowds_table:
     if line[4] not in nodes:
         # Node is in autowds_(auto)_topology but not in nodes => would cause errors
@@ -129,9 +129,9 @@ for line in Intra_Wlan_Discovery:
         links[line[0]][line[1]]["sourcechannel"] = line[2]
         links[line[0]][line[1]]["sourceage"] = line[5]
     if (line[1], line[0]) in source_target:
-        links[line[0]][line[1]]["targetstrength"] = line[3]
-        links[line[0]][line[1]]["targetchannel"] = line[2]
-        links[line[0]][line[1]]["targetage"] = line[5]
+        links[line[1]][line[0]]["targetstrength"] = line[3]
+        links[line[1]][line[0]]["targetchannel"] = line[2]
+        links[line[1]][line[0]]["targetage"] = line[5]
 
 for lan_mac in device_modules.keys():
     wlan_module0 = device_modules[lan_mac][0]
@@ -195,5 +195,6 @@ json_dict = {"nodes": [{'index': index,
                                                 targetstrength,
                                                 state,
                                                 channel in keyed_links]}
+filename = "AutoWDSstatus.json"
 with open(filename, 'w') as outfile:
     json.dump(json_dict, outfile, indent=4)
