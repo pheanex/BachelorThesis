@@ -59,7 +59,7 @@ do
 	vzctl exec $i "cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $NR_SECS $bw"
 done
 
-echo "Wait for test to finish" >&2
+echo "Wait for test to finish (${NR_SECS}s)" >&2
 sleep $NR_SECS
 sleep 1
 
@@ -73,12 +73,12 @@ echo "Copying data from vms to archive" >&2
 testdir="AutoWDStest_bw_${DATE}_${NR_SECS}_${bgscan}_${channel}_${bw}"
 mkdir "$testdir"
 cd "$testdir"
-touch test_report
 for i in $(seq $VM_start $VM_end)
 do
 	mkdir $i
 	cd $i
 	cp -R /var/lib/vz/root/${i}/root/iperf-serverlog_172.16.40.2* .
 	cp -R /var/lib/vz/root/${i}/root/iperf-clientlog_172.16.40.2* .
+	cd ..
 done
 cd ..
