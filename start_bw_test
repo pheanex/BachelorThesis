@@ -73,7 +73,6 @@ echo "Copying data from vms to archive" >&2
 testdir="AutoWDStest_bw_${DATE}_${NR_SECS}_${bgscan}_${channel}_${bw}"
 mkdir "$testdir"
 cd "$testdir"
-touch test_report
 for i in $(seq $VM_start $VM_end)
 do
 	mkdir $i
