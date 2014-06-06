@@ -262,7 +262,7 @@
             "sourcemac": "00a0571c2f85", 
             "targetstrength": "50", 
             "targetmac": "00a0571c2c0d", 
-            "sourcestrength": "50"
+            "sourcestrength": "49"
         }, 
         {
             "source": 1, 
@@ -287,52 +287,42 @@
         {
             "source": 2, 
             "state": "Active", 
-            "target": 19, 
+            "target": 27, 
             "channel": "", 
             "sourcemac": "ece555ffd650", 
-            "targetstrength": "43", 
-            "targetmac": "ece555ffd61e", 
-            "sourcestrength": "43"
+            "targetstrength": "55", 
+            "targetmac": "ece555ffd667", 
+            "sourcestrength": "67"
         }, 
         {
             "source": 3, 
             "state": "Active", 
-            "target": 19, 
+            "target": 35, 
             "channel": "", 
             "sourcemac": "00a0571c363f", 
-            "targetstrength": "58", 
-            "targetmac": "ece555ffd61e", 
-            "sourcestrength": "46"
-        }, 
-        {
-            "source": 4, 
-            "state": "Active", 
-            "target": 15, 
-            "channel": "", 
-            "sourcemac": "ece555ffd5da", 
-            "targetstrength": "67", 
-            "targetmac": "00a0571c2c44", 
-            "sourcestrength": "69"
+            "targetstrength": "39", 
+            "targetmac": "00a0571c3732", 
+            "sourcestrength": "42"
         }, 
         {
             "source": 6, 
             "state": "Active", 
-            "target": 19, 
+            "target": 27, 
             "channel": "", 
             "sourcemac": "00a0571c3501", 
-            "targetstrength": "47", 
-            "targetmac": "ece555ffd61e", 
-            "sourcestrength": "32"
+            "targetstrength": "42", 
+            "targetmac": "ece555ffd667", 
+            "sourcestrength": "40"
         }, 
         {
             "source": 8, 
             "state": "Active", 
-            "target": 30, 
+            "target": 15, 
             "channel": "", 
             "sourcemac": "00a0571c373e", 
-            "targetstrength": "27", 
-            "targetmac": "ece555ffd5af", 
-            "sourcestrength": "19"
+            "targetstrength": "35", 
+            "targetmac": "00a0571c2c44", 
+            "sourcestrength": "25"
         }, 
         {
             "source": 9, 
@@ -353,6 +343,16 @@
             "targetstrength": 9000, 
             "targetmac": "ece555ffd5bf", 
             "sourcestrength": 9000
+        }, 
+        {
+            "source": 7, 
+            "state": "Active", 
+            "target": 20, 
+            "channel": "", 
+            "sourcemac": "ece555ffd5c1", 
+            "targetstrength": "68", 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": "67"
         }, 
         {
             "source": 11, 
@@ -475,6 +475,16 @@
             "sourcestrength": 9000
         }, 
         {
+            "source": 30, 
+            "state": "Active", 
+            "target": 14, 
+            "channel": "", 
+            "sourcemac": "ece555ffd5af", 
+            "targetstrength": "32", 
+            "targetmac": "00a0571c2b52", 
+            "sourcestrength": "25"
+        }, 
+        {
             "source": 21, 
             "state": "Active", 
             "target": 7, 
@@ -537,32 +547,32 @@
         {
             "source": 27, 
             "state": "Active", 
-            "target": 19, 
+            "target": 20, 
             "channel": "", 
             "sourcemac": "ece555ffd667", 
-            "targetstrength": "45", 
-            "targetmac": "ece555ffd61e", 
-            "sourcestrength": "51"
+            "targetstrength": "14", 
+            "targetmac": "00a0571c2c0d", 
+            "sourcestrength": "12"
         }, 
         {
             "source": 19, 
             "state": "Active", 
-            "target": 20, 
+            "target": 2, 
             "channel": "", 
             "sourcemac": "ece555ffd61e", 
-            "targetstrength": "29", 
-            "targetmac": "00a0571c2c0d", 
-            "sourcestrength": "41"
+            "targetstrength": "42", 
+            "targetmac": "ece555ffd650", 
+            "sourcestrength": "42"
         }, 
         {
             "source": 32, 
             "state": "Active", 
-            "target": 20, 
+            "target": 7, 
             "channel": "", 
             "sourcemac": "ece555ffd5b9", 
-            "targetstrength": "66", 
-            "targetmac": "00a0571c2c0d", 
-            "sourcestrength": "63"
+            "targetstrength": "68", 
+            "targetmac": "ece555ffd5c1", 
+            "sourcestrength": "69"
         }, 
         {
             "source": 33, 
@@ -570,9 +580,9 @@
             "target": 27, 
             "channel": "", 
             "sourcemac": "00a0571de372", 
-            "targetstrength": "46", 
+            "targetstrength": "44", 
             "targetmac": "ece555ffd667", 
-            "sourcestrength": "53"
+            "sourcestrength": "52"
         }, 
         {
             "source": 34, 
