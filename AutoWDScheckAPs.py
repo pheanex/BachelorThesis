@@ -39,6 +39,9 @@ if not wlc_is_up(wlc_address):
 ap_list = get_table_data("/Status/WLAN-Management/AP-Connections", wlc_address, wlc_username, wlc_password)
 
 # Check if aps are in table (the right number of aps)
+if ap_list is None:
+    print("Error: Could not get data from WLC")
+    exit(1)
 if len(ap_list) < nr_aps:
     print(str(len(ap_list)) + " != " + str(nr_aps))
     exit(1)
