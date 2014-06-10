@@ -27,7 +27,10 @@ else
 	echo "Setting channel and bgscan OK" >&2
 fi
 
-# Check every 10 secs for 5 minutes if aps are already done or if they still need some time to reconfigure
+echo "Waiting 40 Seconds, then starting checking if APs are still running" >&2
+sleep 40
+
+echo "Check every 10 secs for 5 minutes if aps are already done or if they still need some time to reconfigure" >&2
 for i in $(seq 1 30)
 do
 	sleep 10
@@ -41,6 +44,7 @@ do
 		exit 1
 	fi
 done
+echo "All APs are in state running" >&2
 
 sed -i "s/^NUM_PINGS_ORIG=.*/NUM_PINGS_ORIG=$NR_PACKETS/" bping
 sed -i "s/^PACKET_SIZE=.*/PACKET_SIZE=$psize/" bping

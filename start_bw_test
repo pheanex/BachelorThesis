@@ -26,6 +26,9 @@ else
 	echo "Setting channel and bgscan OK" >&2
 fi
 
+echo "Waiting 40 Seconds, then starting checking if APs are still running" >&2
+sleep 40
+
 # Check every 10 secs for 5 min if aps are already done or if they still need some time to reconfigure
 for i in $(seq 1 30)
 do
@@ -40,6 +43,7 @@ do
                 exit 1
         fi
 done
+echo "All APs are running" >&2
 
 echo "Update iperf script in vms" >&2
 for i in $(seq $VM_start $VM_end)
@@ -56,12 +60,12 @@ done
 echo "Starting traffic throughput test in vms" >&2
 for i in $(seq $VM_start $VM_end)
 do
-	vzctl exec $i "cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $NR_SECS $bw"
+	vzctl exec $i "sleep 0.$RANDOM; cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $NR_SECS $bw"
 done
 
-echo "Wait for test to finish (${NR_SECS}s)" >&2
+echo "Wait for test to finish about (${NR_SECS}s)" >&2
 sleep $NR_SECS
-sleep 1
+sleep 10
 
 echo "Stopping parallel iperf listeners in vms" >62
 for i in $(seq $VM_start $VM_end)
