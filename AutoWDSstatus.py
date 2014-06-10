@@ -16,7 +16,6 @@ if len(sys.argv) < 3:
 wlc_address = sys.argv[1]
 wlc_username = sys.argv[2]
 wlc_password = sys.argv[3]
-filename = "AutoWDSstatus.json"
 
 
 # Returns list of lists with tabledata from wlc for a given tablename, else empty table
@@ -49,7 +48,6 @@ modules = set()
 device_modules = dict()
 nodes = dict()
 links = dict()
-source_target = set()
 
 # Fill nodes from active radios
 for line in Active_Radios:
@@ -69,6 +67,7 @@ for line in Active_Radios:
         d["type"] = "AP"
         d["channel"] = ""
         d["mac"] = line[0]
+        d["connectiontype"] = line[27]
         nodes[line[0]] = d
 
     if not line[5] in nodes:
@@ -103,6 +102,8 @@ else:
     print("Modus is neither Automatic nor Manual => probably Semi -> Don't know what to do.")
     exit(1)
 
+# Go Through autowds-connections
+source_target = set()
 for line in Autowds_table:
     if line[4] not in nodes:
         # Node is in autowds_(auto)_topology but not in nodes => would cause errors
@@ -113,13 +114,13 @@ for line in Autowds_table:
     links[line[4]][line[7]]["connectiontype"] = "real"
     links[line[4]][line[7]]["sourcemac"] = line[4]
     links[line[4]][line[7]]["targetmac"] = line[7]
-    links[line[4]][line[7]]["sourcestrength"] = ""
-    links[line[4]][line[7]]["sourcechannel"] = ""
-    links[line[4]][line[7]]["sourceage"] = ""
-    links[line[4]][line[7]]["targetstrength"] = ""
-    links[line[4]][line[7]]["targetchannel"] = ""
-    links[line[4]][line[7]]["targetage"] = ""
-    links[line[4]][line[7]]["channel"] = ""
+    #links[line[4]][line[7]]["sourcestrength"] = ""
+    #links[line[4]][line[7]]["sourcechannel"] = ""
+    #links[line[4]][line[7]]["sourceage"] = ""
+    #links[line[4]][line[7]]["targetstrength"] = ""
+    #links[line[4]][line[7]]["targetchannel"] = ""
+    #links[line[4]][line[7]]["targetage"] = ""
+    #links[line[4]][line[7]]["channel"] = ""
 
     source_target.add((line[4], line[7]))
 
@@ -128,28 +129,48 @@ for line in Intra_Wlan_Discovery:
         links[line[0]][line[1]]["sourcestrength"] = line[3]
         links[line[0]][line[1]]["sourcechannel"] = line[2]
         links[line[0]][line[1]]["sourceage"] = line[5]
-    if (line[1], line[0]) in source_target:
-        links[line[0]][line[1]]["targetstrength"] = line[3]
-        links[line[0]][line[1]]["targetchannel"] = line[2]
-        links[line[0]][line[1]]["targetage"] = line[5]
+    elif (line[1], line[0]) in source_target:
+        links[line[1]][line[0]]["targetstrength"] = line[3]
+        links[line[1]][line[0]]["targetchannel"] = line[2]
+        links[line[1]][line[0]]["targetage"] = line[5]
+    else:
+        # Ignore seen connections for nodes which are not in active radios
+        if not (line[0] in nodes and line[1] in nodes):
+            continue
+        source_target.add((line[0], line[1]))
+        if not line[0] in links:
+            links[line[0]] = dict()
+        links[line[0]][line[1]] = dict()
+        links[line[0]][line[1]]["connectiontype"] = "seen"
+        links[line[0]][line[1]]["sourcemac"] = line[0]
+        links[line[0]][line[1]]["targetmac"] = line[1]
+        links[line[0]][line[1]]["sourcestrength"] = line[3]
+        links[line[0]][line[1]]["sourcechannel"] = line[2]
+        links[line[0]][line[1]]["sourceage"] = line[5]
+        links[line[0]][line[1]]["state"] = "possible"
+        # preset targetstr to empty string since it may get never set (since the aps dont have to see each other necessarily)
+        links[line[0]][line[1]]["targetstrength"] = ""
+        links[line[0]][line[1]]["targetchannel"] = ""
+        links[line[0]][line[1]]["targetage"] = ""
+
 
 for lan_mac in device_modules.keys():
     wlan_module0 = device_modules[lan_mac][0]
     wlan_module1 = device_modules[lan_mac][1]
     links[lan_mac] = dict()
     links[lan_mac][wlan_module0] = dict()
-    links[lan_mac][wlan_module1] = dict()
     links[lan_mac][wlan_module0]["sourcemac"] = lan_mac
     links[lan_mac][wlan_module0]["targetmac"] = wlan_module0
-    links[lan_mac][wlan_module0]["sourcestrength"] = 9000
-    links[lan_mac][wlan_module0]["targetstrength"] = 9000
+    links[lan_mac][wlan_module0]["sourcestrength"] = ""
+    links[lan_mac][wlan_module0]["targetstrength"] = ""
     links[lan_mac][wlan_module0]["state"] = "Active"
     links[lan_mac][wlan_module0]["connectiontype"] = "fake"
     links[lan_mac][wlan_module0]["channel"] = ""
+    links[lan_mac][wlan_module1] = dict()
     links[lan_mac][wlan_module1]["sourcemac"] = lan_mac
     links[lan_mac][wlan_module1]["targetmac"] = wlan_module1
-    links[lan_mac][wlan_module1]["sourcestrength"] = 9000
-    links[lan_mac][wlan_module1]["targetstrength"] = 9000
+    links[lan_mac][wlan_module1]["sourcestrength"] = ""
+    links[lan_mac][wlan_module1]["targetstrength"] = ""
     links[lan_mac][wlan_module1]["state"] = "Active"
     links[lan_mac][wlan_module1]["connectiontype"] = "fake"
     links[lan_mac][wlan_module1]["channel"] = ""
@@ -171,9 +192,10 @@ for source in links:
             nodes_dict_name[links[source][target]["targetmac"]],
             links[source][target]["sourcemac"],
             links[source][target]["targetmac"],
-            links[source][target]["sourcestrength"], links[source][target]["targetstrength"],
+            links[source][target]["sourcestrength"],
+            links[source][target]["targetstrength"],
             links[source][target]["state"],
-            links[source][target]["channel"]))
+            links[source][target]["connectiontype"]))
 
 json_dict = {"nodes": [{'index': index,
                         'label': nodes[nodes_dict_index[index]]["label"],
@@ -187,13 +209,8 @@ json_dict = {"nodes": [{'index': index,
                         'sourcestrength': sourcestrength,
                         'targetstrength': targetstrength,
                         'state': state,
-                        'channel': channel} for source,
-                                                target,
-                                                sourcemac,
-                                                targetmac,
-                                                sourcestrength,
-                                                targetstrength,
-                                                state,
-                                                channel in keyed_links]}
+                        'connectiontype': connectiontype
+                        } for source, target, sourcemac, targetmac, sourcestrength, targetstrength, state, connectiontype in keyed_links]}
+filename = "autowdsGraphColored.json"
 with open(filename, 'w') as outfile:
     json.dump(json_dict, outfile, indent=4)
