@@ -76,7 +76,9 @@ for line in Active_Radios:
         d["type"] = "IFC"
         d["id"] = int(line[1])
         d["mac"] = line[5]
+        d["connectiontype"] = line[27]
         nodes[line[5]] = d
+
 
 # Fill nodes channel data from accespoints
 for line in Accesspoints:
@@ -114,12 +116,12 @@ for line in Autowds_table:
     links[line[4]][line[7]]["connectiontype"] = "real"
     links[line[4]][line[7]]["sourcemac"] = line[4]
     links[line[4]][line[7]]["targetmac"] = line[7]
-    #links[line[4]][line[7]]["sourcestrength"] = ""
-    #links[line[4]][line[7]]["sourcechannel"] = ""
-    #links[line[4]][line[7]]["sourceage"] = ""
-    #links[line[4]][line[7]]["targetstrength"] = ""
-    #links[line[4]][line[7]]["targetchannel"] = ""
-    #links[line[4]][line[7]]["targetage"] = ""
+    links[line[4]][line[7]]["sourcestrength"] = ""
+    links[line[4]][line[7]]["sourcechannel"] = ""
+    links[line[4]][line[7]]["sourceage"] = ""
+    links[line[4]][line[7]]["targetstrength"] = ""
+    links[line[4]][line[7]]["targetchannel"] = ""
+    links[line[4]][line[7]]["targetage"] = ""
     #links[line[4]][line[7]]["channel"] = ""
 
     source_target.add((line[4], line[7]))
@@ -166,6 +168,8 @@ for lan_mac in device_modules.keys():
     links[lan_mac][wlan_module0]["state"] = "Active"
     links[lan_mac][wlan_module0]["connectiontype"] = "fake"
     links[lan_mac][wlan_module0]["channel"] = ""
+    links[lan_mac][wlan_module0]["sourceage"] = ""
+    links[lan_mac][wlan_module0]["targetage"] = ""
     links[lan_mac][wlan_module1] = dict()
     links[lan_mac][wlan_module1]["sourcemac"] = lan_mac
     links[lan_mac][wlan_module1]["targetmac"] = wlan_module1
@@ -174,6 +178,8 @@ for lan_mac in device_modules.keys():
     links[lan_mac][wlan_module1]["state"] = "Active"
     links[lan_mac][wlan_module1]["connectiontype"] = "fake"
     links[lan_mac][wlan_module1]["channel"] = ""
+    links[lan_mac][wlan_module1]["sourceage"] = ""
+    links[lan_mac][wlan_module1]["targetage"] = ""
 
 # Write stuff to json
 i = 0
@@ -195,13 +201,17 @@ for source in links:
             links[source][target]["sourcestrength"],
             links[source][target]["targetstrength"],
             links[source][target]["state"],
-            links[source][target]["connectiontype"]))
+            links[source][target]["connectiontype"],
+            links[source][target]["sourceage"],
+            links[source][target]["targetage"]))
 
 json_dict = {"nodes": [{'index': index,
                         'label': nodes[nodes_dict_index[index]]["label"],
                         'mac': nodes[nodes_dict_index[index]]["mac"],
                         'type': nodes[nodes_dict_index[index]]["type"],
-                        'channel': nodes[nodes_dict_index[index]]["channel"]} for index in nodes_dict_index.keys()],
+                        'channel': nodes[nodes_dict_index[index]]["channel"],
+                        'connectiontype': nodes[nodes_dict_index[index]]["connectiontype"]
+                        } for index in nodes_dict_index.keys()],
              "links": [{"source": source,
                         "target": target,
                         'sourcemac': sourcemac,
@@ -209,8 +219,10 @@ json_dict = {"nodes": [{'index': index,
                         'sourcestrength': sourcestrength,
                         'targetstrength': targetstrength,
                         'state': state,
-                        'connectiontype': connectiontype
-                        } for source, target, sourcemac, targetmac, sourcestrength, targetstrength, state, connectiontype in keyed_links]}
+                        'connectiontype': connectiontype,
+                        'sourceage': sourceage,
+                        'targetage': targetage
+                        } for source, target, sourcemac, targetmac, sourcestrength, targetstrength, state, connectiontype, sourceage, targetage in keyed_links]}
 filename = "autowdsGraphColored.json"
 with open(filename, 'w') as outfile:
     json.dump(json_dict, outfile, indent=4)
