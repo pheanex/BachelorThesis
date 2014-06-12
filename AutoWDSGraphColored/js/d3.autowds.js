@@ -1,3 +1,11 @@
+/*
+ *  @file    d3.autowds.js
+ *  @author  Christoph Wollgarten (christoph.wollgarten@lancom.de)
+ *  @date    2014/06/06
+ *  @version 0.2
+ *
+ */
+
 /* === HELPER === */
 
 /* check if node is an ap */
@@ -7,7 +15,12 @@ function nodeIsAp(d) {
 
 /* check if link is fake link between radio and ap */
 function linkIsFake(d) {
-  return parseInt(d.sourcestrength) == 9000;
+  return d.connectiontype == "fake";
+}
+
+/* check if link is seen link between radio and radio */
+function linkIsSeen(d) {
+  return d.connectiontype == "seen";
 }
    
 /* d3 size from css of container */
@@ -17,17 +30,23 @@ var width =  $("#d3container").width(),
 	
 /* d3 layout */
 var force = d3.layout.force()
-	.charge(-200)
-	.gravity(0.1)   /* default: 0.1 */
-	.theta(0.8)     /* default: 0.8 */
-	.friction(0.9)  /* default: 0.9 */
+	.charge(-600)
+
+	.gravity(0.1)    /* default: 0.1 */
+	.theta(0.8)      /* default: 0.8 */
+	.friction(0.85)  /* default: 0.9 */
 	.linkStrength(function(d){ 
-	     if(linkIsFake(d)) 
-		   /* link between ap and radio */
-		   return 4;    
+	     if(linkIsFake(d))
+		   return 10;               /* fake between ap and radio */
+		 else if(linkIsSeen(d))
+		 {
+		   if(d.sourcestrength=="") d.sourcestrength = 0;
+		   if(d.targetstrength=="") d.targetstrength = 0;
+		   return 0.01*(((parseInt(d.sourcestrength)+parseInt(d.targetstrength))/200)^8); /* seen link between radio and radio */
+		   //return 0.01;           /* seen between radio and radio */
+		 }
 	     else 
-		   /* link between radio and radio */
-	       return 0.5;  
+	       return 0.8;             /* p2p link between radio and radio */
 	  })
     .size([width, height])
 	.on("tick", function() { force.tick(); });
@@ -66,14 +85,30 @@ d3.json(jsonFile, function(error, graph) {
   var link = svg.selectAll(".link")
       .data(graph.links)
     .enter().append("line")
-      .attr("class", "link")
+	  .attr('class', function(d) { return "link link-connectiontype-"+d.connectiontype; })
+	    .style("stroke-opacity", function(d) {
+           if(linkIsFake(d)) 
+		     return 0.8;            /* fake between radio and radio */
+		   else if(linkIsSeen(d))
+		     {
+		       //if(d.sourcestrength=="") d.sourcestrength = 0;
+			   //if(d.targetstrength=="") d.targetstrength = 0;
+		       //return 0.3/(200/(parseInt(d.sourcestrength)+parseInt(d.targetstrength))); /* seen link between radio and radio */
+			   return 0.15;
+			 }
+		   else 
+             return 0.9;            /* p2p link between radio and radio */
+		})
 	  	.style("stroke", function(d) { 
 		   if(linkIsFake(d)) 
-		     /* link between ap and radio */
-		     return "#C1C1C1"; 
+		     return "#C1C1C1";      /* fake between radio and radio */
+		   else if(d.sourcestrength=="" || d.targetstrength=="")
+		     return "#FF0000";
+		   else if(linkIsSeen(d)) 
+		     return "#bbbbbb";      /* seen link between radio and radio */
 		   else 
 		   {
-		     /* link between radio and radio */
+		     /* p2p link between radio and radio */
 			 channel = parseInt(graph.nodes[parseInt(d.source.index)].channel);
 			 targetchannel = parseInt(graph.nodes[parseInt(d.target.index)].channel);
 			 
@@ -135,8 +170,17 @@ d3.json(jsonFile, function(error, graph) {
 	     })
 	  	.style("stroke-width", function(d) { 
 		   if(linkIsFake(d))
-             /* link between ap and radio */
+             /* p2p link between ap and radio */
 			 return 9;    
+		   else if(linkIsSeen(d))
+		   {
+             /* fake link between ap and radio */
+		     /* link between radio and radio */
+	         if(d.sourcestrength=="") d.sourcestrength = 0;
+	         if(d.targetstrength=="") d.targetstrength = 0;
+		     return (parseInt(d.sourcestrength)+parseInt(d.targetstrength))/18;
+           }
+		//	 return 3;
 		   else 
 		   {
   		     channel = parseInt(graph.nodes[parseInt(d.source.index)].channel);
@@ -149,13 +193,18 @@ d3.json(jsonFile, function(error, graph) {
 			 if(d.state != "Active") return 7;
 
 		     /* link between radio and radio */
+	         if(d.sourcestrength=="") d.sourcestrength = 0;
+	         if(d.targetstrength=="") d.targetstrength = 0;
 		     return (parseInt(d.sourcestrength)+parseInt(d.targetstrength))/18;
 		   }
 		   })
   		.style("stroke-dasharray", function(d) { 
 		     if(linkIsFake(d)) 
-			   /* link between ap and radio */
+			   /* fake link between ap and radio */
 			   return "0,0"; 
+		     else if(linkIsSeen(d)) 
+			   /* seen link between ap and radio */
+			   return "6,1"; 
 			 else 
 			 {
    			   channel = getSourceChannel(d);
@@ -234,13 +283,29 @@ d3.json(jsonFile, function(error, graph) {
 		  else
 		  {
 		    /* link between radio and radio */
+            if(d.sourcestrength=="") d.sourcestrength = 0;
+	        if(d.targetstrength=="") d.targetstrength = 0;
 			channel = getSourceChannel(d);
 		    return 'Source MAC: '+d.sourcemac+'<br/>Target MAC: '+d.targetmac+'<br/>Source Strength: '+d.sourcestrength+'<br/>Target Strength: '+d.targetstrength+(channel > 0 ? "<br/>"+(channel>=36 ? "5GHz":"2.4GHz")+", Channel "+channel+"" : "")+'<br/>State: '+d.state; 
 		  }
         }
       });
-	  
 });
+
+  var seenVisible=true;
+  function toggleSeen() {
+	if(seenVisible)
+	{
+	  seenVisible = false;
+	  $('svg .link-connectiontype-seen').css("stroke","#ffffff");
+	}
+	else
+	{
+	  seenVisible = true;
+	  $('svg .link-connectiontype-seen').css("stroke","#bbbbbb");
+    }
+	
+  }
 
   /* DRAG */
   function dblclicknode(d) {
