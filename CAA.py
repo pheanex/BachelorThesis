@@ -484,23 +484,23 @@ def get_actually_seen_channels_for_modules(graphname, module_a, module_b):
 
 
 # channelset = list of channels we can chose from
-# caluclates the optimal channel from this set
+# calculates the optimal channel from this set
 # Returns the channel to use (not a list of channels)
 def get_best_channel_in(graphname, overall_channel_counter, channelset, module_a, module_b):
     # Speed up things if there is only one channel to chose from
     if len(channelset) == 1:
         return channelset[0]
     else:
-        used_channels_for_both = get_used_channels_for_nodes(graphname, module_a, module_b, channelset)
-        seen_channels_for_both = get_actually_seen_channels_for_modules(graphname, module_a, module_b)
+        used_channels_for_both_nodes = get_used_channels_for_nodes(graphname, module_a, module_b, channelset)
+        seen_channels_for_both_nodes = get_actually_seen_channels_for_modules(graphname, module_a, module_b)
 
         # Take the channels from used_channels_for_both which are used the least,
         # if there is a tie, then take the one, which has a lower value in seen_channels_for_both
-        least_used_channels = list(get_least_used_elements_for_counter_dict(used_channels_for_both, channelset))
+        least_used_channels = list(get_least_used_elements_for_counter_dict(used_channels_for_both_nodes, channelset))
         if len(least_used_channels) == 1:
             return least_used_channels[0]
         else:
-            least_seen_channels = list(get_least_used_elements_for_counter_dict(seen_channels_for_both, least_used_channels))
+            least_seen_channels = list(get_least_used_elements_for_counter_dict(seen_channels_for_both_nodes, least_used_channels))
             if len(least_seen_channels) == 1:
                 return least_seen_channels[0]
             else:
@@ -593,11 +593,11 @@ def get_connected_channel_count_for_module(graphname, module, channel, wlan_modu
 
 # Reassign channels for a given module all connected edges of the same channel (even over multiple modules)
 def reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module, oldchannel, newchannel, wlan_modules):
-    # Speed up things if channels are equal
+    # If channels are the same, something must be wrong
     if oldchannel == newchannel:
         # Nothing to do then
         logger.error("Error: tried to overpaint " + str(oldchannel) + " with " + str(newchannel) + ". This does not make sense and should not happen.")
-        logger.error("This is an error in the Channel assignment algorithm")
+        logger.error("This is an error in the Channel assignment algorithm.")
         exit(1)
 
     # Add initial node to be able to start from there
@@ -626,8 +626,8 @@ def assign_channel_to_edge(graphname, overall_channel_counter, module_a, module_
             # We have to take the channel of module_b
             set_edge_channel(graphname, overall_channel_counter, graphname.node[module_b]["channel"], module_a, module_b)
     else:
-        # We have to take the channel of module_a, lets see if this is a problem
-        # and check if b has not already assigned a channel, or we can use the channel there
+        # We have to take the channel of module_a, lets see if this is a problem.
+        # Therefore check if b has a channel assigned, and if it has, check if its the same channel a has.
         channel_of_module_a = graphname.node[module_a]["channel"]
         if not module_has_channel(graphname, module_b):
             set_edge_channel(graphname, overall_channel_counter, channel_of_module_a, module_a, module_b)
@@ -638,31 +638,29 @@ def assign_channel_to_edge(graphname, overall_channel_counter, module_a, module_
                 # We are lucky, they are the same
                 set_edge_channel(graphname, overall_channel_counter, channel_of_module_a, module_a, module_b)
             else:
-                # Tricky case
-                # Module A and B have different channels assigned, but we have to establish a link between them
-                # This is the most costly case
+                # Channels are not the same, This means Module A and B have different channels assigned, but we have to establish a link between them
+                # This is the most costly case (tricky case)
                 # The solution here is based on a paper called hycint-mcr2 and works like described in the following:
                 # Take the channel from module_a or module_b which occurs less at both sides (connected!) and repaint it with the other one
-                # Then replace the least connected channels at A and B with the newchannel and also use it for the edge
-                # between A and B
+                # Then replace the least connected channels at A and B with the newchannel and also use it for the edge between A and B
 
                 # Get the channelcounts for both nodes and combine them
                 nr_of_occurrences_for_channel_at_module_a = get_connected_channel_count_for_module(graphname, module_a, channel_of_module_a, wlan_modules)
                 nr_of_occurrences_for_channel_at_module_b = get_connected_channel_count_for_module(graphname, module_b, channel_of_module_b, wlan_modules)
 
                 if nr_of_occurrences_for_channel_at_module_a > nr_of_occurrences_for_channel_at_module_b:
-                    winning_channel = channel_of_module_a
-                    losing_channel = channel_of_module_b
+                    channel_with_more_occurrences = channel_of_module_a
+                    channel_with_less_occurrences = channel_of_module_b
                 else:
-                    winning_channel = channel_of_module_b
-                    losing_channel = channel_of_module_a
+                    channel_with_more_occurrences = channel_of_module_b
+                    channel_with_less_occurrences = channel_of_module_a
 
-                # Reassign channels to all the other connected edges for both modules
-                reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module_a, losing_channel, winning_channel, wlan_modules)
-                reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module_b, losing_channel, winning_channel, wlan_modules)
+                # Reassign channels to all the other connected edges for both modules (overpaint channel_with_less_occurrences with channel_with_more_occurrences)
+                reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module_a, channel_with_less_occurrences, channel_with_more_occurrences, wlan_modules)
+                reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module_b, channel_with_less_occurrences, channel_with_more_occurrences, wlan_modules)
 
                 # Assign a channel to the edge from node_a to node_b with this the best channel available at node a
-                set_edge_channel(graphname, overall_channel_counter, winning_channel, module_a, module_b)
+                set_edge_channel(graphname, overall_channel_counter, channel_with_more_occurrences, module_a, module_b)
 
 
 # Check if the CAA is valid
@@ -1087,11 +1085,11 @@ def calculate_caa_for_graph(graphname, wlan_modules, overall_channel_counter):
     nodelist = list()  # This is the list of nodes over which we iterate
     nodelist.append(root_node)  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
 
-    # Go through all nodes (main loop)
+    # Iterate over all nodes in BFS-style
     for node in nodelist:
         neighbors = graphname.neighbors(node)
         for neighbor in neighbors:
-            if (node, neighbor) not in edges_done:
+            if (node, neighbor) not in edges_done and (neighbor, node) not in edges_done:
                 # We just want to assign a channel to the module-edges and not
                 # the edges between node and module, since they dont need a channels assigned
                 if node in wlan_modules and neighbor in wlan_modules and not edge_has_channel(graphname, node, neighbor):
@@ -1100,7 +1098,6 @@ def calculate_caa_for_graph(graphname, wlan_modules, overall_channel_counter):
                     nodelist.append(neighbor)
                 # Mark edge as done
                 edges_done.add((node, neighbor))
-                edges_done.add((neighbor, node))
     return graphname
 
 
