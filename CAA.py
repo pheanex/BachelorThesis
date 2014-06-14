@@ -463,7 +463,7 @@ def get_least_used_colors_in_overall(allowed_colors, overall_color_counter):
     return list(get_least_used_elements_for_counter_dict(overall_color_counter, allowed_colors))
 
 
-# This is uncommented since the foreign table is not implemented yet in lcos
+# Todo: Foreign table/ Seen-channels, but christoph has to implement this table first (probably wont happen anytime soon)
 # Get the color/channel for an edge(pair of modules), which has the least interference from other (not our) devices/wlans
 # That means take a look at seen colors for the two modules and for a given set to chose from(color_set), find the color, which
 # is used the least in both wireless regions
