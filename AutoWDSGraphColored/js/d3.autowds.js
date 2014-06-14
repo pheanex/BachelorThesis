@@ -29,7 +29,7 @@ var width =  $("#d3container").width(),
 
 /* d3 layout */
 var force = d3.layout.force()
-	.charge(-600)
+	.charge(-1000)
 	.gravity(0.1)    /* default: 0.1 */
 	.theta(0.8)      /* default: 0.8 */
 	.friction(0.85)  /* default: 0.9 */
@@ -40,14 +40,17 @@ var force = d3.layout.force()
 		else if(linkIsSeen(d)){
 			if(d.sourcestrength=="") d.sourcestrength = 0;
 			if(d.targetstrength=="") d.targetstrength = 0;
-			return 0.01*(((parseInt(d.sourcestrength)+parseInt(d.targetstrength))/200)^8); /* seen link between radio and radio */
+			/* seen link between radio and radio */
+			return 0.1 * ((parseInt(d.sourcestrength) + parseInt(d.targetstrength)) / 200); 
 		}
 		else{
 			return 0.8;		/* p2p link between radio and radio */
 		}
 	})
 	.size([width, height])
-	.on("tick", function() { force.tick(); });
+	.on("tick", function(){
+		force.tick();
+	});
 
 /* drag */
 var drag = force.drag()
@@ -81,7 +84,9 @@ d3.json(jsonFile, function(error, graph){
 	var link = svg.selectAll(".link")
 		.data(graph.links)
 		.enter().append("line")
-		.attr('class', function(d){ return "link link-connectiontype-" + d.connectiontype; })
+		.attr('class', function(d){
+			return "link link-connectiontype-" + d.connectiontype;
+		})
 		.style("stroke-opacity", function(d) {
 			if(linkIsFake(d)){
 				return 0.8;            /* fake between radio and radio */
@@ -164,28 +169,40 @@ d3.json(jsonFile, function(error, graph){
 		})
 		.style("stroke-width", function(d){
 			if(linkIsFake(d)){
-				/* p2p link between ap and radio */
+				/* fake link between ap and radio */
 				return 9;
 			}else if(linkIsSeen(d)){
 				/* fake link between ap and radio */
 				/* link between radio and radio */
-		 		if(d.sourcestrength==""){ d.sourcestrength = 0; }
-		 		if(d.targetstrength==""){ d.targetstrength = 0; }
+		 		if(d.sourcestrength==""){
+		 			d.sourcestrength = 0;
+		 		}
+		 		if(d.targetstrength==""){
+		 			d.targetstrength = 0;
+		 		}
 				return (parseInt(d.sourcestrength) + parseInt(d.targetstrength)) / 18;
 			}else{
 				channel = parseInt(graph.nodes[parseInt(d.source.index)].channel);
 				targetchannel = parseInt(graph.nodes[parseInt(d.target.index)].channel);
 
 				/* source channel != target channel */
-				if(channel != targetchannel) return 7;
+				if(channel != targetchannel){
+					return 7;
+				}
 
 				/* INACTIVE LINK */
-				if(d.state != "Active") return 7;
+				if(d.state != "Active"){
+					return 7;
+				}
 
 				/* link between radio and radio */
-				if(d.sourcestrength=="") d.sourcestrength = 0;
-				if(d.targetstrength=="") d.targetstrength = 0;
-		     	return (parseInt(d.sourcestrength) + parseInt(d.targetstrength)) / 18;
+				if(d.sourcestrength==""){
+					d.sourcestrength = 0;
+				}
+				if(d.targetstrength==""){
+					d.targetstrength = 0;
+				}
+		     	return (parseInt(d.sourcestrength) + parseInt(d.targetstrength)) / 25;
 			}
 		})
 		.style("stroke-dasharray", function(d){
@@ -211,13 +228,12 @@ d3.json(jsonFile, function(error, graph){
 		});
 
 	/* === NODES === */
-
 	/* constructs nodes */
 	var node = svg.selectAll(".node")
 		.data(graph.nodes)
 		.enter().append("circle")
 		.attr("class", "node")
-		.attr("r", function(d) {
+		.attr("r", function(d){
 		if(nodeIsAp(d)){
 			return 7;
 		}else{
@@ -235,8 +251,6 @@ d3.json(jsonFile, function(error, graph){
 			}
 		};
 	})
-	
-	//.call(force.drag); /* normal drag */
 	.on("dblclick", dblclicknode)
 	.call(drag);
 
@@ -255,12 +269,15 @@ d3.json(jsonFile, function(error, graph){
 			return d.target.y;
 		});
 
-		node.attr("cx", function(d) { return d.x; })
-		.attr("cy", function(d) { return d.y; });
+		node.attr("cx", function(d){ 
+			return d.x;
+		})
+		.attr("cy", function(d){ 
+			return d.y;
+		});
 	});
 
 	/* === TOOLTIP === */
-
 	/* this tipsy shows us the tooltip info for interfaces and aps */
 	$('svg circle.node').tipsy({
 		gravity: 'w',
@@ -282,7 +299,7 @@ d3.json(jsonFile, function(error, graph){
 			var d = this.__data__;
 			if(linkIsFake(d)){
 				/* link between radio and ap */
-				return "links ap and radio (no info)";
+				return "Virtual Connection <no Info>";
 			}else{
 				/* link between radio and radio */
 				if(d.sourcestrength==""){
@@ -292,7 +309,7 @@ d3.json(jsonFile, function(error, graph){
 					d.targetstrength = 0;
 				}
 				channel = getSourceChannel(d);
-				return 'Source MAC: '+d.sourcemac+'<br/>Target MAC: '+d.targetmac+'<br/>Source Strength: '+d.sourcestrength+'<br/>Target Strength: '+d.targetstrength+(channel > 0 ? "<br/>"+(channel>=36 ? "5GHz":"2.4GHz")+", Channel "+channel+"" : "")+'<br/>State: '+d.state;
+				return 'Source MAC: ' + d.sourcemac+'<br/>Target MAC: ' + d.targetmac+'<br/>Source Strength: ' + d.sourcestrength+'<br/>Target Strength: ' + d.targetstrength+(channel > 0 ? "<br/>" + (channel >= 36 ? "5GHz":"2.4GHz") + ", Channel " + channel + "" : "") + '<br/>State: ' + d.state;
 			}
 		}
 	});
@@ -311,13 +328,9 @@ function toggleSeen() {
 
 /* DRAG */
 function dblclicknode(d) {
-	if(nodeIsAp(d)){
-		d3.select(this).classed("fixed", d.fixed = false);
-	}
+	d3.select(this).classed("fixed", d.fixed = false);
 }
 
 function dragstart(d) {
-	if(nodeIsAp(d)){
-		d3.select(this).classed("fixed", d.fixed = true);
-	}
+	d3.select(this).classed("fixed", d.fixed = true);
 }
