@@ -89,26 +89,25 @@ def convert_to_undirected_graph(directed_graph, middle="lower"):
             if directed_graph.has_edge(a, b) and directed_graph.has_edge(b, a):
                 undirected_graph.add_edge(a, b)
                 if middle == "average":
-                    undirected_graph.edge[a][b]["weight"] = (directed_graph.edge[a][b]["weight"] + directed_graph.edge[b][a]["weight"]) / 2.0
                     undirected_graph.edge[a][b]["snr"] = (directed_graph.edge[a][b]["snr"] + directed_graph.edge[b][a]["snr"]) / 2.0
                 elif middle == "lower":
-                    if directed_graph.edge[b][a]["weight"] < directed_graph.edge[a][b]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                    if directed_graph.edge[b][a]["snr"] < directed_graph.edge[a][b]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
-                    if directed_graph.edge[a][b]["weight"] < directed_graph.edge[b][a]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
+                    if directed_graph.edge[a][b]["snr"] < directed_graph.edge[b][a]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                 elif middle == "upper":
-                    if directed_graph.edge[b][a]["weight"] > directed_graph.edge[a][b]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                    if directed_graph.edge[b][a]["snr"] > directed_graph.edge[a][b]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
-                    if directed_graph.edge[a][b]["weight"] > directed_graph.edge[b][a]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
+                    if directed_graph.edge[a][b]["snr"] > directed_graph.edge[b][a]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                 else:
                     logger.error("converting directed graph to undirected graph failed, because '" + str(middle) + "' is not a valid setting.")
                     exit(1)
@@ -360,7 +359,7 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
         # Add the edges originating from root node to new nodes to edge_list
         visited_nodes.add(root_node)
         for neighbor in graphname.neighbors(root_node):
-            edge_list[(root_node, neighbor, graphname.edge[root_node][neighbor]["weight"], graphname.edge[root_node][neighbor]["real-connection"])] \
+            edge_list[(root_node, neighbor, graphname.edge[root_node][neighbor]["real-connection"])] \
                 = calculate_score_for_edge(mst, graphname, root_node, neighbor, wlan_modules)
 
         # Main loop
@@ -370,10 +369,10 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
             removed_edge = True
             while removed_edge:
                 removed_edge = False
-                for (a, b, weight, real_connection) in edge_list:
+                for (a, b, real_connection) in edge_list:
                     if a in visited_nodes and b in visited_nodes:
                         removed_edge = True
-                        del edge_list[(a, b, weight, real_connection)]
+                        del edge_list[(a, b, real_connection)]
                         break
 
             # If the edge_list is empty after the removing of unproductive edges, check if we visited all nodes
@@ -390,7 +389,7 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
 
             # Now find the best new edge and add it to the mst
             # Therefore just take the edge with the highest score
-            (bestedge_node_a, bestedge_node_b, weight, real_connection), highest_score = edge_list.most_common(1)[0]
+            (bestedge_node_a, bestedge_node_b, real_connection), highest_score = edge_list.most_common(1)[0]
 
             # Mark node as visited
             visited_nodes.add(bestedge_node_b)
@@ -403,19 +402,18 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
             # Add its edges to the edge_list
             for neighbor in graphname.neighbors(bestedge_node_b):
                 if neighbor not in visited_nodes:
-                    edge_weight = graphname.edge[bestedge_node_b][neighbor]["weight"]
                     real_connection_neigh = graphname.edge[bestedge_node_b][neighbor]["real-connection"]
-                    edge_list[(bestedge_node_b, neighbor, edge_weight, real_connection_neigh)] \
+                    edge_list[(bestedge_node_b, neighbor, real_connection_neigh)] \
                         = calculate_score_for_edge(mst, graphname, bestedge_node_b, neighbor, wlan_modules)
 
             # Remove the edge from edgelist, to speed up things and since we dont need it any longer (since we are using it)
-            del edge_list[(bestedge_node_a, bestedge_node_b, weight, real_connection)]
+            del edge_list[(bestedge_node_a, bestedge_node_b, real_connection)]
 
             # Update the scores, because scores might change, since we added new edge => score of others could get decreased
             # Todo: this could be made more efficient, by just updating those edges, where sth has changed instead of all, find out if this is a performance killer first
-            for (a, b, weight, real_connection) in edge_list:
+            for (a, b, real_connection) in edge_list:
                 if real_connection:
-                    edge_list[(a, b, weight, real_connection)] = calculate_score_for_edge(mst, graphname, a, b, wlan_modules)
+                    edge_list[(a, b, real_connection)] = calculate_score_for_edge(mst, graphname, a, b, wlan_modules)
 
     else:
         logger.error("Unknown MST mode: Please Chose one out of 'node', 'node_module_edge', 'module_module_edge, 'single', 'none', 'equal_module'")
@@ -872,14 +870,12 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename_svg="caa.svg", f
 
     for (A, B) in networkxgraph.edges():
         if (A, B) not in edges_done:
-            #edge_weight = networkxgraph.edge[A][B]["weight"]
             if A in lan_nodes or B in lan_nodes:
                 edge_style = "solid"
                 edge_color = "black"
                 edge_penwidth = 2
             else:
                 # For debugging set to std penwidth
-                #edge_penwidth = str(Edge_Thickness/edge_weight)
                 edge_penwidth = 5
                 edge_color = networkxgraph.edge[A][B]["color"]
                 edge_style = "dotted"
@@ -1083,7 +1079,6 @@ def get_basic_graph_from_wlc(hostname, username, password):
         basic_graph.add_edge(lan_mac, wlan_mac)
 
         # Module-edge data
-        basic_graph.edge[lan_mac][wlan_mac]["weight"] = 1
         basic_graph.edge[lan_mac][wlan_mac]["real-connection"] = False
 
         # Write all data also into graph
@@ -1112,7 +1107,6 @@ def get_basic_graph_from_wlc(hostname, username, password):
         # The following is done, since Alfred Arnold mentioned to me that the Signal-strength value is already the SNR
         snr = signal_strength
         basic_graph.edge[source_mac][wlan_dest_mac]["snr"] = snr
-        basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - snr
 
         # Initialize each edge with empty color
         basic_graph.edge[source_mac][wlan_dest_mac]["color"] = None
@@ -1176,7 +1170,6 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 18)), max_nr_modul
             basic_graph.add_edge(nodename, module)
 
             # Module-edge data
-            basic_graph.edge[nodename][module]["weight"] = 1
             basic_graph.edge[nodename][module]["real-connection"] = False
 
             # Also count here the number of modules each node has
@@ -1187,9 +1180,7 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 18)), max_nr_modul
                 if basic_graph.node[random_module]["module-of"] != basic_graph.node[module]["module-of"]:
                     basic_graph.add_edge(module, random_module)
                     basic_graph.add_edge(random_module, module)
-                    basic_graph.edge[module][random_module]["weight"] = 1 + 100.0 - random.choice(range(-20, 20))
                     basic_graph.edge[module][random_module]["snr"] = random.choice(range(10, 100))
-                    basic_graph.edge[random_module][module]["weight"] = 1 + 100.0 - random.choice(range(-20, 20))
                     basic_graph.edge[random_module][module]["snr"] = random.choice(range(10, 100))
 
                     # Initialize each edge with empty color
@@ -1322,7 +1313,7 @@ for color_entry in Assignable_Colors:
     color_counter[color_entry] = 0
 
 # Getting Data from WLC per SNMP
-#basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc(wlc_hostname, wlc_username, wlc_password)
+basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc(wlc_hostname, wlc_username, wlc_password)
 
 # Alternatively for debugging/testing, generate Random Graph
 basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_of_nodes=20, max_nr_modules=3, max_nr_connections=3)
