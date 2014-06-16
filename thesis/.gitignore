@@ -1,0 +1,13 @@
+*.bak
+*~
+*.backup
+/thesis.log
+/thesis.lot
+/thesis.out
+/thesis.pdf
+/thesis.toc
+/chapters/*.aux
+/thesis.synctex.gz
+/thesis.bbl
+/thesis.blg
+/.build/
