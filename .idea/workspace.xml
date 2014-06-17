@@ -2,13 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fdf4ca91-eb91-4a61-93d0-be1a86bec4d4" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CAA.py" afterPath="$PROJECT_DIR$/CAA.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa_basic.svg" afterPath="$PROJECT_DIR$/caa_basic.svg" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa_colored_mst.svg" afterPath="$PROJECT_DIR$/caa_colored_mst.svg" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/caa_mst.svg" afterPath="$PROJECT_DIR$/caa_mst.svg" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph_basic.json" afterPath="$PROJECT_DIR$/graph_basic.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph_colored_mst.json" afterPath="$PROJECT_DIR$/graph_colored_mst.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graph_mst.json" afterPath="$PROJECT_DIR$/graph_mst.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AutoWDSGraphColored/autowds-graph.json" afterPath="$PROJECT_DIR$/AutoWDSGraphColored/autowds-graph.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AutoWDSGraphColored/css/styles.css" afterPath="$PROJECT_DIR$/AutoWDSGraphColored/css/styles.css" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="BA.iws" />
@@ -32,13 +27,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="CAA.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/CAA.py">
+      <file leaf-file-name="AutoWDSstatus.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/AutoWDSGraphColored/AutoWDSstatus.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1281" column="0" selection-start="61835" selection-end="61835" vertical-scroll-proportion="0.59237874" vertical-offset="18702" max-vertical-offset="20100">
-              <folding>
-                <element signature="e#157#170#0" expanded="true" />
-              </folding>
+            <state line="202" column="43" selection-start="7775" selection-end="7775" vertical-scroll-proportion="0.46006748" vertical-offset="2576" max-vertical-offset="3465">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -106,7 +99,7 @@
       <console-settings />
     </option>
   </component>
-  <component name="RunManager" selected="Python.CAA">
+  <component name="RunManager" selected="Python.Autowdsstatus">
     <configuration default="true" type="tests" factoryName="py.test">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -246,8 +239,27 @@
       <ConfigurationWrapper RunnerId="PyDebugRunner" />
       <method />
     </configuration>
-    <list size="1">
+    <configuration default="false" name="Autowdsstatus" type="PythonConfigurationType" factoryName="Python" singleton="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/usr/bin/python2.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/AutoWDSGraphColored" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="BA" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/AutoWDSGraphColored/AutoWDSstatus.py" />
+      <option name="PARAMETERS" value="172.16.40.100 admin private" />
+      <RunnerSettings RunnerId="PyDebugRunner" />
+      <ConfigurationWrapper RunnerId="PyDebugRunner" />
+      <method />
+    </configuration>
+    <list size="2">
       <item index="0" class="java.lang.String" itemvalue="Python.CAA" />
+      <item index="1" class="java.lang.String" itemvalue="Python.Autowdsstatus" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -277,7 +289,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1680" height="1033" extended-state="6" />
+    <frame x="0" y="0" width="1680" height="1033" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -285,7 +297,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18077324" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="true" weight="0.22717842" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" x="1680" y="0" width="1642" height="1033" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.22717842" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" x="1680" y="0" width="1642" height="1033" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -382,53 +394,48 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="101" column="0" selection-start="4401" selection-end="4401" vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="19845">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1144" column="0" selection-start="47625" selection-end="47625" vertical-scroll-proportion="0.0" vertical-offset="17160" max-vertical-offset="23100">
+        <state line="1229" column="0" selection-start="61649" selection-end="61649" vertical-scroll-proportion="0.0" vertical-offset="18285" max-vertical-offset="18375">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state line="101" column="0" selection-start="4401" selection-end="4401" vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="19845">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1144" column="0" selection-start="47625" selection-end="47625" vertical-scroll-proportion="0.0" vertical-offset="17160" max-vertical-offset="23100" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CAA.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state line="353" column="0" selection-start="17256" selection-end="17256" vertical-scroll-proportion="0.0" vertical-offset="5295" max-vertical-offset="19095">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="686" column="50" selection-start="33083" selection-end="33083" vertical-scroll-proportion="0.0" vertical-offset="10083" max-vertical-offset="17280">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="559" column="35" selection-start="27276" selection-end="27276" vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="16125">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="1040" column="58" selection-start="53183" selection-end="53183" vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="16125">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -440,9 +447,7 @@
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="1040" column="58" selection-start="53183" selection-end="53183" vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="16125">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -454,9 +459,7 @@
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="236" column="71" selection-start="9208" selection-end="9208" vertical-scroll-proportion="0.0" vertical-offset="3267" max-vertical-offset="7200">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -468,9 +471,7 @@
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="156" column="22" selection-start="6306" selection-end="6306" vertical-scroll-proportion="0.0" vertical-offset="2340" max-vertical-offset="5745">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -487,45 +488,35 @@
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="15" column="24" selection-start="428" selection-end="428" vertical-scroll-proportion="0.0" vertical-offset="225" max-vertical-offset="3585">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="7" column="13" selection-start="211" selection-end="211" vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="3630">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="6" column="17" selection-start="196" selection-end="196" vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="3630">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="6" column="17" selection-start="196" selection-end="196" vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="3630">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="10" column="61" selection-start="287" selection-end="287" vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="3600">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -541,24 +532,32 @@
     </entry>
     <entry file="file:///usr/share/pyshared/netsnmp/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="133" column="37" selection-start="3440" selection-end="3440" vertical-scroll-proportion="0.0" vertical-offset="1938" max-vertical-offset="3645">
-          <folding />
-        </state>
+        <state line="133" column="37" selection-start="3440" selection-end="3440" vertical-scroll-proportion="0.0" vertical-offset="1938" max-vertical-offset="3645" />
       </provider>
     </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1533" column="0" selection-start="60527" selection-end="60527" vertical-scroll-proportion="0.0" vertical-offset="21232" max-vertical-offset="22125">
+        <state line="1533" column="0" selection-start="60527" selection-end="60527" vertical-scroll-proportion="0.0" vertical-offset="21232" max-vertical-offset="22125" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AutoWDSstatus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="0" selection-start="457" selection-end="457" vertical-scroll-proportion="-2.6445444" vertical-offset="2576" max-vertical-offset="3465">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CAA.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1281" column="0" selection-start="61835" selection-end="61835" vertical-scroll-proportion="0.59237874" vertical-offset="18702" max-vertical-offset="20100">
-          <folding>
-            <element signature="e#157#170#0" expanded="true" />
-          </folding>
+        <state line="838" column="109" selection-start="42597" selection-end="42597" vertical-scroll-proportion="12.071918" vertical-offset="1845" max-vertical-offset="18375">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AutoWDSGraphColored/AutoWDSstatus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="202" column="43" selection-start="7775" selection-end="7775" vertical-scroll-proportion="0.46006748" vertical-offset="2576" max-vertical-offset="3465">
+          <folding />
         </state>
       </provider>
     </entry>
