@@ -29,8 +29,8 @@ fi
 echo "Waiting 40 Seconds, then starting checking if APs are still running" >&2
 sleep 40
 
-# Check every 10 secs for 5 min if aps are already done or if they still need some time to reconfigure
-for i in $(seq 1 30)
+# Check every 10 secs for 400 secs if aps are already done or if they still need some time to reconfigure
+for i in $(seq 1 40)
 do
         sleep 10
         if python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
