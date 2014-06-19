@@ -223,6 +223,6 @@ json_dict = {"nodes": [{'index': index,
                         'sourceage': sourceage,
                         'targetage': targetage
                         } for source, target, sourcemac, targetmac, sourcestrength, targetstrength, state, connectiontype, sourceage, targetage in keyed_links]}
-filename = "autowdsGraphColored.json"
+filename = "autowds-graph.json"
 with open(filename, 'w') as outfile:
     json.dump(json_dict, outfile, indent=4)

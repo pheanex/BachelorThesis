@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # author Konstantin Manna
 # date   25.03.2014
-# purpose This script colors a networkx graph (Lancom AutoWDS Channel assignment algorithm)
+# purpose Selects the best Topology and Channels for a Mesh network administered by a WLC (Lancom AutoWDS)
 
 import random
 import json
@@ -13,17 +13,17 @@ import pydot
 import logging
 
 import collections_enhanced
-#import testcore.control.ssh
+import testcore.control.ssh
 
 
-# counterlist = dictionary with colors and their number of occurences
-# allowed_colors = list to pick colors from (because we might not be allowed to use all in a certain situation)
-# Returns a list with elements that are in the allowed_colors list and are least commonly used
-def get_least_used_elements_for_counter_dict(counterlist, allowed_colors):
-    # Create new restricted counterlist with only those elements in it, which are also in allowed_colors
+# counterlist = dictionary with channels and their number of occurences
+# allowed_channels = list to pick channels from (because we might not be allowed to use all in a certain situation)
+# Returns a list with elements that are in the allowed_channels list and are least commonly used
+def get_least_used_elements_for_counter_dict(counterlist, allowed_channels):
+    # Create new restricted counterlist with only those elements in it, which are also in allowed_channels
     restricted_counterlist = collections_enhanced.Counter()
     for element in counterlist.keys():
-        if element in allowed_colors:
+        if element in allowed_channels:
             restricted_counterlist[element] = counterlist[element]
 
     # Get all the least common elements
@@ -35,16 +35,16 @@ def get_node_for_module(graphname, module):
     return graphname.node[module]["module-of"]
 
 
-# Returns counter with entries (like color : nr of occurences of this color in neighborhood of node_a and node_b)
-# for two nodes/modules and a list of allowed colors
-def get_used_colors_for_nodes(graphname, modula_a, module_b, allowed_colors):
+# Returns counter with entries (like channel : nr of occurences of this channel in neighborhood of node_a and node_b)
+# for two nodes/modules and a list of allowed channels
+def get_used_channels_for_nodes(graphname, modula_a, module_b, allowed_channels):
     node_a = get_node_for_module(graphname, modula_a)
     node_b = get_node_for_module(graphname, module_b)
-    common_color_counter = graphname.node[node_a]["used-colors"] + graphname.node[node_b]["used-colors"]
+    common_channel_counter = graphname.node[node_a]["used-channels"] + graphname.node[node_b]["used-channels"]
     returncounter = collections_enhanced.Counter()
-    for key in common_color_counter.keys():
-        if key in allowed_colors:
-            returncounter[key] = common_color_counter[key]
+    for key in common_channel_counter.keys():
+        if key in allowed_channels:
+            returncounter[key] = common_channel_counter[key]
 
     return returncounter
 
@@ -57,15 +57,6 @@ def module_is_used(mst_graphname, module):
         if module_con is True:
             return True
     return False
-
-
-# Returns the number of non module connections for a module
-def nr_of_non_module_connections(graphname, module):
-    connection_counter = 0
-    for neighbor in graphname.neighbors(module):
-        if graphname.edge[module][neighbor]["real-connection"]:
-            connection_counter += 1
-    return connection_counter
 
 
 # Converts a given directed graph to a undirected graph
@@ -89,32 +80,31 @@ def convert_to_undirected_graph(directed_graph, middle="lower"):
             if directed_graph.has_edge(a, b) and directed_graph.has_edge(b, a):
                 undirected_graph.add_edge(a, b)
                 if middle == "average":
-                    undirected_graph.edge[a][b]["weight"] = (directed_graph.edge[a][b]["weight"] + directed_graph.edge[b][a]["weight"]) / 2.0
                     undirected_graph.edge[a][b]["snr"] = (directed_graph.edge[a][b]["snr"] + directed_graph.edge[b][a]["snr"]) / 2.0
                 elif middle == "lower":
-                    if directed_graph.edge[b][a]["weight"] < directed_graph.edge[a][b]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                    if directed_graph.edge[b][a]["snr"] < directed_graph.edge[a][b]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
-                    if directed_graph.edge[a][b]["weight"] < directed_graph.edge[b][a]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
+                    if directed_graph.edge[a][b]["snr"] < directed_graph.edge[b][a]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                 elif middle == "upper":
-                    if directed_graph.edge[b][a]["weight"] > directed_graph.edge[a][b]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                    if directed_graph.edge[b][a]["snr"] > directed_graph.edge[a][b]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
-                    if directed_graph.edge[a][b]["weight"] > directed_graph.edge[b][a]["weight"]:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[a][b]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
+                    if directed_graph.edge[a][b]["snr"] > directed_graph.edge[b][a]["snr"]:
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[a][b]["snr"]
                     else:
-                        undirected_graph.edge[a][b]["weight"] = directed_graph.edge[b][a]["weight"]
+                        undirected_graph.edge[a][b]["snr"] = directed_graph.edge[b][a]["snr"]
                 else:
                     logger.error("converting directed graph to undirected graph failed, because '" + str(middle) + "' is not a valid setting.")
                     exit(1)
 
                 undirected_graph.edge[a][b]["real-connection"] = True
-                undirected_graph.edge[a][b]["color"] = None
+                undirected_graph.edge[a][b]["channel"] = None
             else:
                 # Ignore this edge
                 if directed_graph.has_edge(a, b):
@@ -152,18 +142,18 @@ def count_connected_module_edges_for_module(graph, module, wlan_modules):
 
 # Translates the given SNR to a bandwith, so we can use it for calculating the score
 # Returns a bandwidth
-def translate_snr_to_bw(snrlancomvalue):
-    snr = snrlancomvalue / 100 * 46
-    if snr <= 0:
+def translate_snr_to_bw(snr_lancom_value):
+    signal_to_noise = snr_lancom_value / 100 * 46
+    if signal_to_noise <= 0:
         return 0
-    elif 0 < snr <= 10:
-        return snr
-    elif 10 < snr <= 20:
-        return 2 * snr - 10
-    elif 20 < snr <= 25:
-        return 3 * snr - 30
-    elif 25 < snr <= 30:
-        return 2 * snr - 5
+    elif 0 < signal_to_noise <= 10:
+        return signal_to_noise
+    elif 10 < signal_to_noise <= 20:
+        return 2 * signal_to_noise - 10
+    elif 20 < signal_to_noise <= 25:
+        return 3 * signal_to_noise - 30
+    elif 25 < signal_to_noise <= 30:
+        return 2 * signal_to_noise - 5
     else:
         return 56
 
@@ -360,7 +350,7 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
         # Add the edges originating from root node to new nodes to edge_list
         visited_nodes.add(root_node)
         for neighbor in graphname.neighbors(root_node):
-            edge_list[(root_node, neighbor, graphname.edge[root_node][neighbor]["weight"], graphname.edge[root_node][neighbor]["real-connection"])] \
+            edge_list[(root_node, neighbor, graphname.edge[root_node][neighbor]["real-connection"])] \
                 = calculate_score_for_edge(mst, graphname, root_node, neighbor, wlan_modules)
 
         # Main loop
@@ -370,10 +360,10 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
             removed_edge = True
             while removed_edge:
                 removed_edge = False
-                for (a, b, weight, real_connection) in edge_list:
+                for (a, b, real_connection) in edge_list:
                     if a in visited_nodes and b in visited_nodes:
                         removed_edge = True
-                        del edge_list[(a, b, weight, real_connection)]
+                        del edge_list[(a, b, real_connection)]
                         break
 
             # If the edge_list is empty after the removing of unproductive edges, check if we visited all nodes
@@ -390,7 +380,7 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
 
             # Now find the best new edge and add it to the mst
             # Therefore just take the edge with the highest score
-            (bestedge_node_a, bestedge_node_b, weight, real_connection), highest_score = edge_list.most_common(1)[0]
+            (bestedge_node_a, bestedge_node_b, real_connection), highest_score = edge_list.most_common(1)[0]
 
             # Mark node as visited
             visited_nodes.add(bestedge_node_b)
@@ -403,19 +393,18 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
             # Add its edges to the edge_list
             for neighbor in graphname.neighbors(bestedge_node_b):
                 if neighbor not in visited_nodes:
-                    edge_weight = graphname.edge[bestedge_node_b][neighbor]["weight"]
                     real_connection_neigh = graphname.edge[bestedge_node_b][neighbor]["real-connection"]
-                    edge_list[(bestedge_node_b, neighbor, edge_weight, real_connection_neigh)] \
+                    edge_list[(bestedge_node_b, neighbor, real_connection_neigh)] \
                         = calculate_score_for_edge(mst, graphname, bestedge_node_b, neighbor, wlan_modules)
 
             # Remove the edge from edgelist, to speed up things and since we dont need it any longer (since we are using it)
-            del edge_list[(bestedge_node_a, bestedge_node_b, weight, real_connection)]
+            del edge_list[(bestedge_node_a, bestedge_node_b, real_connection)]
 
             # Update the scores, because scores might change, since we added new edge => score of others could get decreased
             # Todo: this could be made more efficient, by just updating those edges, where sth has changed instead of all, find out if this is a performance killer first
-            for (a, b, weight, real_connection) in edge_list:
+            for (a, b, real_connection) in edge_list:
                 if real_connection:
-                    edge_list[(a, b, weight, real_connection)] = calculate_score_for_edge(mst, graphname, a, b, wlan_modules)
+                    edge_list[(a, b, real_connection)] = calculate_score_for_edge(mst, graphname, a, b, wlan_modules)
 
     else:
         logger.error("Unknown MST mode: Please Chose one out of 'node', 'node_module_edge', 'module_module_edge, 'single', 'none', 'equal_module'")
@@ -469,158 +458,114 @@ def calculate_backup_links(mst, basic_con_graph, wlan_modules):
     return mst
 
 
-# Returns list of colors which are used the least over all edges in the graph and are in the allowed_colors list
-def get_least_used_colors_in_overall(allowed_colors, overall_color_counter):
-    return list(get_least_used_elements_for_counter_dict(overall_color_counter, allowed_colors))
+# Returns list of channels which are used the least over all edges in the graph and are in the allowed_channels list
+def get_least_used_channels_in_overall(allowed_channels, overall_channel_counter):
+    return list(get_least_used_elements_for_counter_dict(overall_channel_counter, allowed_channels))
 
 
-# Get the color/channel for an edge(pair of modules), which has the least interference from other (not our) devices/wlans
-# That means take a look at seen colors for the two modules and for a given set to chose from(color_set), find the color, which
+# Todo: Foreign table/ Seen-channels, but christoph has to implement this table first (probably wont happen anytime soon)
+# Get the channel for an edge(pair of modules), which has the least interference from other (not our) devices/wlans
+# That means take a look at seen channels for the two modules and for a given set to chose from(channel_set), find the channel, which
 # is used the least in both wireless regions
 # Returns a list
-def get_least_actually_seen_colors_for_set(graphname, color_set, module_a, module_b):
-    seen_channels_for_node_a = graphname.node[module_a]["seen_channels"]
-    seen_channels_for_node_b = graphname.node[module_b]["seen_channels"]
-    seen_channels_for_both_nodes = seen_channels_for_node_a + seen_channels_for_node_b
-    return list(get_least_used_elements_for_counter_dict(seen_channels_for_both_nodes, color_set))
+#def get_least_actually_seen_channels_for_set(graphname, channel_set, module_a, module_b):
+#    seen_channels_for_node_a = graphname.node[module_a]["seen_channels"]
+#    seen_channels_for_node_b = graphname.node[module_b]["seen_channels"]
+#    seen_channels_for_both_nodes = seen_channels_for_node_a + seen_channels_for_node_b
+#    return list(get_least_used_elements_for_counter_dict(seen_channels_for_both_nodes, channel_set))
 
 
-# Returns a dict of the form: color : nr_of_occurrences for two modules
-def get_actually_seen_colors_for_modules(graphname, module_a, module_b):
+# Returns a dict of the form: channel : nr_of_occurrences for two modules
+def get_actually_seen_channels_for_modules(graphname, module_a, module_b):
     seen_channels_for_node_a = graphname.node[module_a]["seen_channels"]
     seen_channels_for_node_b = graphname.node[module_b]["seen_channels"]
     seen_channels_for_both_nodes = seen_channels_for_node_a + seen_channels_for_node_b
     return seen_channels_for_both_nodes
 
 
-# colorset = list of colors we can chose from
-# caluclates the optimal color from this set
-# Returns the color to use (not a list of colors)
-def get_best_color_in(graphname, overall_color_counter, colorset, module_a, module_b):
-    # Speed up things if there is only one color to chose from
-    if len(colorset) == 1:
-        return colorset[0]
+# channelset = list of channels we can chose from
+# calculates the optimal channel from this set
+# Returns the channel to use (not a list of channels)
+def get_best_channel_in(graphname, overall_channel_counter, channelset, module_a, module_b):
+    # Speed up things if there is only one channel to chose from
+    if len(channelset) == 1:
+        return channelset[0]
     else:
-        used_colors_for_both = get_used_colors_for_nodes(graphname, module_a, module_b, colorset)
-        seen_colors_for_both = get_actually_seen_colors_for_modules(graphname, module_a, module_b)
+        used_channels_for_both_nodes = get_used_channels_for_nodes(graphname, module_a, module_b, channelset)
+        seen_channels_for_both_nodes = get_actually_seen_channels_for_modules(graphname, module_a, module_b)
 
-        # Take the colors from used_colors_for_both which are used the least,
-        # if there is a tie, then take the one, which has a lower value in seen_colors_for_both
-        least_used_colors = list(get_least_used_elements_for_counter_dict(used_colors_for_both, colorset))
-        if len(least_used_colors) == 1:
-            return least_used_colors[0]
+        # Take the channels from used_channels_for_both which are used the least,
+        # if there is a tie, then take the one, which has a lower value in seen_channels_for_both
+        least_used_channels = list(get_least_used_elements_for_counter_dict(used_channels_for_both_nodes, channelset))
+        if len(least_used_channels) == 1:
+            return least_used_channels[0]
         else:
-            least_seen_colors = list(get_least_used_elements_for_counter_dict(seen_colors_for_both, least_used_colors))
-            if len(least_seen_colors) == 1:
-                return least_seen_colors[0]
+            least_seen_channels = list(get_least_used_elements_for_counter_dict(seen_channels_for_both_nodes, least_used_channels))
+            if len(least_seen_channels) == 1:
+                return least_seen_channels[0]
             else:
-                least_used_colors_overall = get_least_used_colors_in_overall(least_seen_colors, overall_color_counter)
-                if len(least_used_colors_overall) == 1:
-                    return least_used_colors_overall[0]
+                least_used_channels_overall = get_least_used_channels_in_overall(least_seen_channels, overall_channel_counter)
+                if len(least_used_channels_overall) == 1:
+                    return least_used_channels_overall[0]
                 else:
                     # Pick one at random
-                    return random.choice(least_used_colors_overall)
+                    return random.choice(least_used_channels_overall)
 
 
-# Sets the color for an edge
-def set_edge_color(graphname, overall_color_counter, edgecolor, module_a, module_b):
-    # Check if the edge had a color before,
-    # so it would be recoloring and we have to adapt the counters correspondingly
-    former_color = graphname.edge[module_a][module_b]["color"]
+# Sets the channel for an edge
+def set_edge_channel(graphname, overall_channel_counter, edgechannel, module_a, module_b):
+    # Check if the edge had a channel before,
+    # so it would be a reassigning and we have to adapt the counters correspondingly
+    former_channel = graphname.edge[module_a][module_b]["channel"]
     node_of_module_a = get_node_for_module(graphname, module_a)
     node_of_module_b = get_node_for_module(graphname, module_b)
-    if former_color is not None:
-        # It had a color before => we do a recoloring
-        # Decrease for overpainting the old color
-        graphname.node[node_of_module_a]["used-colors"][former_color] -= 1
-        graphname.node[node_of_module_b]["used-colors"][former_color] -= 1
+    if former_channel is not None:
+        # It had a channel before => we do a reassignment
+        # Decrease for overpainting the old channel
+        graphname.node[node_of_module_a]["used-channels"][former_channel] -= 1
+        graphname.node[node_of_module_b]["used-channels"][former_channel] -= 1
 
-        # Decrease also the overall colorcounters for the former color
-        overall_color_counter[former_color] -= 1
+        # Decrease also the overall channelcounters for the former channel
+        overall_channel_counter[former_channel] -= 1
 
-    # Color the edge and the modules
-    graphname.edge[module_a][module_b]["color"] = edgecolor
-    graphname.node[module_a]["color"] = edgecolor
-    graphname.node[module_b]["color"] = edgecolor
+    # Assign channels to the edge and the modules
+    graphname.edge[module_a][module_b]["channel"] = edgechannel
+    graphname.node[module_a]["channel"] = edgechannel
+    graphname.node[module_b]["channel"] = edgechannel
 
-    # Increase the color counter at the respective nodes for these modules
-    graphname.node[node_of_module_a]["used-colors"][edgecolor] += 1
-    graphname.node[node_of_module_b]["used-colors"][edgecolor] += 1
+    # Increase the channel counter at the respective nodes for these modules
+    graphname.node[node_of_module_a]["used-channels"][edgechannel] += 1
+    graphname.node[node_of_module_b]["used-channels"][edgechannel] += 1
 
-    # Increase also the overall colorcounters
-    overall_color_counter[edgecolor] += 1
-
-
-# Returns the number of modules for a node
-def get_modules_count_for_node(graphname, node):
-    imodules = graphname.node[node]["modules"]
-    if imodules:
-        return imodules
-    else:
-        logger.error("node " + str(node) + " has no modules field. This is an error and should not happen")
-        exit(1)
+    # Increase also the overall channelcounters
+    overall_channel_counter[edgechannel] += 1
 
 
-# Returns set of colors for all edges of a node, colored so far
-def get_colorset_used_for_node(graphname, node):
-    return set(graphname.node[node]["used-colors"])
+# Returns set of channels for all edges of a node
+def get_channelset_used_for_node(graphname, node):
+    return set(graphname.node[node]["used-channels"])
 
 
-# Returns set of colors for the node this module belongs to
-# This makes sense, since a module can always just have maximal 1 attached color/channel
-def get_colorset_used_for_module(graphname, module):
-    node = get_node_for_module(graphname, module)
-    return set(graphname.node[node]["used-colors"])
-
-
-# Returns the number of the (distinct) colors this node already uses
-def get_number_of_colors_used_for_node(graphname, node):
-    colors_used = get_colorset_used_for_node(graphname, node)
-    return len(colors_used)
-
-
-# Returns the number of modules for a node that are still free to use
-# modules=number of wlan modules (probably 2 or 3 atm)
-def modules_free_count_for_node(graphname, node):
-    #free modules = number of modules of node minus number of channels already used on that node
-    return get_modules_count_for_node(graphname, node) - get_number_of_colors_used_for_node(graphname, node)
-
-
-# Returns True, if this module already uses a color
-# Since a module is per definition only one, this just tells us whether this module already uses a color or not
-def module_is_already_colored(graphname, module):
-    if graphname.node[module]["color"] is None:
+# Returns True, if this module already uses a channel
+# Since a module is per definition only one, this just tells us whether this module already uses a channel or not
+def module_has_channel(graphname, module):
+    if graphname.node[module]["channel"] is None:
         return False
     else:
         return True
 
 
-# Returns list of colors which either node a or node b uses
-def get_colors_used_for_nodes(graphname, node_a, node_b):
-    colors_used_by_node_a = get_colorset_used_for_node(graphname, node_a)
-    colors_used_by_node_b = get_colorset_used_for_node(graphname, node_b)
-    colors_used_by_either_node_a_or_node_b = set(colors_used_by_node_a.union(colors_used_by_node_b))
-    return colors_used_by_either_node_a_or_node_b
-
-
-# Returns a set of colors which are not used by the node
-def get_colors_not_used_for_node(graphname, node):
-    colors_used_by_node = get_colorset_used_for_node(graphname, node)
-    colors_not_used = [i for i in Assignable_Colors if i not in colors_used_by_node]
-    return set(colors_not_used)
-
-
-# Check if edge has a color
-def edge_has_color(graphname, node_a, node_b):
-    if graphname.edge[node_a][node_b]["color"] is not None:
-        return True
-    else:
+# Check if edge has a channel
+def edge_has_channel(graphname, node_a, node_b):
+    if graphname.edge[node_a][node_b]["channel"] is None:
         return False
+    else:
+        return True
 
 
-# Returns the number of connected occurences for a certain color at a module
-# It counts all the connected edges of the same color (over multiple modules)
-def get_connected_color_count_for_module(graphname, module, color, wlan_modules):
+# Returns the number of connected occurences for a certain channel at a module
+# It counts all the connected edges of the same channel (over multiple modules)
+def get_connected_channel_count_for_module(graphname, module, channel, wlan_modules):
     occurences = 0
     edges_done = set()
     modules_todo = list()
@@ -632,8 +577,8 @@ def get_connected_color_count_for_module(graphname, module, color, wlan_modules)
         neighbors = graphname.neighbors(mod)
         for neighbor in neighbors:
             if neighbor in wlan_modules:
-                if graphname.edge[mod][neighbor]["color"] == color and (mod, neighbor) not in edges_done:
-                    # Increase overall color counter
+                if graphname.edge[mod][neighbor]["channel"] == channel and (mod, neighbor) not in edges_done:
+                    # Increase overall channel counter
                     occurences += 1
 
                     # Add edge to done-list
@@ -646,46 +591,13 @@ def get_connected_color_count_for_module(graphname, module, color, wlan_modules)
     return occurences
 
 
-# Returns a dictionary with number of connected colorusage for the module provided
-def get_color_count_for_module(graphname, module, wlan_modules):
-    color_ctr = collections_enhanced.Counter()
-    colors_of_node = get_colorset_used_for_node(graphname, module)
-    for color in colors_of_node:
-        color_ctr[color] = 0
-
-    for color in colors_of_node:
-        edges_done = set()
-        modules_todo = list()
-
-        # Add initial node to be able to start from there
-        modules_todo.append(module)
-
-        for mod in modules_todo:
-            neighbors = graphname.neighbors(mod)
-            for neighbor in neighbors:
-                if neighbor in wlan_modules:
-                    edge = graphname.edge[mod][neighbor]
-                    if edge and "color" in edge.keys() and edge["color"] == color and (mod, neighbor) not in edges_done:
-                        # Increase overall color counter
-                        color_ctr[color] += 1
-
-                        # Add edge to done-list
-                        edges_done.add((mod, neighbor))
-                        edges_done.add((neighbor, mod))
-
-                        # Add module to go if not already visited
-                        if neighbor not in modules_todo:
-                            modules_todo.append(neighbor)
-    return color_ctr
-
-
-# Recolors for a given module all connected edges of the same color (even over multiple modules)
-def recolor_edges_for_module(graphname, overall_color_counter, module, oldcolor, newcolor, wlan_modules):
-    # Speed up things if colors are equal
-    if oldcolor == newcolor:
+# Reassign channels for a given module all connected edges of the same channel (even over multiple modules)
+def reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module, oldchannel, newchannel, wlan_modules):
+    # If channels are the same, something must be wrong
+    if oldchannel == newchannel:
         # Nothing to do then
-        logger.error("Error: tried to overpaint " + str(oldcolor) + " with " + str(newcolor) + ". This does not make sense and should not happen.")
-        logger.error("This is an error in the coloring algorithm")
+        logger.error("Error: tried to overpaint " + str(oldchannel) + " with " + str(newchannel) + ". This does not make sense and should not happen.")
+        logger.error("This is an error in the Channel assignment algorithm.")
         exit(1)
 
     # Add initial node to be able to start from there
@@ -697,76 +609,66 @@ def recolor_edges_for_module(graphname, overall_color_counter, module, oldcolor,
         for neighbor in neighbors:
             if neighbor in wlan_modules:
                 edge = graphname.edge[mod][neighbor]
-                if edge and "color" in edge.keys() and edge["color"] == oldcolor:
-                    # Recolor that edge
-                    set_edge_color(graphname, overall_color_counter, newcolor, mod, neighbor)
+                if edge and "channel" in edge.keys() and edge["channel"] == oldchannel:
+                    # Reassign channel to that edge
+                    set_edge_channel(graphname, overall_channel_counter, newchannel, mod, neighbor)
 
                     # Add the destination node to nodes_todo
                     modules_todo.append(neighbor)
 
 
-def find_color_for_edge_without_tricky(graphname, overall_color_counter, module_a, module_b):
-    if not module_is_already_colored(graphname, module_a):
-        if not module_is_already_colored(graphname, module_b):
-            set_edge_color(graphname, overall_color_counter, get_best_color_in(graphname, overall_color_counter, Assignable_Colors, module_a, module_b), module_a, module_b)
+# Find the best channel for an edge
+def assign_channel_to_edge(graphname, overall_channel_counter, module_a, module_b, wlan_modules):
+    if not module_has_channel(graphname, module_a):
+        if not module_has_channel(graphname, module_b):
+            set_edge_channel(graphname, overall_channel_counter, get_best_channel_in(graphname, overall_channel_counter, Assignable_Channels, module_a, module_b), module_a, module_b)
         else:
-            # We have to take the color of module_b
-            set_edge_color(graphname, overall_color_counter, graphname.node[module_b]["color"], module_a, module_b)
+            # We have to take the channel of module_b
+            set_edge_channel(graphname, overall_channel_counter, graphname.node[module_b]["channel"], module_a, module_b)
     else:
-        # we have to take the color of module_a, lets see if this is a problem
-        # and check if b is not colored, or we can use the color there
-        color_of_module_a = graphname.node[module_a]["color"]
-        if not module_is_already_colored(graphname, module_b):
-            set_edge_color(graphname, overall_color_counter, color_of_module_a, module_a, module_b)
+        # We have to take the channel of module_a, lets see if this is a problem.
+        # Therefore check if b has a channel assigned, and if it has, check if its the same channel a has.
+        channel_of_module_a = graphname.node[module_a]["channel"]
+        if not module_has_channel(graphname, module_b):
+            set_edge_channel(graphname, overall_channel_counter, channel_of_module_a, module_a, module_b)
         else:
-            # Now we have a problem if the colors are not by accident the same
-            color_of_module_b = graphname.node[module_b]["color"]
-            if color_of_module_a == color_of_module_b:
+            # Now we have a problem if the channels are not by accident the same
+            channel_of_module_b = graphname.node[module_b]["channel"]
+            if channel_of_module_a == channel_of_module_b:
                 # We are lucky, they are the same
-                set_edge_color(graphname, overall_color_counter, color_of_module_a, module_a, module_b)
+                set_edge_channel(graphname, overall_channel_counter, channel_of_module_a, module_a, module_b)
             else:
-                # Tricky case
-                return False
-    return True
+                # Channels are not the same, This means Module A and B have different channels assigned, but we have to establish a link between them
+                # This is the most costly case (tricky case)
+                # The solution here is based on a paper called hycint-mcr2 and works like described in the following:
+                # Take the channel from module_a or module_b which occurs less at both sides (connected!) and repaint it with the other one
+                # Then replace the least connected channels at A and B with the newchannel and also use it for the edge between A and B
+
+                # Get the channelcounts for both nodes and combine them
+                nr_of_occurrences_for_channel_at_module_a = get_connected_channel_count_for_module(graphname, module_a, channel_of_module_a, wlan_modules)
+                nr_of_occurrences_for_channel_at_module_b = get_connected_channel_count_for_module(graphname, module_b, channel_of_module_b, wlan_modules)
+
+                if nr_of_occurrences_for_channel_at_module_a > nr_of_occurrences_for_channel_at_module_b:
+                    channel_with_more_occurrences = channel_of_module_a
+                    channel_with_less_occurrences = channel_of_module_b
+                else:
+                    channel_with_more_occurrences = channel_of_module_b
+                    channel_with_less_occurrences = channel_of_module_a
+
+                # Reassign channels to all the other connected edges for both modules (overpaint channel_with_less_occurrences with channel_with_more_occurrences)
+                reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module_a, channel_with_less_occurrences, channel_with_more_occurrences, wlan_modules)
+                reassign_channel_to_edges_for_module(graphname, overall_channel_counter, module_b, channel_with_less_occurrences, channel_with_more_occurrences, wlan_modules)
+
+                # Assign a channel to the edge from node_a to node_b with this the best channel available at node a
+                set_edge_channel(graphname, overall_channel_counter, channel_with_more_occurrences, module_a, module_b)
 
 
-# Find the best color for an edge
-def find_color_for_edge(graphname, overall_color_counter, module_a, module_b, wlan_modules):
-    if not find_color_for_edge_without_tricky(graphname, overall_color_counter, module_a, module_b):
-        # Module A and B are differently colored but we have to establish a link between them
-        # This is the most costly case
-        # The solution here is based on a paper called hycint-mcr2 and works like described in the following:
-        # Take the color from module_a or module_b which occurs less at both sides (connected!) and repaint it with the other one
-        # Then replace the least connected colors at A and B with the newcolor and also use it for the edge
-        # between A and B
-
-        # Get the colorcounts for both nodes and combine them
-        color_of_module_a = graphname.node[module_a]["color"]
-        color_of_module_b = graphname.node[module_b]["color"]
-        nr_of_occurrences_for_color_at_module_a = get_connected_color_count_for_module(graphname, module_a, color_of_module_a, wlan_modules)
-        nr_of_occurrences_for_color_at_module_b = get_connected_color_count_for_module(graphname, module_b, color_of_module_b, wlan_modules)
-
-        if nr_of_occurrences_for_color_at_module_a > nr_of_occurrences_for_color_at_module_b:
-            winning_color = color_of_module_a
-            losing_color = color_of_module_b
-        else:
-            winning_color = color_of_module_b
-            losing_color = color_of_module_a
-
-        # Recolor all other connected edges for both modules
-        recolor_edges_for_module(graphname, overall_color_counter, module_a, losing_color, winning_color, wlan_modules)
-        recolor_edges_for_module(graphname, overall_color_counter, module_b, losing_color, winning_color, wlan_modules)
-
-        # Color the edge from node_a to node_b with this the best color available at node a
-        set_edge_color(graphname, overall_color_counter, winning_color, module_a, module_b)
-
-
-# Check if the coloring is valid (does ever node only use a number of colors = his modules and Are all edges colored?)
+# Check if the CAA is valid
 def graph_is_valid(graphname, lan_nodes, wlan_modules):
     logger.info("Checking the graph for validity")
 
     valid = True
-    # First check if every edge is colored
+    # First check if every edge has an assigned channel
     for edge in graphname.edges():
         if not edge[0] in lan_nodes and not edge[1] in lan_nodes:
             if not edge:
@@ -774,14 +676,14 @@ def graph_is_valid(graphname, lan_nodes, wlan_modules):
                 valid = False
                 break
             else:
-                if not graphname.edge[edge[0]][edge[1]]["color"]:
-                    logger.error("Edge has no color: " + str(edge[0]) + "<->" + str(edge[1]))
+                if not graphname.edge[edge[0]][edge[1]]["channel"]:
+                    logger.error("Edge has no channel: " + str(edge[0]) + "<->" + str(edge[1]))
                     valid = False
                     break
                 else:
-                    # Check if the color is in one of the assignable colors
-                    if graphname.edge[edge[0]][edge[1]]["color"] not in Assignable_Colors:
-                        logger.error("The color for edge: " + str(edge[0]) + "," + str(edge[1]) + "is not an assignable color.")
+                    # Check if the channel is in one of the assignable channels
+                    if graphname.edge[edge[0]][edge[1]]["channel"] not in Assignable_Channels:
+                        logger.error("The channel for edge: " + str(edge[0]) + "," + str(edge[1]) + "is not an assignable channel.")
                         valid = False
                         break
                 # Check if there are only connections between modules of different nodes
@@ -798,19 +700,19 @@ def graph_is_valid(graphname, lan_nodes, wlan_modules):
             valid = False
             break
 
-    # Now check if every node has only so many attached colors/channels as the number of modules it has
+    # Now check if every node has only so many attached channels/channels as the number of modules it has
     for node in lan_nodes:
         nr_of_modules = graphname.node[node]["modules"]
 
-        # Number of colors in the used-colors counter which have a value != 0
-        nr_of_colors = 0
-        for key in graphname.node[node]["used-colors"].keys():
-            if graphname.node[node]["used-colors"][key] != 0:
-                nr_of_colors += 1
+        # Number of channels in the used-channels counter which have a value != 0
+        nr_of_channels = 0
+        for key in graphname.node[node]["used-channels"].keys():
+            if graphname.node[node]["used-channels"][key] != 0:
+                nr_of_channels += 1
 
-        if nr_of_colors > nr_of_modules:
-            logger.error("Node " + str(node) + " has more colors attached than it has modules:" + str(nr_of_colors) + " > " + str(nr_of_modules) + ")")
-            logger.error(graphname.node[node]["used-colors"])
+        if nr_of_channels > nr_of_modules:
+            logger.error("Node " + str(node) + " has more channels attached than it has modules:" + str(nr_of_channels) + " > " + str(nr_of_modules) + ")")
+            logger.error(graphname.node[node]["used-channels"])
             valid = False
             break
 
@@ -835,20 +737,20 @@ def write_json(graph, lan_nodes, wlan_modules, filename="graph.json"):
     connections = list()
     for (A, B) in graph.edges():
         if A in wlan_modules and B in wlan_modules:
-            if graph.edge[A][B]["color"]:
-                color = colortable[graph.edge[A][B]["color"]]
+            if graph.edge[A][B]["channel"]:
+                channel = channeltable[graph.edge[A][B]["channel"]]
             else:
-                color = "grey"
+                channel = "grey"
             snr = graph.edge[A][B]["snr"]
             dash = "5,5"
         else:
             dash = "0,0"
             snr = 200
-            color = "black"
-        connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, color, dash))
+            channel = "black"
+        connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, channel, dash))
 
-    json_dict = {"nodes": [{'name': nodes_dict_index[index], "index": index, "color": "black", "label": nodes_dict_index[index]} for index in nodes_dict_index.keys()],
-                 "links": [{"source": source, "target": target, "value": value, "color": color, "dash": dash} for source, target, value, color, dash in connections]}
+    json_dict = {"nodes": [{'name': nodes_dict_index[index], "index": index, "channel": "black", "label": nodes_dict_index[index]} for index in nodes_dict_index.keys()],
+                 "links": [{"source": source, "target": target, "value": value, "channel": channel, "dash": dash} for source, target, value, channel, dash in connections]}
     with open(filename, 'w') as outfile:
         json.dump(json_dict, outfile, indent=4)
 
@@ -872,37 +774,23 @@ def show_graph(networkxgraph, wlan_modules, lan_nodes, filename_svg="caa.svg", f
 
     for (A, B) in networkxgraph.edges():
         if (A, B) not in edges_done:
-            #edge_weight = networkxgraph.edge[A][B]["weight"]
             if A in lan_nodes or B in lan_nodes:
                 edge_style = "solid"
-                edge_color = "black"
+                edge_channel = "black"
                 edge_penwidth = 2
             else:
                 # For debugging set to std penwidth
-                #edge_penwidth = str(Edge_Thickness/edge_weight)
                 edge_penwidth = 5
-                edge_color = networkxgraph.edge[A][B]["color"]
+                edge_channel = networkxgraph.edge[A][B]["channel"]
                 edge_style = "dotted"
-                if edge_color is None:
-                    edge_color = "grey"
+                if edge_channel is None:
+                    edge_channel = "grey"
                 else:
-                    edge_color = colortable[edge_color]
-            pydotgraphname.add_edge(pydot.Edge(str(A), str(B), style=edge_style, penwidth=edge_penwidth, color=edge_color))
+                    edge_channel = channeltable[edge_channel]
+            pydotgraphname.add_edge(pydot.Edge(str(A), str(B), style=edge_style, penwidth=edge_penwidth, channel=edge_channel))
             edges_done.add((A, B))
     pydotgraphname.write(filename_svg, format="svg")
     write_json(networkxgraph, lan_nodes, wlan_modules, filename_json)
-
-
-# Translate a lan_mac + interface nr to wlan_mac
-# Returns the wlan_mac, or nothing if not found
-def translate_lan_mac_to_wlan_mac(lanmac, interfacenr, active_radios_dict):
-    # Interfacenr is of the form "WLAN-ID"
-    # Look for the combination lanmac + interfacenr in the table active radios and return the wlan_mac for it
-    for index in active_radios_dict.keys():
-        if active_radios_dict[index]["lan_mac"] == lanmac and active_radios_dict[index]["interface_nr"] == interfacenr:
-            return active_radios_dict[index]["bssid_mac"]
-    logger.warning("Got inconsistent data from WLC")
-    logger.warning("         Could not translate lanmac: " + str(lanmac) + " and interfacenr: " + str(interfacenr) + " to wlan_mac from Scanresults and Active Radios.")
 
 
 # Translate a wlan_ac into a interface_nr
@@ -923,9 +811,6 @@ def get_table_data(tablename, hostname, username, password):
 # Get the data from the wlc, returns a networkx basic graph
 def get_basic_graph_from_wlc(hostname, username, password):
     logger.info("Getting Data from WLC...")
-    #
-    # Get data from WLC
-    #
 
     # First check if we get a connection to the wlc
     if not os.system("ping -c 1 " + hostname + " > /dev/null") == 0:
@@ -936,8 +821,8 @@ def get_basic_graph_from_wlc(hostname, username, password):
     # Example entry: scan_results[<index>][<name>]["lan_mac"] = <value>
     #                scan_results[<index>][<name>]["channel"] = <value>
     #                ...
-    autowds_topology_scan_results = dict()
-    autowds_topology_scan_results_index = 0
+    intra_wlan_discovery = dict()
+    intra_wlan_discovery_index = 0
     for line in get_table_data("/Status/WLAN-Management/Intra-WLAN-Discovery", hostname, username, password):
         entry_dict = dict()
         entry_dict["source_mac"] = line[0]
@@ -946,8 +831,8 @@ def get_basic_graph_from_wlc(hostname, username, password):
         entry_dict["signal_strength"] = line[3]
         entry_dict["noise_level"] = line[4]
         entry_dict["age"] = line[5]
-        autowds_topology_scan_results[autowds_topology_scan_results_index] = entry_dict
-        autowds_topology_scan_results_index += 1
+        intra_wlan_discovery[intra_wlan_discovery_index] = entry_dict
+        intra_wlan_discovery_index += 1
 
     # First create the interfaces-graph
     # That means we create a node for each WLAN-interface of a node
@@ -1011,20 +896,22 @@ def get_basic_graph_from_wlc(hostname, username, password):
     #        foreign_connections[index] = scan_results[index]
 
     # Safety check
-    if len(autowds_topology_scan_results) == 0:
+    if len(intra_wlan_discovery) == 0:
         logger.error("Our connection list is empty. The APs don't see each other")
         exit(1)
+
+    # Todo: Foreign table/ Seen-channels, but christoph has to implement this table first (probably wont happen anytime soon)
     #if len(foreign_connections) == 0:
-    #    logger.warning("Foreign connection list is empty. The APs don't foreign networks.")
+    #    logger.warning("Foreign connection list is empty. The APs don't show foreign networks.")
     #    logger.warning("         This is unlikely, except there are really no other wireless lan networks around")
 
     # Remove the inactive connections from scan results
     # Only consider those connections, which have a corresponding partner in the active radios table, since only those connections are really active
-    for index in autowds_topology_scan_results.keys():
-        if not autowds_topology_scan_results[index]["source_mac"] in active_wlan_interfaces or not autowds_topology_scan_results[index]["wlan_dest_mac"] in active_wlan_interfaces:
-            logger.info("Ignoring link {0},{1}, since at least one is not in active Radios.".format(str(autowds_topology_scan_results[index]["source_mac"]),
-                                                                                                    str(autowds_topology_scan_results[index]["wlan_dest_mac"])))
-            del autowds_topology_scan_results[index]
+    for index in intra_wlan_discovery.keys():
+        if not intra_wlan_discovery[index]["source_mac"] in active_wlan_interfaces or not intra_wlan_discovery[index]["wlan_dest_mac"] in active_wlan_interfaces:
+            logger.info("Ignoring link {0},{1}, since at least one is not in active Radios.".format(str(intra_wlan_discovery[index]["source_mac"]),
+                                                                                                    str(intra_wlan_discovery[index]["wlan_dest_mac"])))
+            del intra_wlan_discovery[index]
 
     # Create set of nodes, which are modules
     wlan_modules = set()
@@ -1046,11 +933,11 @@ def get_basic_graph_from_wlc(hostname, username, password):
         # Add the node
         basic_graph.add_node(node)
 
-        # Initialize used colors with 0
-        used_colors = collections_enhanced.Counter()
-        for color in Assignable_Colors:
-            used_colors[color] = 0
-        basic_graph.node[node]["used-colors"] = used_colors
+        # Initialize used channels with 0
+        used_channels = collections_enhanced.Counter()
+        for channel in Assignable_Channels:
+            used_channels[channel] = 0
+        basic_graph.node[node]["used-channels"] = used_channels
 
         # Set number of modules initially to 0
         basic_graph.node[node]["modules"] = 0
@@ -1061,14 +948,14 @@ def get_basic_graph_from_wlc(hostname, username, password):
         # Add the module-node
         basic_graph.add_node(module)
 
-        # Set the default color
-        basic_graph.node[module]["color"] = None
+        # Set the default channel
+        basic_graph.node[module]["channel"] = None
 
         # Initialize actually seen counters for wlan modules with 0
-        actually_seen_colors = collections_enhanced.Counter()
-        for color in Assignable_Colors:
-            actually_seen_colors[color] = 0
-        basic_graph.node[module]["seen_channels"] = actually_seen_colors
+        actually_seen_channels = collections_enhanced.Counter()
+        for channel in Assignable_Channels:
+            actually_seen_channels[channel] = 0
+        basic_graph.node[module]["seen_channels"] = actually_seen_channels
 
         # Initialize nr of modules for wlan module
         basic_graph.node[module]["modules"] = 1
@@ -1083,7 +970,6 @@ def get_basic_graph_from_wlc(hostname, username, password):
         basic_graph.add_edge(lan_mac, wlan_mac)
 
         # Module-edge data
-        basic_graph.edge[lan_mac][wlan_mac]["weight"] = 1
         basic_graph.edge[lan_mac][wlan_mac]["real-connection"] = False
 
         # Write all data also into graph
@@ -1096,35 +982,33 @@ def get_basic_graph_from_wlc(hostname, username, password):
         basic_graph.node[lan_mac]["modules"] += 1
 
     # Add all possible module-module links
-    for index in autowds_topology_scan_results.keys():
-        source_mac = autowds_topology_scan_results[index]["source_mac"]
-        wlan_dest_mac = autowds_topology_scan_results[index]["wlan_dest_mac"]
+    for index in intra_wlan_discovery.keys():
+        source_mac = intra_wlan_discovery[index]["source_mac"]
+        wlan_dest_mac = intra_wlan_discovery[index]["wlan_dest_mac"]
         #channel = autowds_topology_scan_results[index]["channel"]
-        signal_strength = int(autowds_topology_scan_results[index]["signal_strength"])
+        signal_strength = int(intra_wlan_discovery[index]["signal_strength"])
         #noise_level = int(autowds_topology_scan_results[index]["noise_level"])
         #age = autowds_topology_scan_results[index]["age"]
 
         basic_graph.add_edge(source_mac, wlan_dest_mac)
 
         # Set the score of this edge
-        # 1 + because the best edge has one (node to interfaces) a high signal-strength = good -> make inverse for MST-calculation
-        # because lower values are better there
-        # The following is done, since Alfred Arnold mentioned to me that the Signal-strength value is already the SNR
+        # The following is done, since Alfred Arnold mentioned that the Signal-strength value in LCOS is already the SNR
         snr = signal_strength
         basic_graph.edge[source_mac][wlan_dest_mac]["snr"] = snr
-        basic_graph.edge[source_mac][wlan_dest_mac]["weight"] = 1 + 100.0 - snr
 
-        # Initialize each edge with empty color
-        basic_graph.edge[source_mac][wlan_dest_mac]["color"] = None
+        # Initialize each edge with empty channel
+        basic_graph.edge[source_mac][wlan_dest_mac]["channel"] = None
         basic_graph.edge[source_mac][wlan_dest_mac]["real-connection"] = True
 
+    # Todo: Foreign table/ Seen-channels, but christoph has to implement this table first (probably wont happen anytime soon)
     # Fill interference list
     #for index in foreign_connections.keys():
     #    channel = foreign_connections[index]["channel"]
     #    wlan_mac = foreign_connections[index]["wlan_mac"]
     #    # Add to interference list of this wlan module-node
-    #    # Only consider the channels we have in Assignable colors, since the others are useless
-    #    if channel in Assignable_Colors:
+    #    # Only consider the channels we have in Assignable channels, since the others are useless
+    #    if channel in Assignable_channels:
     #        basic_graph.node[wlan_mac]["seen_channels"][channel] += 1
 
     return basic_graph, wlan_modules, lan_nodes
@@ -1143,11 +1027,11 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 18)), max_nr_modul
         # Add the node
         basic_graph.add_node(nodename)
 
-        # Initialize used colors with 0
-        used_colors = collections_enhanced.Counter()
-        for color in Assignable_Colors:
-            used_colors[color] = 0
-        basic_graph.node[nodename]["used-colors"] = used_colors
+        # Initialize used channels with 0
+        used_channels = collections_enhanced.Counter()
+        for channel in Assignable_Channels:
+            used_channels[channel] = 0
+        basic_graph.node[nodename]["used-channels"] = used_channels
 
         # Set number of modules initially to 0
         basic_graph.node[nodename]["modules"] = 0
@@ -1159,24 +1043,19 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 18)), max_nr_modul
             # Add the module-node
             basic_graph.add_node(module)
 
-            # Set the default color
-            basic_graph.node[module]["color"] = None
+            # Set the default channel
+            basic_graph.node[module]["channel"] = None
 
             # Initialize actually seen counters for wlan modules with 0
-            actually_seen_colors = collections_enhanced.Counter()
-            for color in Assignable_Colors:
-                actually_seen_colors[color] = 0
-            basic_graph.node[module]["seen_channels"] = actually_seen_colors
-
-            # Initialize nr of modules for wlan module
-            basic_graph.node[module]["modules"] = 1
-
+            actually_seen_channels = collections_enhanced.Counter()
+            for channel in Assignable_Channels:
+                actually_seen_channels[channel] = 0
+            basic_graph.node[module]["seen_channels"] = actually_seen_channels
             basic_graph.node[module]["module-of"] = nodename
 
             basic_graph.add_edge(nodename, module)
 
             # Module-edge data
-            basic_graph.edge[nodename][module]["weight"] = 1
             basic_graph.edge[nodename][module]["real-connection"] = False
 
             # Also count here the number of modules each node has
@@ -1187,46 +1066,43 @@ def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 18)), max_nr_modul
                 if basic_graph.node[random_module]["module-of"] != basic_graph.node[module]["module-of"]:
                     basic_graph.add_edge(module, random_module)
                     basic_graph.add_edge(random_module, module)
-                    basic_graph.edge[module][random_module]["weight"] = 1 + 100.0 - random.choice(range(-20, 20))
                     basic_graph.edge[module][random_module]["snr"] = random.choice(range(10, 100))
-                    basic_graph.edge[random_module][module]["weight"] = 1 + 100.0 - random.choice(range(-20, 20))
                     basic_graph.edge[random_module][module]["snr"] = random.choice(range(10, 100))
 
-                    # Initialize each edge with empty color
-                    basic_graph.edge[random_module][module]["color"] = None
-                    basic_graph.edge[module][random_module]["color"] = None
+                    # Initialize each edge with empty channel
+                    basic_graph.edge[random_module][module]["channel"] = None
+                    basic_graph.edge[module][random_module]["channel"] = None
                     basic_graph.edge[module][random_module]["real-connection"] = True
                     basic_graph.edge[random_module][module]["real-connection"] = True
 
     return basic_graph, wlan_modules, lan_nodes
 
 
-# Caclulate a coloring for a given graph
-def calculate_colored_graph(graphname, wlan_modules, overall_color_counter):
-    logger.info("Calculating Coloring for Graph...")
+# Caclulate a CAA for a given graph
+def calculate_caa_for_graph(graphname, wlan_modules, overall_channel_counter):
+    logger.info("Calculating CAA for Graph...")
     edges_done = set()  # List of edges which have been visited (empty at beginning)
     nodelist = list()  # This is the list of nodes over which we iterate
     nodelist.append(root_node)  # Initially put only the gatewaynode in the nodelist (Could also be a different one)
 
-    # Go through all nodes (main loop)
+    # Iterate over all nodes in BFS-style
     for node in nodelist:
         neighbors = graphname.neighbors(node)
         for neighbor in neighbors:
-            if (node, neighbor) not in edges_done:
-                # We just want to color the module-edges and not
-                # the edges between node and module, since they dont need a coloring
-                if node in wlan_modules and neighbor in wlan_modules and not edge_has_color(graphname, node, neighbor):
-                    find_color_for_edge(graphname, overall_color_counter, node, neighbor, wlan_modules)
+            if (node, neighbor) not in edges_done and (neighbor, node) not in edges_done:
+                # We just want to assign a channel to the module-edges and not
+                # the edges between node and module, since they dont need a channels assigned
+                if node in wlan_modules and neighbor in wlan_modules and not edge_has_channel(graphname, node, neighbor):
+                    assign_channel_to_edge(graphname, overall_channel_counter, node, neighbor, wlan_modules)
                 if not neighbor in nodelist:
                     nodelist.append(neighbor)
                 # Mark edge as done
                 edges_done.add((node, neighbor))
-                edges_done.add((neighbor, node))
     return graphname
 
 
 # Write the connections back to the WLC
-def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colored):
+def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_with_channels_assigned):
     logger.info("Writing Data to WLC")
     lcos_script = list()
 
@@ -1240,15 +1116,15 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
     lcos_script.append('rm /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/*')
 
     # Add the links for the connection
-    prio_counter = 1000
-    for a, b in mst_graph_colored.edges():
+    prio_counter = 1000  # Magic hidden value in LCOS (implemented by Christoph)
+    for a, b in pmst_graph_with_channels_assigned.edges():
         if not a in wlan_modules or not b in wlan_modules:
             continue
 
         module_a = str(a)
         module_b = str(b)
-        module_a_device = str(mst_graph_colored.node[module_a]["module-of-name"])
-        module_b_device = str(mst_graph_colored.node[module_b]["module-of-name"])
+        module_a_device = str(pmst_graph_with_channels_assigned.node[module_a]["module-of-name"])
+        module_b_device = str(pmst_graph_with_channels_assigned.node[module_b]["module-of-name"])
         module_a_interface_nr = int(translate_wlan_mac_to_interface_nr(module_a)) + 1
         module_b_interface_nr = int(translate_wlan_mac_to_interface_nr(module_b)) + 1
         module_a_interface_name = "WLAN-" + str(module_a_interface_nr)
@@ -1265,18 +1141,18 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
     module_channel_assignment = dict()
     for module in wlan_modules:
         if module not in module_channel_assignment:
-            module_channel_assignment[module] = mst_graph_colored.node[module]["color"]
+            module_channel_assignment[module] = pmst_graph_with_channels_assigned.node[module]["channel"]
         else:
-            # Check if it has the same color like the entry in the dictionary
+            # Check if it has the same channel like the entry in the dictionary
             # (since it has to be consistent, else this is a fatal error and sth is wrong with the algorithm)
-            if not module_channel_assignment[module] == mst_graph_colored.node[module]["color"]:
+            if not module_channel_assignment[module] == pmst_graph_with_channels_assigned.node[module]["channel"]:
                 logger.error("Interface-Channel assignment problem.")
                 exit(1)
     for element in module_channel_assignment:
         module_name = str(element)
         channel = str(module_channel_assignment[element])
 
-        # Check if we use this module, if not the color is still None
+        # Check if we use this module, if not the channel is still None
         if module_channel_assignment[element] is None:
             continue
 
@@ -1289,7 +1165,7 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
             band = "1"
         else:  # set to 5GHz
             band = "2"
-        corresponding_device_name = mst_graph_colored.node[module_name]["module-of"]
+        corresponding_device_name = pmst_graph_with_channels_assigned.node[module_name]["module-of"]
         lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} {4}'.format(corresponding_device_name, module_number_name, band, module_channel_list_name, channel))
 
     # Really write it now
@@ -1297,35 +1173,33 @@ def write_graph_to_wlc(wlan_modules, address, username, password, mst_graph_colo
     wlc_connection.runscript(lcos_script)
 
 
-#
 # Configuration
-#
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 Number = 0  # Image-iterator for debugging
 Edge_Thickness = 9.0  # Factor for edge thickness, smaller value => smaller edges
-Assignable_Colors = ["1", "6", "11"]  # List of all channels/colors which can be used for assignment
-colortable = dict()
-colortable["1"] = "red"
-colortable["3"] = "green"
-colortable["6"] = "blue"
-colortable["11"] = "orange"
-colortable["14"] = "yellow"
-colortable["18"] = "brown"
+Assignable_Channels = ["1", "6", "11"]  # List of all channels which can be used for assignment
+channeltable = dict()
+channeltable["1"] = "red"
+channeltable["3"] = "green"
+channeltable["6"] = "blue"
+channeltable["11"] = "orange"
+channeltable["14"] = "yellow"
+channeltable["18"] = "brown"
 wlc_hostname = "172.16.40.100"
 wlc_username = "admin"
 wlc_password = "private"
 show_graph_enabled = True
 edge_max_score = 1000  # The score for node-module connections, this has to be higher than any possible module-module connection
-color_counter = collections_enhanced.Counter()  # This counts how often each color has been used overall, initially fill with 0
-for color_entry in Assignable_Colors:
-    color_counter[color_entry] = 0
+channel_counter = collections_enhanced.Counter()  # This counts how often each channel has been used overall, initially fill with 0
+for channel_entry in Assignable_Channels:
+    channel_counter[channel_entry] = 0
 
 # Getting Data from WLC per SNMP
-#basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc(wlc_hostname, wlc_username, wlc_password)
+basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc(wlc_hostname, wlc_username, wlc_password)
 
 # Alternatively for debugging/testing, generate Random Graph
-basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_of_nodes=20, max_nr_modules=3, max_nr_connections=3)
+#basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_of_nodes=20, max_nr_modules=3, max_nr_connections=3)
 
 # Set the root node TODO: automate this further later
 root_node = random.choice(list(devices))
@@ -1338,18 +1212,18 @@ show_graph(basic_connectivity_graph, modules, devices, filename_svg='caa_basic.s
 mst_graph = calculate_mst(basic_connectivity_graph, modules, devices, "equal_module")
 show_graph(mst_graph, modules, devices, filename_svg='caa_mst.svg', filename_json="graph_mst.json")
 
-# Color the mst
-colored_mst_graph = calculate_colored_graph(mst_graph, modules, color_counter)
-show_graph(colored_mst_graph, modules, devices, filename_svg='caa_colored_mst.svg', filename_json="graph_colored_mst.json")
+# Assign channels to the mst
+mst_graph_with_channels_assigned = calculate_caa_for_graph(mst_graph, modules, channel_counter)
+show_graph(mst_graph_with_channels_assigned, modules, devices, filename_svg='caa_colored_mst.svg', filename_json="graph_colored_mst.json")
 
 # Finally check the graph for validity
-if not graph_is_valid(colored_mst_graph, devices, modules):
+if not graph_is_valid(mst_graph_with_channels_assigned, devices, modules):
     exit(1)
 
-# Calculate the backup links for a given, colored mst
-#todo: create copy for colored_mst_graph because this variable is overwritten/modified
-#robust_graph = calculate_backup_links(colored_mst_graph, basic_connectivity_graph, modules)
+# Calculate the backup links for a given, CAAed mst
+# Todo: create copy for mst_graph_with_channels_assigned because this variable is overwritten/modified
+#robust_graph = calculate_backup_links(mst_graph_with_channels_assigned, basic_connectivity_graph, modules)
 #show_graph(robust_graph, modules, devices, filename_svg='caa_robust.svg', filename_json="graph_robust.json")
 
 # In the wlc set the links and channels
-#write_graph_to_wlc(modules, wlc_hostname, wlc_username, wlc_password, colored_mst_graph)
+#write_graph_to_wlc(modules, wlc_hostname, wlc_username, wlc_password, mst_graph_with_channels_assigned)
