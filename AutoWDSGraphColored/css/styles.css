@@ -67,3 +67,7 @@ body {
 .clear {
  clear:both;
 }
+
+.checkbox {
+  vertical-align:-3px;
+}
