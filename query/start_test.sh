@@ -47,10 +47,10 @@ do
 	cp -R ../query "/var/lib/vz/root/${i}/root"
 done
 
-# Get wlc config
+echo "Get wlc config" >&2
 scp "${wlc_username}@${wlc_address}:config" wlc_config
 
-# Start AP queries
+echo "Start AP querier on VMs" >&2
 vzctl exec 11 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.122 root private $test_duration &"
 vzctl exec 12 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.104 admin private $test_duration &"
 vzctl exec 13 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.123 root private $test_duration &"
@@ -73,7 +73,7 @@ done
 echo "Starting traffic throughput test in vms" >&2
 for i in $(seq $VM_start $VM_end)
 do
-        vzctl exec $i "sleep 0.$RANDOM; cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $NR_SECS $bw"
+        vzctl exec $i "sleep 0.$RANDOM; cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $test_duration $traffic_bw"
 done
 
 echo "Wait for test to finish about (${test_duration}s)" >&2
