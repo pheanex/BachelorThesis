@@ -95,7 +95,7 @@ sleep 5
 
 if [ "$enable_traffic" = "enable" ]
 then
-	echo "Stopping parallel iperf listeners in vms" >62
+	echo "Stopping parallel iperf listeners in vms" >&2
 	for i in $(seq $VM_start $VM_end)
 	do
         	vzctl exec $i "killall iperf"
