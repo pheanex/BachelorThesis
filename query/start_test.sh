@@ -3,6 +3,9 @@
 #date 21.06.2014
 #purpose starts the autowds traffic test
 
+DATE="$(date +%Y-%m-%d-%H-%M-%S)"
+VM_start="11"
+VM_end="22"
 wlc_address="172.16.40.100"
 wlc_username="admin"
 test_duration="$1"
