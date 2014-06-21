@@ -21,7 +21,6 @@ if not os.system("ping -c 1 " + address + " > /dev/null") == 0:
 
 ssh_connection = SSH(host=address, username=username, password=password)
 
-
 # for given raw table string, write pretty string to file
 def write_pretty_to_file(table_string, tablename):
     writestring = str()
