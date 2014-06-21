@@ -25,7 +25,7 @@ then
 	exit 1
 fi
 
-# Check if APs are stable in 15s
+echo "Check if APs are stable in 15s" >&2
 for i in $(seq 1 3)
 do
         sleep 5
