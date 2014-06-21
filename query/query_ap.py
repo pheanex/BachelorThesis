@@ -55,6 +55,15 @@ errors_file.write(errors_table)
 packet_transport_file.write(radios_table)
 radios_file.write(radios_table)
 accesspoints_list_file.write(accesspoints_list_table)
+
+# write pretty/parsable stuff to file
+string writestring
+for bigrow in accesspoints_list_table:
+	for row in accesspoints_list_table[1]:
+		for e in row: s += str(e) + "\t"
+		s += "\n"
+
+
 byte_transport_raw_file.write(byte_transport_table)
 errors_raw_file.write(errors_table)
 packet_transport_raw_file.write(radios_table)
