@@ -52,8 +52,8 @@ autowds_auto_topology = parse_table(autowds_auto_topology_raw)
 autowds_topology = parse_table(autowds_topology_raw)
 
 #write pretty files
-write_pretty_to_file(autowds_auto_topology, "autowds_auto_topology")
-write_pretty_to_file(autowds_topology, "autowds_topology")
+write_pretty_to_file(autowds_auto_topology, "autowds_auto_topology", timestamp)
+write_pretty_to_file(autowds_topology, "autowds_topology", timestamp)
 
 # Open/Create the raw files
 autowds_auto_topology_raw_file = open("autowds_auto_topology_raw" + timestamp, "w")
