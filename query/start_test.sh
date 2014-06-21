@@ -29,7 +29,7 @@ echo "Check if APs are stable in 15s" >&2
 for i in $(seq 1 3)
 do
         sleep 5
-        if ! python AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
+        if ! python ../AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
         then
 		echo "Error: APs are not stabilized yet, please take a look at this"
 		exit 1
