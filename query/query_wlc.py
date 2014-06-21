@@ -22,13 +22,21 @@ if not os.system("ping -c 1 " + address + " > /dev/null") == 0:
 ssh_connection = SSH(host=address, username=username, password=password)
 
 # for given raw table string, write pretty string to file
-def write_pretty_to_file(table_string, tablename):
+def write_pretty_to_file(table_string, tablename, timestamp):
     writestring = str()
-    for gen_row in table_string:
-        for row in gen_row:
-            for entry in row:
-                writestring += str(entry) + "\t"
-            writestring += "\n"
+
+    # Title line
+    for name in table_string[0]:
+        writestring += name + "\t"
+    writestring += "\n"
+
+    # Start of data lines
+    for row in table_string[1]:
+        for entry in row:
+            writestring += str(entry) + "\t"
+        writestring += "\n"
+
+    # Write stuff to files
     fd = open(tablename + "_" + timestamp, "w")
     fd.write(writestring)
     fd.close()
