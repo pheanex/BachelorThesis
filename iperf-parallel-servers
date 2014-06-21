@@ -1,0 +1,24 @@
+#!/bin/bash
+# author kmanna
+# date 03.06.2014
+# Run multiple parallel instances of iperf servers
+
+export vmstart=$1
+export vmend=$2
+export self=$3
+
+if [[ -z "$vmstart" ]] || [[ -z "$vmend" ]] || [[ -z "$self" ]]
+then
+        echo "Error: usage: $0 <vmstartnr> <vmendnr> <id-of-own-vm>" >&2
+        exit 1
+fi
+
+
+for i in $(seq $vmstart $vmend)
+do
+	[[ $i -eq $self ]] && continue
+        server_port=$((5000+$i));
+        report_file="query/testdata/iperf-serverlog_172.16.40.2${i}"
+        iperf -s -p $server_port -u -i 1 &> $report_file &
+done
+
