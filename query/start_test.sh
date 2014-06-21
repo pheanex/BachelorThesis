@@ -43,7 +43,7 @@ echo "All APs are stable" >&2
 echo "Update scripts in vms" >&2
 for i in $(seq $VM_start $VM_end)
 do
-        cp iperf-parallel-servers iperf-multiple-clients /var/lib/vz/root/$i/root/
+        cp ../iperf-parallel-servers ../iperf-multiple-clients /var/lib/vz/root/$i/root/
 	cp -R ../query "/var/lib/vz/root/${i}/root"
 done
 
