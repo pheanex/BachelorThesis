@@ -78,4 +78,3 @@ packet_transport_raw_file.close()
 radios_raw_file.close()
 accesspoints_list_raw_file.close()
 
-
