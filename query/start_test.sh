@@ -93,11 +93,14 @@ echo "Waiting for Test to finish in about (${test_duration}s)" >&2
 sleep "$test_duration"
 sleep 5
 
-echo "Stopping parallel iperf listeners in vms" >62
-for i in $(seq $VM_start $VM_end)
-do
-        vzctl exec $i "killall iperf"
-done
+if [ "$enable_traffic" = "enable" ]
+then
+	echo "Stopping parallel iperf listeners in vms" >62
+	for i in $(seq $VM_start $VM_end)
+	do
+        	vzctl exec $i "killall iperf"
+	done
+fi
 
 echo "Copying data from vms to archive" >&2
 cd "$testarchive"
