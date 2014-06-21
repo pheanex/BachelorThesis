@@ -7,13 +7,13 @@ cd /root
 rm -f bping_data
 rm -f ping_*
 # c = 3 to get 2 answers from all devices (since ping stops accepting packets after it received the first one)
-ping -b 172.31.255.255 -c $NUM_PINGS | while read pong; do echo "$(date +%s): $pong"; done > bping_data
-for target in $(grep "64 bytes" bping_data | awk '{print $5}'| sort | uniq | cut -d':' -f1)
+ping -b 172.31.255.255 -c $NUM_PINGS | while read pong; do echo "$(date +%s): $pong"; done > testdata/bping_data
+for target in $(grep "64 bytes" testdata/bping_data | awk '{print $5}'| sort | uniq | cut -d':' -f1)
 do
-	grep $target bping_data | awk '{split($8,rtt,"="); print $1" "rtt[2]}' > ping_${target}
+	grep $target testdata/bping_data | awk '{split($8,rtt,"="); print $1" "rtt[2]}' > testdata/ping_${target}
 	#wc -l ping_$target | cut -d' ' -f1 > ping_${target}_packs_received
 	#echo $NUM_PINGS_ORIG > ping_${target}_packs_sent
-	LINE_CNT=$(wc -l ping_$target | cut -d' ' -f1)
+	LINE_CNT=$(wc -l testdata/ping_$target | cut -d' ' -f1)
 	[[ $LINE_CNT -gt $NUM_PINGS_ORIG ]] && LINE_CNT=$NUM_PINGS_ORIG
-	echo "1-${LINE_CNT}/$NUM_PINGS_ORIG" | bc -l > ping_${target}_packetloss
+	echo "1-${LINE_CNT}/$NUM_PINGS_ORIG" | bc -l > testdata/ping_${target}_packetloss
 done
