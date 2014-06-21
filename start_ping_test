@@ -4,29 +4,16 @@ NR_PACKETS=$1
 VM_start=11
 VM_end=22
 VM_cnt=0
-channel=$2
-bgscan=$3
-psize=$4
+psize=$2
 
-if [[ -z "$channel" ]] || [[ -z "$bgscan" ]] || [[ -z "$NR_PACKETS" ]] || [[ -z "$psize" ]]
+if [[ -z "$NR_PACKETS" ]] || [[ -z "$psize" ]]
 then
-	echo "Error: usage: $0 <nr_packets> <channel> <bgscan> <packet_size>"
+	echo "Error: usage: $0 <nr_packets> <packet_size>"
 	echo "packetsize max: 1472 normal: 56"
 	exit 1
 fi
 
-echo "Channel: $channel"
 echo "Number of packets: $NR_PACKETS"
-echo "Background scan interval: $bgscan"
-echo "Setting channel: ${channel} and bgscan: ${bgscan}"
-if ! python AutoWDSsetTest.py 172.16.40.100 admin private 0 $channel
-then
-	echo "Error: Setting channel and bgscan failed"  >&2
-	exit 1
-else
-	echo "Setting channel and bgscan OK" >&2
-fi
-
 echo "Waiting 40 Seconds, then starting checking if APs are still running" >&2
 sleep 40
 
@@ -69,7 +56,7 @@ echo "Starting avg calculation and archiving" >&2
 
 overall_overall_ms_sum=0
 overall_overall_pl_sum=0
-testdir="AutoWDStest_ping_${DATE}_${NR_PACKETS}_${bgscan}_${channel}_${psize}"
+testdir="AutoWDStest_ping_${DATE}_${NR_PACKETS}_${psize}"
 mkdir "$testdir"
 cd "$testdir"
 touch test_report

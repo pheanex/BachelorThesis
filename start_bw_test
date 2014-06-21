@@ -4,30 +4,15 @@ NR_SECS=$1
 VM_start=11
 VM_end=22
 VM_cnt=0
-channel=$2
-bgscan=$3
-bw=$4
+bw=$2
 
-if [[ -z "$channel" ]] || [[ -z "$bgscan" ]] || [[ -z "$NR_SECS" ]] || [[ -z "$bw" ]]
+if [[ -z "$NR_SECS" ]] || [[ -z "$bw" ]]
 then
-	echo "Error: usage: $0 <nr_secs_iperf(t)> <channel> <bgscan> <bw in Mbit>"
+	echo "Error: usage: $0 <nr_secs_iperf(t)> <bw in Mbit>"
 	exit 1
 fi
 
-echo "Channel: $channel"
 echo "Seconds count (-t for iperf): $NR_SECS"
-echo "Background scan interval: $bgscan"
-echo "Setting channel: ${channel} and bgscan: ${bgscan}"
-if ! python AutoWDSsetTest.py 172.16.40.100 admin private 0 $channel
-then
-	echo "Error: Setting channel and bgscan failed"  >&2
-	exit 1
-else
-	echo "Setting channel and bgscan OK" >&2
-fi
-
-echo "Waiting 40 Seconds, then starting checking if APs are still running" >&2
-sleep 40
 
 # Check every 10 secs for 400 secs if aps are already done or if they still need some time to reconfigure
 for i in $(seq 1 40)
@@ -74,7 +59,7 @@ do
 done
 
 echo "Copying data from vms to archive" >&2
-testdir="AutoWDStest_bw_${DATE}_${NR_SECS}_${bgscan}_${channel}_${bw}"
+testdir="AutoWDStest_bw_${DATE}_${NR_SECS}_${bw}"
 mkdir "$testdir"
 cd "$testdir"
 for i in $(seq $VM_start $VM_end)
