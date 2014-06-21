@@ -10,10 +10,11 @@ wlc_address="172.16.40.100"
 wlc_username="admin"
 test_duration="$1"
 traffic_bw="$2"
+traffic_switch="$3"
 
-if [[ -z "$test_duration" ]] || [[ -z "$traffic_bw" ]]
+if [[ -z "$test_duration" ]] || [[ -z "$traffic_bw" ]] || [[ -z "$traffic_switch" ]]
 then
-        echo "Error: usage: $0 <Testduration in seconds> <Traffic in Mbit/s>"
+        echo "Error: usage: $0 <Testduration in seconds> <Traffic in Mbit/s> <enable/disable Traffic>"
         exit 1
 fi
 
@@ -28,7 +29,7 @@ then
 	exit 1
 fi
 
-echo "Check if APs are stable in 15s" >&2
+echo "Check if APs are stable for 15s" >&2
 for i in $(seq 1 3)
 do
         sleep 5
@@ -73,20 +74,23 @@ vzctl exec 20 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.
 vzctl exec 21 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.103 admin private $test_duration &"
 vzctl exec 22 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.106 admin private $test_duration &"
 
-echo "Starting parallel iperf listeners in vms" >&2
-for i in $(seq $VM_start $VM_end)
-do
-        vzctl exec $i "cd /root; ./iperf-parallel-servers $VM_start $VM_end $i"
-done
+if [[ "$enable_traffic" == "enable" ]]
+then
+	echo "Starting parallel iperf listeners in vms" >&2
+	for i in $(seq $VM_start $VM_end)
+	do
+	        vzctl exec $i "cd /root; ./iperf-parallel-servers $VM_start $VM_end $i"
+	done
 
-echo "Starting traffic throughput test in vms" >&2
-for i in $(seq $VM_start $VM_end)
-do
-        vzctl exec $i "sleep 0.$RANDOM; cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $test_duration $traffic_bw"
-done
+	echo "Starting traffic throughput test in vms" >&2
+	for i in $(seq $VM_start $VM_end)
+	do
+	        vzctl exec $i "sleep 0.$RANDOM; cd /root; ./iperf-multiple-clients $VM_start $VM_end $i $test_duration $traffic_bw"
+	done
+fi
 
-echo "Wait for test to finish about (${test_duration}s)" >&2
-sleep $test_duration
+echo "Waiting for Test to finish in about (${test_duration}s)" >&2
+sleep "$test_duration"
 sleep 5
 
 echo "Stopping parallel iperf listeners in vms" >62
