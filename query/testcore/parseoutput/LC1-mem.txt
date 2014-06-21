@@ -1,0 +1,7 @@
+
+
+Total: 1003.7 MBytes
+Status : Blocks     Big          Small        Total    
+-------------------------------------------------------
+USED   : 75902      43.6 MBytes  64 Bytes     150.3 MBytes 
+FREE   : 329        853.3 MBytes 64 Bytes     853.4 MBytes 
