@@ -47,8 +47,12 @@ do
 	cp -R ../query "/var/lib/vz/root/${i}/root"
 done
 
-echo "Get wlc config" >&2
-scp "${wlc_username}@${wlc_address}:config" wlc_config
+echo "Creating Test-Archive" >&2
+testarchive="$Testdata_${DATE}_${test_duration}_${traffic_bw}"
+mkdir "$testarchive"
+
+echo "Get config from the WLC" >&2
+scp "${wlc_username}@${wlc_address}:config" "${testarchive}/wlc_config"
 
 echo "Start AP querier on VMs" >&2
 vzctl exec 11 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.122 root private $test_duration &"
@@ -87,8 +91,6 @@ do
 done
 
 echo "Copying data from vms to archive" >&2
-testarchive="$Testdata_${DATE}_${test_duration}_${traffic_bw}"
-mkdir "$testarchive"
 cd "$testarchive"
 for i in $(seq $VM_start $VM_end)
 do
