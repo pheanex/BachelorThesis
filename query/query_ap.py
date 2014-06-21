@@ -65,11 +65,11 @@ radios_raw_file = open("radios_raw_" + timestamp, "w")
 accesspoints_list_raw_file = open("accesspoints_list_raw_" + timestamp, "w")
 
 # Write data to raw files
-byte_transport_raw_file.write(byte_transport_table)
-errors_raw_file.write(errors_table)
-packet_transport_raw_file.write(radios_table)
-radios_raw_file.write(radios_table)
-accesspoints_list_raw_file.write(accesspoints_list_table)
+byte_transport_raw_file.write(byte_transport_table_raw)
+errors_raw_file.write(errors_table_raw)
+packet_transport_raw_file.write(radios_table_raw)
+radios_raw_file.write(radios_table_raw)
+accesspoints_list_raw_file.write(accesspoints_list_table_raw)
 
 # Close the raw files
 byte_transport_raw_file.close()
