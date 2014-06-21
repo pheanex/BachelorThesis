@@ -18,7 +18,7 @@ fi
 read -p "Notizen zum Test:" notes
 
 #Reminder continuation time
-read -p "Continuation time auf > ${test_duration} gestellt?" answer
+read -p "Continuation time auf > ${test_duration}s gestellt?" answer
 if ! [ "$answer" = "yes" ]
 then
 	echo "Please type 'yes'" >&2
