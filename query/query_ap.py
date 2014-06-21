@@ -28,7 +28,7 @@ byte_transport_table_raw = ssh_connection.runquery("ls /status/wlan/byte-transpo
 errors_table_raw = ssh_connection.runquery("ls /status/wlan/errors")
 packet_transport_table_raw = ssh_connection.runquery("ls /status/wlan/packet-transport")
 radios_table_raw = ssh_connection.runquery("ls /status/wlan/radios")
-accesspoints_list_table_raw = ssh_connection.runquery("ls /status/wlan/interpoints/accesspoints-list")
+accesspoints_list_table_raw = ssh_connection.runquery("ls /Status/WLAN/Interpoints/Accesspoint-List")
 
 # Parse tables
 byte_transport_table = parse_table(byte_transport_table_raw)
