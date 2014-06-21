@@ -49,10 +49,15 @@ done
 
 echo "Creating Test-Archive" >&2
 testarchive="$Testdata_${DATE}_${test_duration}_${traffic_bw}"
-mkdir "$testarchive"
+mkdir -p "$testarchive/wlc"
 
 echo "Get config from the WLC" >&2
 scp "${wlc_username}@${wlc_address}:config" "${testarchive}/wlc_config"
+
+echo "Getting table data from WLC and copying it to archive" >&2
+python query_wlc.py "$wlc_address" "$wlc_username" "$wlc_password"
+
+mv "autowds_auto_topology*" "${testarchive}/wlc"
 
 echo "Start AP querier on VMs" >&2
 vzctl exec 11 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.122 root private $test_duration &"
