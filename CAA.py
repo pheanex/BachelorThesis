@@ -1072,6 +1072,10 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
         if answer[0] == "y" or answer[0] == "Y":
             wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
             wlc_connection.runscript(lcos_script)
+            print("Successfully written data to WLC")
+            return
+    print("Nothing written to WLC")
+     
 
 
 # Check if wlc is up
