@@ -34,7 +34,7 @@ echo "Update scripts in vms" >&2
 for i in $(seq $VM_start $VM_end)
 do
         cp ../iperf-parallel-servers ../iperf-multiple-clients /var/lib/vz/root/$i/root/
-	cp ../query/query_ap.py "/var/lib/vz/root/${i}/root"
+	cp ../query/query_ap.py "/var/lib/vz/root/${i}/root/query"
 done
 
 echo "Creating Test-Archive" >&2
