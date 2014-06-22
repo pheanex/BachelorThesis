@@ -7,9 +7,9 @@ import random
 import json
 import copy
 import os
+import sys
 
 import networkx as nx
-import pydot
 import logging
 
 import collections_enhanced
@@ -143,7 +143,7 @@ def count_connected_module_edges_for_module(graph, module, wlan_modules):
 # Translates the given SNR to a bandwith, so we can use it for calculating the score
 # Returns a bandwidth
 def translate_snr_to_bw(snr_lancom_value):
-    signal_to_noise = snr_lancom_value / 100 * 46
+    signal_to_noise = snr_lancom_value / 100.0 * 46.0
     if signal_to_noise <= 0:
         return 0
     elif 0 < signal_to_noise <= 10:
@@ -738,59 +738,21 @@ def write_json(graph, lan_nodes, wlan_modules, filename="graph.json"):
     for (A, B) in graph.edges():
         if A in wlan_modules and B in wlan_modules:
             if graph.edge[A][B]["channel"]:
-                channel = channeltable[graph.edge[A][B]["channel"]]
+                color = "green"
             else:
-                channel = "grey"
+                color = "grey"
             snr = graph.edge[A][B]["snr"]
             dash = "5,5"
         else:
             dash = "0,0"
             snr = 200
-            channel = "black"
-        connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, channel, dash))
+            color = "black"
+        connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, color, dash))
 
     json_dict = {"nodes": [{'name': nodes_dict_index[index], "index": index, "channel": "black", "label": nodes_dict_index[index]} for index in nodes_dict_index.keys()],
-                 "links": [{"source": source, "target": target, "value": value, "channel": channel, "dash": dash} for source, target, value, channel, dash in connections]}
+                 "links": [{"source": source, "target": target, "value": value, "color": color, "dash": dash} for source, target, value, color, dash in connections]}
     with open(filename, 'w') as outfile:
         json.dump(json_dict, outfile, indent=4)
-
-
-# Transform networkxgraph to pydot graph, for displaying purposes
-def show_graph(networkxgraph, wlan_modules, lan_nodes, filename_svg="caa.svg", filename_json="graph.json"):
-    if not show_graph_enabled:
-        return
-    pydotgraphname = pydot.Dot(graph_type='graph', layout="fdp")
-    edges_done = set()
-    for node in networkxgraph.nodes():
-        node_shape = "oval"
-        if node in lan_nodes:
-            node_shape = "oval"
-        elif node in wlan_modules:
-            node_shape = "box"
-        else:
-            logger.error("Node " + str(node) + " is neither in lan_nodes nor in wlan_modules. It has to be in one of those.")
-            exit(1)
-        pydotgraphname.add_node(pydot.Node(node, shape=node_shape))
-
-    for (A, B) in networkxgraph.edges():
-        if (A, B) not in edges_done:
-            if A in lan_nodes or B in lan_nodes:
-                edge_style = "solid"
-                edge_channel = "black"
-                edge_penwidth = 2
-            else:
-                # For debugging set to std penwidth
-                edge_penwidth = 5
-                edge_channel = networkxgraph.edge[A][B]["channel"]
-                edge_style = "dotted"
-                if edge_channel is None:
-                    edge_channel = "grey"
-                else:
-                    edge_channel = channeltable[edge_channel]
-            pydotgraphname.add_edge(pydot.Edge(str(A), str(B), style=edge_style, penwidth=edge_penwidth, channel=edge_channel))
-            edges_done.add((A, B))
-    pydotgraphname.write(filename_svg, format="svg")
-    write_json(networkxgraph, lan_nodes, wlan_modules, filename_json)
 
 
 # Translate a wlan_ac into a interface_nr
@@ -1014,70 +976,6 @@ def get_basic_graph_from_wlc(hostname, username, password):
     return basic_graph, wlan_modules, lan_nodes
 
 
-# Create a random Graph for testing
-# If no parameters specified, we generate some randomly ourselfes
-def get_basic_random_graph(nr_of_nodes=random.choice(range(5, 18)), max_nr_modules=random.choice(range(2, 5)), max_nr_connections=random.choice(range(2, 6))):
-    logger.info("Generating Random Graph...")
-    basic_graph = nx.DiGraph()
-    wlan_modules = set()
-    lan_nodes = set()
-    for nr in range(0, nr_of_nodes):
-        nodename = "node_" + str(nr)
-        lan_nodes.add(str(nodename))
-        # Add the node
-        basic_graph.add_node(nodename)
-
-        # Initialize used channels with 0
-        used_channels = collections_enhanced.Counter()
-        for channel in Assignable_Channels:
-            used_channels[channel] = 0
-        basic_graph.node[nodename]["used-channels"] = used_channels
-
-        # Set number of modules initially to 0
-        basic_graph.node[nodename]["modules"] = 0
-        for nr_mod in range(0, random.choice(range(1, max_nr_modules))):
-            module = str(nr) + "_" + str(nr_mod)
-
-            wlan_modules.add(module)
-
-            # Add the module-node
-            basic_graph.add_node(module)
-
-            # Set the default channel
-            basic_graph.node[module]["channel"] = None
-
-            # Initialize actually seen counters for wlan modules with 0
-            actually_seen_channels = collections_enhanced.Counter()
-            for channel in Assignable_Channels:
-                actually_seen_channels[channel] = 0
-            basic_graph.node[module]["seen_channels"] = actually_seen_channels
-            basic_graph.node[module]["module-of"] = nodename
-
-            basic_graph.add_edge(nodename, module)
-
-            # Module-edge data
-            basic_graph.edge[nodename][module]["real-connection"] = False
-
-            # Also count here the number of modules each node has
-            basic_graph.node[nodename]["modules"] += 1
-
-            for nr_con in range(0, random.choice(range(1, max_nr_connections))):
-                random_module = random.choice(list(wlan_modules))
-                if basic_graph.node[random_module]["module-of"] != basic_graph.node[module]["module-of"]:
-                    basic_graph.add_edge(module, random_module)
-                    basic_graph.add_edge(random_module, module)
-                    basic_graph.edge[module][random_module]["snr"] = random.choice(range(10, 100))
-                    basic_graph.edge[random_module][module]["snr"] = random.choice(range(10, 100))
-
-                    # Initialize each edge with empty channel
-                    basic_graph.edge[random_module][module]["channel"] = None
-                    basic_graph.edge[module][random_module]["channel"] = None
-                    basic_graph.edge[module][random_module]["real-connection"] = True
-                    basic_graph.edge[random_module][module]["real-connection"] = True
-
-    return basic_graph, wlan_modules, lan_nodes
-
-
 # Caclulate a CAA for a given graph
 def calculate_caa_for_graph(graphname, wlan_modules, overall_channel_counter):
     logger.info("Calculating CAA for Graph...")
@@ -1134,7 +1032,7 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
         #if not wlc_connection.runscript(['set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE 0 ' + module_a_device + ' ' + module_a + ' ' + module_b_device + ' ' + module_b]):
         #    logger.error("Could not write a link to table")
         #    exit(1)
-        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * 0'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name))
+        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * 2'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name))
         prio_counter += 1
 
     # Assign channels to the modules
@@ -1166,55 +1064,58 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
         else:  # set to 5GHz
             band = "2"
         corresponding_device_name = pmst_graph_with_channels_assigned.node[module_name]["module-of"]
+
         lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} {4}'.format(corresponding_device_name, module_number_name, band, module_channel_list_name, channel))
 
     # Really write it now
+    for line in lcos_script:
+        logger.debug(line)
     wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
     wlc_connection.runscript(lcos_script)
 
 
+# Check if wlc is up
+def wlc_is_up(hostname):
+    if not os.system("ping -c 1 " + hostname + " > /dev/null") == 0:
+        return False
+    else:
+        return True
+
+
 # Configuration
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
-Number = 0  # Image-iterator for debugging
-Edge_Thickness = 9.0  # Factor for edge thickness, smaller value => smaller edges
-Assignable_Channels = ["1", "6", "11"]  # List of all channels which can be used for assignment
-channeltable = dict()
-channeltable["1"] = "red"
-channeltable["3"] = "green"
-channeltable["6"] = "blue"
-channeltable["11"] = "orange"
-channeltable["14"] = "yellow"
-channeltable["18"] = "brown"
-wlc_hostname = "172.16.40.100"
-wlc_username = "admin"
-wlc_password = "private"
-show_graph_enabled = True
+if len(sys.argv) < 4:
+    print("Usage: python CAA.py <wlc-address> <wlc-username> <wlc_password> <usable-channels>")
+    exit(1)
+wlc_address = sys.argv[1]
+wlc_username = sys.argv[2]
+wlc_password = sys.argv[3]
+Assignable_Channels = sys.argv[4].split(",")  # List of all channels which can be used for assignment
+
+if not wlc_is_up(wlc_address):
+    logger.error("WLC:" + str(wlc_address) + " seems to be offline.")
+    exit(1)
+
 edge_max_score = 1000  # The score for node-module connections, this has to be higher than any possible module-module connection
 channel_counter = collections_enhanced.Counter()  # This counts how often each channel has been used overall, initially fill with 0
 for channel_entry in Assignable_Channels:
     channel_counter[channel_entry] = 0
 
 # Getting Data from WLC per SNMP
-basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc(wlc_hostname, wlc_username, wlc_password)
-
-# Alternatively for debugging/testing, generate Random Graph
-#basic_connectivity_graph_directed, modules, devices = get_basic_random_graph(nr_of_nodes=20, max_nr_modules=3, max_nr_connections=3)
+basic_connectivity_graph_directed, modules, devices = get_basic_graph_from_wlc(wlc_address, wlc_username, wlc_password)
 
 # Set the root node TODO: automate this further later
 root_node = random.choice(list(devices))
 
 # Convert to undirected graph
 basic_connectivity_graph = convert_to_undirected_graph(basic_connectivity_graph_directed)
-show_graph(basic_connectivity_graph, modules, devices, filename_svg='caa_basic.svg', filename_json="graph_basic.json")
 
 # First phase: Calculate the Minimal Spanning Tree from the basic connectivity graph
 mst_graph = calculate_mst(basic_connectivity_graph, modules, devices, "equal_module")
-show_graph(mst_graph, modules, devices, filename_svg='caa_mst.svg', filename_json="graph_mst.json")
 
 # Assign channels to the mst
 mst_graph_with_channels_assigned = calculate_caa_for_graph(mst_graph, modules, channel_counter)
-show_graph(mst_graph_with_channels_assigned, modules, devices, filename_svg='caa_colored_mst.svg', filename_json="graph_colored_mst.json")
 
 # Finally check the graph for validity
 if not graph_is_valid(mst_graph_with_channels_assigned, devices, modules):
@@ -1226,4 +1127,4 @@ if not graph_is_valid(mst_graph_with_channels_assigned, devices, modules):
 #show_graph(robust_graph, modules, devices, filename_svg='caa_robust.svg', filename_json="graph_robust.json")
 
 # In the wlc set the links and channels
-#write_graph_to_wlc(modules, wlc_hostname, wlc_username, wlc_password, mst_graph_with_channels_assigned)
+write_graph_to_wlc(modules, wlc_address, wlc_username, wlc_password, mst_graph_with_channels_assigned)
