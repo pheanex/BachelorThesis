@@ -369,11 +369,8 @@ def calculate_mst(graphname, wlan_modules, lan_nodes, mst_mode="equal_module"):
             # If the edge_list is empty after the removing of unproductive edges, check if we visited all nodes
             if len(edge_list) == 0:
                 if len(visited_nodes) != graphname.number_of_nodes():
-                    logger.error("Error: Could not connect all nodes. If you are using the random graph generator, it's fine, ")
-                    logger.error("just generate another graph. If you are using the data from the wlc, something is wrong, ")
-                    logger.error("because this cannot really be, except, you used two gatewaynodes and you connected them ")
-                    logger.error("to the wlc per ethernet-cable (This case is not implemented at the moment).")
-                    logger.error("If this isnt the case, then sth is really strange")
+                    logger.error("Could not connect all nodes.")
+                    logger.error("Graph / APs are separated, maybe wait some time until they can at least theoretically span a network.")
                     exit(1)
                 else:
                     break
@@ -1070,8 +1067,15 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
     # Really write it now
     for line in lcos_script:
         logger.debug(line)
-    wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
-    wlc_connection.runscript(lcos_script)
+    answer = raw_input("Really write this to the WLC? [yN]:")
+    if answer and len(answer) > 0:
+        if answer[0] == "y" or answer[0] == "Y":
+            wlc_connection = testcore.control.ssh.SSH(host=address, username=username, password=password)
+            wlc_connection.runscript(lcos_script)
+            print("Successfully written data to WLC")
+            return
+    print("Nothing written to WLC")
+     
 
 
 # Check if wlc is up
