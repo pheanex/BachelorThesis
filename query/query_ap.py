@@ -44,7 +44,7 @@ def write_pretty_to_file(table_string, tablename, timestamp):
         writestring += "\n"
 
     # Write stuff to files
-    fd = open(tablename + "_" + timestamp, "w")
+    fd = open("testdata/" + tablename + "_" + timestamp, "w")
     fd.write(writestring)
     fd.close()
 
