@@ -49,18 +49,6 @@ python query_wlc.py "$wlc_address" "$wlc_username" "$wlc_password"
 
 mv autowds_auto_topology* "${testarchive}/wlc"
 
-echo "Check if APs are stable for 15s" >&2
-for i in $(seq 1 3)
-do
-        sleep 5
-        if ! python ../AutoWDScheckAPs.py 172.16.40.100 admin private $(seq $VM_start $VM_end | wc -l)
-        then
-		echo "Error: APs are not stabilized yet, please take a look at this"
-		exit 1
-        fi
-done
-echo "All APs are stable" >&2
-
 echo "Start AP querier on VMs" >&2
 vzctl exec 11 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.122 root private $test_duration &"
 vzctl exec 12 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.104 admin private $test_duration &"
