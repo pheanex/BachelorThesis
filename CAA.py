@@ -1032,7 +1032,7 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
         #if not wlc_connection.runscript(['set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE 0 ' + module_a_device + ' ' + module_a + ' ' + module_b_device + ' ' + module_b]):
         #    logger.error("Could not write a link to table")
         #    exit(1)
-        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * 2'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name))
+        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * 11'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name))
         prio_counter += 1
 
     # Assign channels to the modules
