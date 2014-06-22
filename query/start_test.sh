@@ -13,9 +13,9 @@ test_duration="$1"
 traffic_bw="$2"
 traffic_switch="$3"
 
-if [[ -z "$test_duration" ]] || [[ -z "$traffic_bw" ]] || [[ -z "$traffic_switch" ]]
+if [[ -z "$test_duration" ]] || [[ -z "$traffic_bw" ]]
 then
-        echo "Error: usage: $0 <Testduration in seconds> <Traffic in Mbit/s> <enable/disable Traffic>"
+        echo "Error: usage: $0 <Testduration in seconds> <Traffic in Mbit/s> <disable Traffic>"
         exit 1
 fi
 
@@ -75,7 +75,7 @@ vzctl exec 20 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.
 vzctl exec 21 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.103 admin private $test_duration &"
 vzctl exec 22 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.106 admin private $test_duration &"
 
-if [[ "$enable_traffic" == "enable" ]]
+if ! [[ "$enable_traffic" ]]
 then
 	echo "Starting parallel iperf listeners in vms" >&2
 	for i in $(seq $VM_start $VM_end)
@@ -94,7 +94,7 @@ echo "Waiting for Test to finish in about (${test_duration}s)" >&2
 sleep "$test_duration"
 sleep 5
 
-if [ "$enable_traffic" = "enable" ]
+if ! [ "$enable_traffic" ]
 then
 	echo "Stopping parallel iperf listeners in vms" >&2
 	for i in $(seq $VM_start $VM_end)
