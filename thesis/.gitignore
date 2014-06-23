@@ -1,6 +1,7 @@
 *.bak
 *~
 *.backup
+*.aux
 /thesis.log
 /thesis.lot
 /thesis.out
