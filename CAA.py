@@ -1029,7 +1029,7 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
         #if not wlc_connection.runscript(['set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE 0 ' + module_a_device + ' ' + module_a + ' ' + module_b_device + ' ' + module_b]):
         #    logger.error("Could not write a link to table")
         #    exit(1)
-        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * 11'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name))
+        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * {5}'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name, continuation_time))
         prio_counter += 1
 
     # Assign channels to the modules
@@ -1077,7 +1077,6 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
     print("Nothing written to WLC")
      
 
-
 # Check if wlc is up
 def wlc_is_up(hostname):
     if not os.system("ping -c 1 " + hostname + " > /dev/null") == 0:
@@ -1089,13 +1088,14 @@ def wlc_is_up(hostname):
 # Configuration
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
-if len(sys.argv) < 4:
-    print("Usage: python CAA.py <wlc-address> <wlc-username> <wlc_password> <usable-channels>")
+if len(sys.argv) < 5:
+    print("Usage: python CAA.py <wlc-address> <wlc-username> <wlc_password> <usable-channels> <continuation_time in min>")
     exit(1)
 wlc_address = sys.argv[1]
 wlc_username = sys.argv[2]
 wlc_password = sys.argv[3]
 Assignable_Channels = sys.argv[4].split(",")  # List of all channels which can be used for assignment
+continuation_time = sys.argv[5]  # How long the APs should stay connected until going back to scanning mode
 
 if not wlc_is_up(wlc_address):
     logger.error("WLC:" + str(wlc_address) + " seems to be offline.")
