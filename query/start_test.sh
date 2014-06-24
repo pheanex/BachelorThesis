@@ -2,6 +2,7 @@
 #author kmanna
 #date 21.06.2014
 #purpose starts the autowds traffic test
+set -x
 
 DATE="$(date +%Y-%m-%d-%H-%M-%S)"
 VM_start="11"
