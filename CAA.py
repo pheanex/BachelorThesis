@@ -1088,9 +1088,8 @@ def wlc_is_up(hostname):
 # Configuration
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
-if len(sys.argv) < 5:
-    print("Usage: python CAA.py <wlc-address> <wlc-username> <wlc_password> <usable-channels> <continuation_time in min>")
-    exit(1)
+if len(sys.argv) < 6:
+    sys.exit("Usage: python CAA.py <wlc-address> <wlc-username> <wlc_password> <usable-channels> <continuation_time in min>")
 wlc_address = sys.argv[1]
 wlc_username = sys.argv[2]
 wlc_password = sys.argv[3]
