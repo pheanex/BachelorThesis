@@ -3,9 +3,7 @@
 NUM_PINGS_ORIG=10
 NUM_PINGS=$((NUM_PINGS_ORIG + 1))
 PACKET_SIZE=56
-cd /root
-rm -f bping_data
-rm -f ping_*
+cd /root/query
 # c = 3 to get 2 answers from all devices (since ping stops accepting packets after it received the first one)
 ping -b 172.31.255.255 -c $NUM_PINGS | while read pong; do echo "$(date +%s): $pong"; done > testdata/bping_data
 for target in $(grep "64 bytes" testdata/bping_data | awk '{print $5}'| sort | uniq | cut -d':' -f1)
