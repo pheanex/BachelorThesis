@@ -64,7 +64,7 @@ vzctl exec 20 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.
 vzctl exec 21 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.103 admin private $test_duration &"
 vzctl exec 22 "cd /root/query; rm -rf testdata; mkdir testdata; python query_ap.py 172.16.40.106 admin private $test_duration &"
 
-if ! [[ "$enable_traffic" ]]
+if ! [[ "$traffic_switch" ]]
 then
 	echo "Starting parallel iperf listeners in vms" >&2
 	for i in $(seq $VM_start $VM_end)
@@ -83,7 +83,7 @@ echo "Waiting for Test to finish in about (${test_duration}s)" >&2
 sleep "$test_duration"
 sleep 5
 
-if ! [ "$enable_traffic" ]
+if ! [ "$traffic_switch" ]
 then
 	echo "Stopping parallel iperf listeners in vms" >&2
 	for i in $(seq $VM_start $VM_end)
