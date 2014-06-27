@@ -239,11 +239,20 @@ Rate 	Ghz		Channel 	Subchan
 0.1 	5ghz 	Different	36 40 44 48 52 56 60   	y	   	y		
 1 	 	5ghz 	Different	36 40 44 48 52 56 60	y			n	 y
 0.1 	both 	Different	1 6 11 36 40 44 48 		y			n	 
-1 	 	both 	Different	1 6 11 36 40 44 48 		y			n 	dabei
-0 		5ghz	Same 		36						y 			n
+1 	 	both 	Different	1 6 11 36 40 44 48 		y			n   
 0 		2.4 	same 		1 						y
 0 		
 
+bei reduzierter sendeleistung:
+1 	 	both 	Different	1 6 11 36 40 44 48 		y			n 	y
+0 		5ghz	Same 		36						y 			n y
+0.1 s 1 y
+0.1 D 1 6 11  y
+1 S 36 			y
+1 D 36,40,44 	y
+
+
+zusätzlichen graph zeichnen: transmitted packets/fehlerrate => zeigt verhältnis: jedes ?te packet war fehlerhaft
 
 
 kein hidden station problem beim testaufbau => wenn ich beim testaufbau aps noch weiter auseinander sollten werte noch besser sein
