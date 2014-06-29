@@ -7,7 +7,7 @@ then
 	echo "Error: ${testdatadir} is not a valid testdatadir" >&2
 	exit 1
 fi
-
+curdir="$(pwd)"
 cd "$testdatadir"
 
 # $1 = outputfilename
@@ -130,4 +130,5 @@ done
 column -t sums | awk '$11{print $0}' > sums_tmp
 mv sums_tmp sums
 
-cd ..
+cd "$curdir"
+

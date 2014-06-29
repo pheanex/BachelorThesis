@@ -1,22 +1,22 @@
-#!/bin/bash
-# Date 26.06.2014
-# Purpose takes the sums reports files for all dirs in this directory and creates single type reports for all tests
+testdatadir="$1"
 
-# For each testdatadir trigger the create_stat_reports script
-for datadir in $(find .  -maxdepth 1 -type d | tail -n +2)
-do 
-	./create_stat_reports.sh "$datadir"
-done
-
+if [ ! -d "$testdatadir" ]
+then
+	echo "Error: ${testdatadir} is not a valid testdatadir" >&2
+	exit 1
+fi
+curdir="$(pwd)"
+cd "$testdatadir"
 
 # Extract from the sums file of each datadir the overall reports files
 for report in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
 do
 	rm -f "$report"
 	touch "$report"
-	for sums_file in $(find .  -maxdepth 1 -type d | tail -n +2)
+	for datadir in $(find .  -maxdepth 1 -type d | tail -n +2)
 	do
-		cd "$sums_file"
+		cd "$datadir"
+		sums_file="sums"
 		description=$(cat notes)
 		case "$report" in
 			rx_crc_errors)
@@ -57,18 +57,20 @@ do
 				exit 1
 				;;
 		esac
-		
-		awk 'NR>1{print $"'$column_nr'"}')	"$sums_file" > "${report}_column"
-		paste -d' ' "$report" "${report}_column" > "${report}_tmp"
-		mv "${report}_tmp" "$report"
+		echo "$description" > "${report}_column"
+		awk 'NR>1{print $"'$column_nr'"}' "$sums_file" >> "${report}_column"
+		paste -d' ' "../${report}" "${report}_column" > "${report}_tmp"
+		mv "${report}_tmp" "../${report}"
 
 		cd ..
 	done
 done
 
-# Align the columns nicely 
+# Align the columns nicely
 for report in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
 do
 	column -t "$report" > "${report}_tmp"
 	mv "${report}_tmp" "$report"
 done
+
+cd "$curdir"
