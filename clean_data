@@ -1,0 +1,21 @@
+#!/bin/bash
+for dir in $(ls -d 2014-*)
+do
+	cd "$dir"
+	echo "$dir"
+	for i in {11..22}
+	do
+		cd "$i"
+		echo "AP-$i"
+		modules_file="$(ls accesspoints_list_raw_* | head -n1)"
+		module_grep="$(egrep P2P "$modules_file" | cut -d' ' -f1 | cut -d'-' -f2 | tr -s '[:space:]' '|' | sed s/.$//)"
+		echo "WLAN-${module_grep}"
+		for file in byte_transport* errors_* packet_transport_* radios_*
+		do
+			egrep "WLAN-[${module_grep}]" "$file" > "${file}.tmp"
+			mv "${file}.tmp" "$file"
+		done
+		cd ..
+	done
+	cd ..
+done
