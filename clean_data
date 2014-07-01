@@ -3,11 +3,14 @@ for dir in $(ls -d 2014-*)
 do
 	cd "$dir"
 	echo "$dir"
+	modules_count=0
 	for i in {11..22}
 	do
 		cd "$i"
 		echo "AP-$i"
 		modules_file="$(ls accesspoints_list_raw_* | head -n1)"
+		nr_of_modules=$(egrep P2P "$modules_file" | cut -d' ' -f1 | cut -d'-' -f2|sort|uniq|wc -l|cut -d' ' -f1)
+		modules_count=$(($modules_count+$nr_of_modules))
 		module_grep="$(egrep P2P "$modules_file" | cut -d' ' -f1 | cut -d'-' -f2 | tr -s '[:space:]' '|' | sed s/.$//)"
 		echo "WLAN-${module_grep}"
 		for file in byte_transport* errors_* packet_transport_* radios_*
@@ -17,5 +20,6 @@ do
 		done
 		cd ..
 	done
+	echo "$modules_count" > nr_modules
 	cd ..
 done

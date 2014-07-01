@@ -1,3 +1,4 @@
+#!/bin/bash
 testdatadir="$1"
 
 if [ ! -d "$testdatadir" ]
@@ -58,10 +59,29 @@ do
 				;;
 		esac
 		echo "$description" > "${report}_column"
-		awk 'NR>1{print $"'$column_nr'"}' "$sums_file" >> "${report}_column"
+
+		# For noise and modem load divide by the nr of modules to get the average and not the sums values
+		if [[ "$report" == "noise" ]] || [[ "$report" == "modem_load" ]]
+		then
+			if ! [ -f nr_modules ]
+			then
+				echo "Error: no nr_modules file found" >&2
+				exit 1
+			fi
+			nr_modules=$(cat nr_modules)
+			awk 'NR>1{print $"'$column_nr'"/"'$nr_modules'"}' "$sums_file" >> "${report}_column"
+		else
+			awk 'NR>1{print $"'$column_nr'"}' "$sums_file" >> "${report}_column"
+		fi
+
 		paste -d' ' "../${report}" "${report}_column" > "${report}_tmp"
 		mv "${report}_tmp" "../${report}"
 
+		if [ "$report" = "modem_load" ]
+		then
+			awk '{for (i=1;i<13;i++){if($i == 0){$i=last[i]};last[i]=$i};print $0}' "../${report}" | column -t > "${report}_tmp"
+			mv "${report}_tmp" "../${report}"
+		fi
 		cd ..
 	done
 done

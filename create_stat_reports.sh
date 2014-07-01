@@ -23,6 +23,8 @@ create_stat_file()
 	do
 		ap_wlan1_data=$(grep WLAN-1 "$file" | awk '{print $"'$3'"}')
 		ap_wlan2_data=$(grep WLAN-2 "$file" | awk '{print $"'$3'"}')
+		[[ "$ap_wlan1_data" ]] || ap_wlan1_data=0
+		[[ "$ap_wlan2_data" ]] || ap_wlan2_data=0
 		ap_sum_data=$(echo "${ap_wlan1_data} + ${ap_wlan2_data}" | bc -l)
 		echo "$ap_sum_data" >> "$ap_cur_file"
 	done
@@ -34,7 +36,7 @@ create_stat_file()
 
 	paste -d' ' "$general_file" "$ap_cur_file" > "$ap_tmp_file"
 	rm "$ap_cur_file"
-	mv "$ap_tmp_file" "$general_file"		
+	mv "$ap_tmp_file" "$general_file"
 }
 
 # Delete old files first
@@ -113,7 +115,7 @@ touch sums
 for file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
 do
 	echo "$file" > sums_tmp
-	awk 'NR>1{print $13}' "$file" >> sums_tmp 
+	awk 'NR>1{print $13}' "$file" >> sums_tmp
 	paste -d' ' sums sums_tmp > sums_tmp2
 	rm sums_tmp
 	mv sums_tmp2 sums

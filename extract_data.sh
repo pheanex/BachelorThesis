@@ -9,7 +9,14 @@ then
 	echo "Error: ${1} is not a directory" >&2
 	exit 1
 else
+	if ! [ -f clean_data ]
+	then
+		echo "Error: clean_data script not found" >&2
+		exit 1
+	fi
+	cp clean_data "$1"/
 	cd "$1"
+	./clean_data
 fi
 
 # For each testdatadir trigger the create_stat_reports script
