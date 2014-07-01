@@ -17,6 +17,7 @@ else
 	cp clean_data "$1"/
 	cd "$1"
 	./clean_data
+	rm clean_data
 fi
 
 # For each testdatadir trigger the create_stat_reports script
