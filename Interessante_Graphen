@@ -1,0 +1,18 @@
+Uninteressante Graphen:
+	Modem load
+	byte rates graphen( da wir packet rates haben ) 
+Interessante Graphen:
+	vergleiche 20 mit 3 (wegen hidden station problem) received packet rate
+	received packet rate
+	Receive Error Rate
+	Packet error rate
+	Transmit packet rate
+	
+Zu erzeugende Graphen: (Nur für 20er) (die verwurstetn graphen in den anhang)
+	Receive Packet error rate = Receive Error Rate / received Packet rate
+	Send Packet error rate = Send packet retries / send Packet rate
+	Multi Send Packet error rate = Multiple Send packet retries / send Packet rate
+	Die 7 sekunden zu 1 sekundenintervallen abändern
+ 	nur die interfaces berücksichten für noise und radio load, welche auch tatsächlich verwendet werden + anzahl der involvierten itnerfaces notieren, welche tatsächlich benutzt werden
+	reihenfolge der legende anpassen wenn moeglich
+	crc berechnung graph überprüfen
