@@ -125,38 +125,6 @@ channel assignment algorithmen lesen vergleichen
 	INSTC: equal nr of radios (problem)
 DLP ansehen und als Lösungsansatz evaluieren / SAT solver
 Expected load nacher noch miteinfliessen lassen
-BA anmelden (nach antrittsvortrag)
-Zeitplan genau aufstellen (monat zeitnehmen zum schreiben danach 4 monate zeit)
-mail an jo: michael vu paper
-evaluation
-	passendes simulationstool finden unter:
-		omnet framework - mixim ist die modellsuite
-		ns3 eventuell auch
-		opnet
-		selbst schauen
-	tatsächliche testszenario (mit wirklichen details) und das als testszenario ntzen das dann nacher generalisiert wird(w84a martin krebs i4 mesh)
-	grundrissplaene von unis holen und diese dort simulieren(seite heisst crawdad)
-	im buch von joe muessten auch noch einige verweise auf daten zu instanzen von szenarien existieren
-	alex zimmermann per email zu i4 mesh daten fragen (wie heisst die emailadresse genau? wer ist das?)
-	christoph fragen wie stabil der link zwischen den knoten ist (wird gemessen in rssi, packet loss, retransmissions) (mit welchem ziel?)
-
-
-Done:
-Antrittsvortrag erstellen:
-	umfang 10min
-	intention: feedback/ideen einsammeln
-	Dauer: 10 min / +5 min Diskuession
-	Aufbau:
-		2slides motivation
-		2 slides wissenschaftliche ansatz/channel assignment
-		was sind ideen, ansätze
-		prinzipielle machbarkeit(schnittstellen existieren, was ist vorhanden)
-		wie koennte man das evaluieren? QoS violation zb
-		Zzeitplan
-CAA: in pick_best_channel-fkt: prioritätsliste (störer-aps/ bei den nachbarn im wer-sieht-wen-grap benutzte channel beachten)
-programm jabref installieren (sehe den vorteil davon nicht)
-mail an joe : graphviz images/python scripts
-basisalgo implementieren (dazu zunächst entscheiden welchen algo einsetzen?)
 
 Gelöst Fragen:
 Kollisionskanten miteinbauen, also interferenzen nahe zusammenstehender knoten mitberücksichtigen (wähl immer kannte die nach möglichkeit in der umgebung noch nicht auftritt)
@@ -184,41 +152,6 @@ Wie wird die zugrundelegende verbindungstopologie festgelegt? soll sich jeder se
 	nach der anforderung des survival paths, sollte jeweils eine backuproute vorhanden sein
 Noise level als grundrauschen miteinbeziehen? Inwiefern war das gemeint?:
 	wenn nacher noch zeit ist, zunächst nicht(vorallem da auch nicht so ohne weiteres an die daten heranzukommen ist (aps))
-
-
-zuvor autowdstopology auf semi setzen, damit die tabbel auch berücksichtigt wird
-[1.3.6.1.4.1.248.32.18][2.37.1.3] conf delay auf 5 setzen
-[1.3.6.1.4.1.248.32.18][2.37.1.15.1].8 (Topology Management) semi dh 1
-
-zum setzen eines links dementsprechend in eine neue tabelle die von christoph noch angelegt wird schreiben
-[1.3.6.1.4.1.248.32.18][2.37.1.16]
-über namen eintragen:
-apname1 - ifc1 - apname2 - ifc2
-add AUTOWDS_PROFILE 0 TESTAP1 WLAN-1 TESTAP2 WLAN-2
-löschen mit del *
-
-configuration strecken setzen [1.3.6.1.4.1.248.32.18][2.37.1.16] zeilen existieren immer
-um ein modul mit einem channel zu konfigurieren muss man folgendes in diese tabelle eintragen:
-wlan-module1: 7   (band 5ghz/2,4ghz) oder evtl funktioniert heir auch Auto -> christoph martin
-module-1-channel-list: nr 9: string mit channel nr zb 7
-module-2-channel-list dementsprechend für das zweite modul
-
-
-set {9} "" {10} "" {8} 0 {7} 0
-set 00a0571d6864 {9} "" {10} "" {8} 0 {7} 0
-set 00a0571d6865 {9} "" {10} "" {8} 0 {7} 0
-set 00a0571d6867 {9} "" {10} "" {8} 0 {7} 0
-set 00a0571da012 {9} "" {10} "" {8} 0 {7} 0
-set 00a0571da017 {9} "" {10} "" {8} 0 {7} 0
-set 00a0571da270 {9} "" {10} "" {8} 0 {7} 0
-set ece55571dca0 {9} "" {10} "" {8} 0 {7} 0
-set ece55571dcd0 {9} "" {10} "" {8} 0 {7} 0
-set ece55571dd00 {9} "" {10} "" {8} 0 {7} 0
-set ece555748695 {9} "" {10} "" {8} 0 {7} 0
-set ece55574a4a5 {9} "" {10} "" {8} 0 {7} 0
-set ece55574a4d5 {9} "" {10} "" {8} 0 {7} 0
-
-
 
 Testbeschreibung:
 jeweils 10 Minuten
@@ -251,14 +184,8 @@ bei reduzierter sendeleistung:
 1 S 36 			y
 1 D 36,40,44 	y
 
-
-zusätzlichen graph zeichnen: transmitted packets/fehlerrate => zeigt verhältnis: jedes ?te packet war fehlerhaft
-
-
 kein hidden station problem beim testaufbau => wenn ich beim testaufbau aps noch weiter auseinander sollten werte noch besser sein
 durch hidden station problem sollte die fehlerrate im verhältnis zu den transmitted packets ansteigen (mehr fehler pro transmitted packet)
-
-Graph durchschnitt pro interface / 24
 
 kein 2.4 ghz band weil zu viele störungen
 
@@ -266,7 +193,6 @@ ergebnisse sollten sogar noch besser sein als bisher, da "ship around used chann
 traffictest im 2,4ghz, alle uerbschreiehn sich so, dass die verbidnungen abbrechen => kein richter bandbreitentest möglich
 selbiges gilt auch für 5 ghz!
 wir nutzen nur 5ghz weil 2.4 hier sehr voll
-
 
 Uninteressante Graphen:
 	Modem load
