@@ -210,3 +210,5 @@ Zu erzeugende Graphen: (Nur für 20er) (die verwurstetn graphen in den anhang)
 	Multi Send Packet error rate = Multiple Send packet retries / send Packet rate
 	reihenfolge der legende anpassen wenn moeglich
 	crc berechnung graph überprüfen
+
+todo: time auf 10 minuten umrechnen
