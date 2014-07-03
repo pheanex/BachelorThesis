@@ -10,7 +10,7 @@ curdir="$(pwd)"
 cd "$testdatadir"
 
 # Extract from the sums file of each datadir the overall reports files
-for report in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
+for report in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise tx_discard
 do
 	rm -f "$report"
 	touch "$report"
@@ -53,6 +53,9 @@ do
 			noise)
 				column_nr=11
 				;;
+			tx_discard)
+				column_nr=12
+				;;
 			*)
 				echo "Error: unknown report column/file" >&2
 				exit 1
@@ -79,7 +82,7 @@ do
 
 		if [ "$report" = "modem_load" ]
 		then
-			awk '{for (i=1;i<13;i++){if($i == 0){$i=last[i]};last[i]=$i};print $0}' "../${report}" | column -t > "${report}_tmp"
+			awk '{for (i=1;i<14;i++){if($i == 0){$i=last[i]};last[i]=$i};print $0}' "../${report}" | column -t > "${report}_tmp"
 			mv "${report}_tmp" "../${report}"
 		fi
 		cd ..
@@ -87,7 +90,7 @@ do
 done
 
 # Align the columns nicely
-for report in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
+for report in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise tx_discard
 do
 	column -t "$report" > "${report}_tmp"
 	mv "${report}_tmp" "$report"

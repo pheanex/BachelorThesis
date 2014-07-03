@@ -40,7 +40,7 @@ create_stat_file()
 }
 
 # Delete old files first
-for stat_file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise sums
+for stat_file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise tx_discard sums
 do
 	rm -f "$stat_file"*
 done
@@ -82,18 +82,21 @@ do
 	# Noise
 	create_stat_file noise radios_table 8
 
+	# Tx-Discard
+	create_stat_file tx_discard errors_raw 8
+
 	cd ..
 done
 
 # align the columns and cut away uncomplete lines
-for stat_file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
+for stat_file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load tx_discard noise
 do
 	column -t "$stat_file" | awk '$12{print $0}' > "${stat_file}_tmp"
 	mv "${stat_file}_tmp" "$stat_file"
 done
 
 # convert to delta values for certain tables
-for table in multiple_retries retries rx_bytes rx_crc_errors rx_errors rx_packets tx_bytes tx_errors tx_packets
+for table in multiple_retries retries rx_bytes rx_crc_errors rx_errors rx_packets tx_bytes tx_errors tx_packets tx_discard
 do
 	head -n1 "$table" > "${table}_tmp"
 	awk 'NR>1{print $1-prev1,$2-prev2,$3-prev3,$4-prev4,$5-prev5,$6-prev6,$7-prev7,$8-prev8,$9-prev9,$10-prev10,$11-prev11,$12-prev12; prev1=$1;prev2=$2;prev3=$3;prev4=$4;prev5=$5;prev6=$6;prev7=$7;prev8=$8;prev9=$9;prev10=$10;prev11=$11;prev12=$12}' "$table" | tail -n +3 >> "${table}_tmp"
@@ -101,7 +104,7 @@ do
 done
 
 # append the sum for the main files
-for file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
+for file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise tx_discard
 do
 	echo "SUM" > "${file}_sum"
 	awk 'NR>1{print sum=$1+$2+$3+$4+$5+$6+$7+$8+$9+$10+$11+$12}' "$file" >> "${file}_sum"
@@ -112,7 +115,7 @@ done
 
 # Create the SUMs table
 touch sums
-for file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
+for file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise tx_discard
 do
 	echo "$file" > sums_tmp
 	awk 'NR>1{print $13}' "$file" >> sums_tmp
@@ -122,7 +125,7 @@ do
 done
 
 # align the columns again and cut away uncomplete lines
-for stat_file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise
+for stat_file in rx_crc_errors rx_errors tx_errors retries multiple_retries rx_packets tx_packets rx_bytes tx_bytes modem_load noise tx_discard
 do
 	column -t "$stat_file" | awk '$12{print $0}' > "${stat_file}_tmp"
 	mv "${stat_file}_tmp" "$stat_file"
