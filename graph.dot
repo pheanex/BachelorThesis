@@ -1,9 +1,0 @@
-strict graph G {
-a;
-c;
-b;
-d;
-a -- b;
-c -- b;
-c -- d;
-}
