@@ -1,0 +1,70 @@
+Introduction 
+	In welchem Gebiet befinden wir uns?
+		WLAN Infrastructure
+		AP
+		Mesh
+	Worum geht es generell?
+		WLAN Performanz im Verteilten Netzwerk optimieren
+Background
+	Erklärung/Erinnerung der genutzten System/Konzepte/Algos/...
+		Mesh
+		WLAN Channel
+		Beschreibung des von LANCOM genutzten Systems, kurz AutoWDS
+		Beschreibung der Usecases des Systems
+Requirement Analysis
+	Welches Problem gilt es zu lösen?
+		Minimize Interference
+		Maximize Throughput
+		Finding redundant Paths
+		Utilize multiple Radios
+Related Work
+	Welche Lösungen gibt es schon?
+		CLICA
+		INSTC
+		DLP
+		BFS-CA
+		CTA
+		MCI-CA
+		MCCA
+		...
+	Warum können wir diese nicht verwenden?	
+		CLICA
+		INSTC
+		DLP
+		BFS-CA
+		CTA
+		MCI-CA
+		MCCA
+		...
+Design
+	Welche Daten haben wir zur Verfügung?
+		Central Inter-AP SNR
+	Wie nutzen wir diese Daten?
+	Wie sieht unsere neuen Lösung im Detail aus?
+		Description Topology creation Algorithm
+		Description Channel Assignment Algorithm
+Implementation
+	Wie haben wir unsere Lösung implementiert?
+		Python; Communication WLC
+	Welche Probleme gab es bei der Implementierung?
+		Probleme mit AutoWDS Implementierung
+Evaluation
+	Wie bewerten wir unsere Lösung?
+		Throughput
+	Wie sieht der Testaufbau aus?
+	Wie lauten die Parameter der Testdurchläufe?
+		Szenarienbeschreibung
+			Dauer
+			Channelnutzung
+			AP Konfiguration
+	Welche Ergebnisse würden wir erwarten?
+	Gibt es Abweichungen von den Erwartungen?
+	Wie gut ist unsere Lösung vergleichen mit Ausgangsszenario?
+		Testergebnisse
+Future Work
+	Was müsste noch getan werden?
+	Vergleich mit anderen Lösungen auf neutralem Grund
+
+
+Noch nicht zugeordnete Fragestellungen:
+	Beschreibung des Lösungsszenarios: static decenralized Mesh ...

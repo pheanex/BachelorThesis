@@ -193,22 +193,3 @@ ergebnisse sollten sogar noch besser sein als bisher, da "ship around used chann
 traffictest im 2,4ghz, alle uerbschreiehn sich so, dass die verbidnungen abbrechen => kein richter bandbreitentest möglich
 selbiges gilt auch für 5 ghz!
 wir nutzen nur 5ghz weil 2.4 hier sehr voll
-
-Uninteressante Graphen:
-	Modem load
-	byte rates graphen( da wir packet rates haben ) 
-Interessante Graphen:
-	vergleiche 20 mit 3 (wegen hidden station problem) received packet rate
-	received packet rate
-	Receive Error Rate
-	Packet error rate
-	Transmit packet rate
-	
-Zu erzeugende Graphen: (Nur für 20er) (die verwurstetn graphen in den anhang)
-	Receive Packet Error Rate = Receive Error Rate / Received Packet Rate
-	Send Packet error rate = Send packet retries / send Packet rate
-	Multi Send Packet error rate = Multiple Send packet retries / send Packet rate
-	reihenfolge der legende anpassen wenn moeglich
-	crc berechnung graph überprüfen
-
-todo: time auf 10 minuten umrechnen
