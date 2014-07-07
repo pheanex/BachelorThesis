@@ -9,25 +9,22 @@ Background
 	Erklärung/Erinnerung der genutzten System/Konzepte/Algos/...
 		Mesh
 		WLAN Channel
+			Hidden Station/Interference
+		Graph theoretic basics
+			vertices, edges, coloring (frequency assignment)
 		Beschreibung des von LANCOM genutzten Systems, kurz AutoWDS
 		Beschreibung der Usecases des Systems
-Requirement Analysis
+Requirement Analysis http://en.wikipedia.org/wiki/Software_Requirements_Specification
 	Welches Problem gilt es zu lösen?
 		Minimize Interference
 		Maximize Throughput
 		Finding redundant Paths
 		Utilize multiple Radios
+		Technical restrictions
+			muss auf Routen laufen? Zentral?
+		Economical restrictions? (If there happen to be some)
 Related Work
-	Welche Lösungen gibt es schon?
-		CLICA
-		INSTC
-		DLP
-		BFS-CA
-		CTA
-		MCI-CA
-		MCCA
-		...
-	Warum können/wollen wir diese nicht verwenden?	
+	Welche Lösungen gibt es schon?W arum können/wollen wir diese nicht verwenden?
 		CLICA
 		INSTC
 		DLP
@@ -39,11 +36,18 @@ Related Work
 Design
 	Welche Daten haben wir zur Verfügung?
 		Central Inter-AP SNR
+		Wie kommt man da ran?
 	Wie nutzen wir diese Daten?
+		Modellieren der Konnektivität
+		-> auf das mathematische Modell abbilden
 	Wie sieht unsere neuen Lösung im Detail aus?
 		Description Topology creation Algorithm
 		Description Channel Assignment Algorithm
 Implementation
+	UML Diagramm
+	Wo finde ich was? Welche Dateien/Module sind für was zuständig?
+		Ersetzt nicht die Kommentare im Sourcecode
+	Umgebung die man braucht, damit das läuft? IDE?
 	Wie haben wir unsere Lösung implementiert?
 		Python; Communication WLC
 	Welche Probleme gab es bei der Implementierung?
@@ -54,19 +58,19 @@ Evaluation
 	Wie sieht der Testaufbau aus?
 		Infrastruktur
 		Physikalischer Aufbau
-	Wie lauten die Parameter der Testdurchläufe?
+	Wie lauten die Parameter der Testdurchläufe? Metriken?
 		Szenarienbeschreibung
 			Dauer
 			Channelnutzung
 			AP Konfiguration
+		Was ist gut, was ist schlecht?
 	Welche Ergebnisse würden wir erwarten?
 	Gibt es Abweichungen von den Erwartungen?
 	Wie gut ist unsere Lösung vergleichen mit Ausgangsszenario?
 		Testergebnisse
+	Vergleich mit Related Work?
+		Verfügbare Features?
 Future Work
 	Was müsste noch getan werden?
 	Vergleich mit anderen Lösungen auf neutralem Grund
 
-
-Noch nicht zugeordnete Fragestellungen:
-	Beschreibung des Lösungsszenarios: static decenralized Mesh ...
