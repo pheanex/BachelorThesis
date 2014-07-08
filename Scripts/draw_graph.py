@@ -17,17 +17,17 @@ def write_graph(title, ylabel, data1, data2, filename):
     linestyle_iterator = 1
     boxplotlist = list()
     namelist = list()
-    for first_data, second_data in zip(sorted(data1, key=itemgetter(0)), sorted(data2, key=itemgetter(0))):
+    for first_data, second_data in zip(data1, data2):
         divisionlist = [int(a) * 1.0 / (int(b) + int(a)) for a, b in zip(first_data[1:], second_data[1:])]
         data = divisionlist[:88]
 
         # Convert data from 0.9 in 90 (Because numpy does seem to have problems with float)
-        data = [int(round(float(element) * 100)) for element in data]
+        rounded_data = [int(round(float(element) * 100)) for element in data]
 
         plt.plot(xscale, data, linestyle[linestyle_iterator], label=first_data[0])
         linestyle_iterator += 1
         namelist.append(first_data[0])
-        boxplotlist.append(data)
+        boxplotlist.append(rounded_data)
 
     lg = plt.legend(loc=2, prop={"size": 10}, bbox_to_anchor=(1.05, 0.7), borderaxespad=0., title="Used Channels")
     plt.grid(True)
@@ -49,7 +49,7 @@ linestyle_iterator = 1
 linestyle = {1: "ob-", 2: "vg-", 3: "sr-", 4: "pc-", 5: "*m-"}
 boxplotlist = list()
 xscale = range(0, 614, 7)
-for reportfile in ["rx_errors", "tx_errors", "retries", "rx_packets", "tx_packets", "rx_bytes", "tx_bytes", "modem_load", "noise"]:
+for reportfile in ["rx_errors", "tx_errors", "retries", "rx_packets", "tx_packets", "rx_bytes", "tx_bytes", "modem_load", "noise", "multiple_retries"]:
     linestyle_iterator = 1
     f = open(reportfile, "r")
     filestring = f.read()
@@ -65,6 +65,10 @@ for reportfile in ["rx_errors", "tx_errors", "retries", "rx_packets", "tx_packet
         for entry in splitline:
             masterlist[i].append(entry)
             i += 1
+
+    # Reorder masterlist
+    myorder = [3, 0, 4, 2, 1]
+    masterlist = [masterlist[i] for i in myorder]
 
     plt.figure(figsize=(7, 4))
 
@@ -90,10 +94,10 @@ for reportfile in ["rx_errors", "tx_errors", "retries", "rx_packets", "tx_packet
         title = "Successfully Transmitted Packets/s"
         ylabel = "Packets/s"
     elif reportfile == "rx_bytes":
-        title = "Successfully Received Bytes/s"
+        title = "Successfully Received KBytes/s"
         ylabel = "KBytes/s"
     elif reportfile == "tx_bytes":
-        title = "Successfully Transmitted Bytes/s"
+        title = "Successfully Transmitted KBytes/s"
         ylabel = "KBytes/s"
     elif reportfile == "modem_load":
         title = "Average Modem Load (Per AP)"
@@ -126,7 +130,7 @@ for reportfile in ["rx_errors", "tx_errors", "retries", "rx_packets", "tx_packet
     # Cycle through the data sets
     namelist = list()
     boxplot_data_list = list()
-    for listentry in sorted(masterlist, key=itemgetter(0)):
+    for listentry in masterlist:
 
         # Limit plot to 600s (since the tests only ran that long and everything after that is garbage/artefacts)
         plt.xlim(0, 600)
@@ -170,3 +174,4 @@ for reportfile in ["rx_errors", "tx_errors", "retries", "rx_packets", "tx_packet
 
 write_graph("Received Packets with Errors / All Received Packets", "%", rx_errors, rx_packets, "recpackerr")
 write_graph("Packet Transmission Retries / All Transmitted Packets", "%", retries, tx_packets, "sentpackerr")
+write_graph("Packet Transmission Retries (Multiple) / All Transmitted Packets", "%", multiple_retries, tx_packets, "multisentpackerr")
