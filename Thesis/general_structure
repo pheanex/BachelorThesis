@@ -1,30 +1,64 @@
-Introduction 
-	In welchem Gebiet befinden wir uns?
-		WLAN Infrastructure
-		AP
-		Mesh
-	Worum geht es generell?
-		WLAN Performanz im Verteilten Netzwerk optimieren
-Background
-	Erklärung/Erinnerung der genutzten System/Konzepte/Algos/...
-		Mesh
-		WLAN Channel
-			Hidden Station/Interference
-		Graph theoretic basics
-			vertices, edges, coloring (frequency assignment)
-		Beschreibung des von LANCOM genutzten Systems, kurz AutoWDS
-		Beschreibung der Usecases des Systems
-Requirement Analysis http://en.wikipedia.org/wiki/Software_Requirements_Specification
-	Welches Problem gilt es zu lösen?
-		Minimize Interference
-		Maximize Throughput
-		Finding redundant Paths
-		Utilize multiple Radios
-		Technical restrictions
-			muss auf Routen laufen? Zentral?
-		Economical restrictions? (If there happen to be some)
+Abstract
+	What is it?
+	What does it do?
+	How does it work generally?
+	Where is it used?
+	Short Results
+Introduction
+	Motivation
+		Description of Status Quo
+		What is the Problem?
+			AutoWDS does not scale/work well
+		What do we want?
+			Make AutoWDS Useful/scalable/work again
+		Why are we doing this?
+			Provide a system to easily deploy of a set of accesspoints for creating a wireless lan infrastructure
+		How do we want to do/solve this?
+			Using multiple Channels
+			Using Redundant Paths
+			Using a better Network Topology
+		What problems could arise?
+			Finding a good network-topology/CAA tricky
+		How are we planing on dealing with these problems?
+		What (data) do we need to solve the Problem?
+			Central Inter-AP SNR
+	Structure of Thesis
+Background - Explanation of the used Systems / Concepts
+	Accesspoint
+		How do they work?
+		Usecases of Accesspoints
+	Mesh
+		What is it?
+		How does it work?
+		Alterations in our scenario compared to standard mesh
+	WLAN Channel
+		What Channels are there?
+		How are the channels used (in germany?)
+		WLAN Interference
+		Hidden Station Problem
+		CSMA-CD/CA
+	Graph theoretic basics
+		How to we map the real world scenario to graph theory
+		How is our Channel assignment related to the problem COLORING?
+	Description of AutoWDS (the underlying system used)
+	Usecases for AutoWDS
+		Universities, Hotels, stadiums
+Requirement Analysis 
+	What problem has to be solved?
+		Has to maximize throughput
+			done by minimize interference
+		Has to Reduce Network Connectivity Failures
+			done by finding/using redundant Paths
+		Has to utilize multiple Radios per AP
+		Has Technical restrictions:
+			Has to somewhere specific?
+				central entity/WLC
+		Has Economical restrictions:
+			Runtime restrictions / Duration
 Related Work
-	Welche Lösungen gibt es schon?W arum können/wollen wir diese nicht verwenden?
+	Which solutions exist already?
+	How do those solutions work?
+	Why can't we use those / Why do we not want to use those?
 		CLICA
 		INSTC
 		DLP
@@ -33,44 +67,44 @@ Related Work
 		MCI-CA
 		MCCA
 		...
-Design
-	Welche Daten haben wir zur Verfügung?
-		Central Inter-AP SNR
-		Wie kommt man da ran?
-	Wie nutzen wir diese Daten?
-		Modellieren der Konnektivität
-		-> auf das mathematische Modell abbilden
-	Wie sieht unsere neuen Lösung im Detail aus?
-		Description Topology creation Algorithm
-		Description Channel Assignment Algorithm
+Design - How does our solution work in detail?
+	Modeling the szenario in a graph
+	Pre-Requirements for the algorithms
+		Connected Graph
+	Topology creation Algorithm
+		Flow Chart
+		Illustrated process + Verbal description
+	Channel Assignment Algorithm
+		Flow Chart
+		Illustrated process + Verbal description
 Implementation
-	UML Diagramm
-	Wo finde ich was? Welche Dateien/Module sind für was zuständig?
-		Ersetzt nicht die Kommentare im Sourcecode
-	Umgebung die man braucht, damit das läuft? IDE?
-	Wie haben wir unsere Lösung implementiert?
-		Python; Communication WLC
-	Welche Probleme gab es bei der Implementierung?
-		Probleme mit AutoWDS Implementierung
+	Which environment / language was used?
+		python
+	Which Modules have been included/imported?
+	What are we using those modules for?
+	Did the Modules have to be extended?
+		Python collections extensions
+	What is the structure of the code?
+	Interface to Algorithm - Accesspoints - Data
+	Have there been problems with the implementation?
+	What is needed to run the algorithm yourself?
 Evaluation
-	Wie bewerten wir unsere Lösung?
-		Throughput
-	Wie sieht der Testaufbau aus?
-		Infrastruktur
-		Physikalischer Aufbau
-	Wie lauten die Parameter der Testdurchläufe? Metriken?
-		Szenarienbeschreibung
-			Dauer
-			Channelnutzung
-			AP Konfiguration
-		Was ist gut, was ist schlecht?
-	Welche Ergebnisse würden wir erwarten?
-	Gibt es Abweichungen von den Erwartungen?
-	Wie gut ist unsere Lösung vergleichen mit Ausgangsszenario?
-		Testergebnisse
-	Vergleich mit Related Work?
-		Verfügbare Features?
+	How do we evaluate the Solution?
+		By measuring the overall throughput
+	What was the test-arrangement?
+		Description of the Network Infrastructure
+		Physical Infrastructure
+	What were the metrics of the test-runs?
+		Durations
+		Channelusage
+		Time of day/tests
+	What results would we expect?
+	Do the actual results diverge from the expected ones?
+	By how much is the solution better then before?
+	How far does the solution meet the requirements?
+	Comparison to related Work algorithms
+		By comparing the features
+	Discussion - What do the results mean?
 Future Work
-	Was müsste noch getan werden?
-	Vergleich mit anderen Lösungen auf neutralem Grund
-
+	What is still to do?
+		Comparison to related work algorithms with actual measurements
