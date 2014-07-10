@@ -1,0 +1,877 @@
+#LyX file created by tex2lyx 2.0.3
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options false
+\language english
+\language_package none
+\inputencoding auto
+\fontencoding default
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\paperfontsize default
+\spacing single
+\use_hyperref 0
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 0
+\use_mathdots 0
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+chapter{Introduction}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+General intro that your non-cs friends also understand 2 to 3 pages
+\end_layout
+
+\begin_layout Standard
+
+general context of your work what is it good for societal relevance.
+\end_layout
+
+\begin_layout Standard
+
+This is the introduction. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum posuere vehicula lorem id commodo. Nam tempor felis quis orci tincidunt suscipit. Morbi dictum purus et nisl porttitor fringilla. Quisque feugiat, tellus quis semper placerat, lectus eros rutrum ipsum, eu elementum nibh nulla eu purus. Vestibulum ultrices varius orci, vitae porta elit laoreet at. Phasellus luctus aliquam molestie. Praesent varius blandit felis eu pellentesque. Aliquam erat volutpat. Morbi at est nibh.
+\end_layout
+
+\begin_layout Standard
+
+Sed a mi tellus, id pellentesque neque. Integer vel volutpat diam. Sed nec lorem eu arcu lobortis porta. Sed quam nunc, luctus quis facilisis nec, aliquet nec mauris. Mauris non velit nisi, sed convallis risus. Sed quis lectus ligula. Morbi in nibh elit. Aenean a purus justo. Suspendisse pretium semper faucibus. Proin dictum, justo quis sagittis cursus, erat massa sollicitudin magna, in tempus quam lacus non turpis.
+\end_layout
+
+\begin_layout Standard
+
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam congue magna at est pellentesque nec hendrerit arcu aliquet. Vivamus sem lectus, vehicula elementum accumsan iaculis, condimentum a mi. Proin sit amet justo eleifend massa eleifend lacinia. Mauris nibh nisl, vehicula vel tincidunt ac, varius et odio. Aliquam feugiat nulla ac felis interdum sodales. Etiam mollis arcu et mi scelerisque quis viverra est vestibulum. Mauris at massa libero, sit amet tincidunt elit. Mauris tempor lorem ut purus hendrerit non viverra nisi vehicula.
+\end_layout
+
+\begin_layout Standard
+
+Vivamus ligula dui, semper sed consequat non, tempor ut diam. Morbi metus nisl, adipiscing feugiat malesuada viverra, blandit id nunc. Aliquam sed ante id velit ultricies condimentum. Aenean lacinia elementum lacus sit amet luctus. Vestibulum consequat nibh et tortor laoreet sit amet vehicula orci venenatis. Suspendisse enim velit, hendrerit quis vestibulum sit amet, tincidunt sit amet odio. Sed gravida tellus in nunc egestas porta. Morbi suscipit, dui vel elementum volutpat, lectus nulla elementum lacus, vitae dictum erat turpis ut ligula. Donec sit amet dolor ut urna vestibulum consequat nec et purus. In adipiscing lacus vel tellus fermentum quis cursus sapien egestas. Curabitur id ipsum erat. In lacinia adipiscing sapien at varius.
+\end_layout
+
+\begin_layout Standard
+
+In consequat laoreet blandit. Ut ac ipsum at velit malesuada tincidunt ornare at sapien. Aenean at dui dolor. Pellentesque sit amet fermentum lorem. Nullam pulvinar diam eget diam hendrerit condimentum. Duis fermentum vulputate ante, a egestas mauris vehicula at. Quisque convallis vestibulum fermentum. Aenean molestie dictum libero, a tincidunt lectus vestibulum in. Vivamus consequat purus pellentesque urna elementum consequat. Cras nec tortor felis, ac cursus risus. Morbi gravida ligula nec orci aliquam aliquam. Morbi et ligula diam, vel venenatis eros. Duis rhoncus ultricies mollis. Nullam ut est lacinia est auctor consectetur faucibus nec tellus. Phasellus id tincidunt risus. Nulla volutpat quam vel diam vehicula in egestas ligula laoreet.
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{listing}
+\end_layout
+
+\end_inset
+
+[t] 
+\begin_inset listings
+inline false
+status collapsed
+
+\begin_layout Plain Layout
+
+#include <stdio.h>
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+int main(void)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	printf("Hello, World
+\backslash
+n");
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	return 0;
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Standard
+
+A simple code example.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "lst:example"
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{listing}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum posuere vehicula lorem id commodo. Nam tempor felis quis orci tincidunt suscipit. Morbi dictum purus et nisl porttitor fringilla. Quisque feugiat, tellus quis semper placerat, lectus eros rutrum ipsum, eu elementum nibh nulla eu purus. Vestibulum ultrices varius orci, vitae porta elit laoreet at. Phasellus luctus aliquam molestie. Praesent varius blandit felis eu pellentesque. Aliquam erat volutpat. Morbi at est nibh.
+\end_layout
+
+\begin_layout Standard
+
+Sed a mi tellus, id pellentesque neque. Integer vel volutpat diam. Sed nec lorem eu arcu lobortis porta. Sed quam nunc, luctus quis facilisis nec, aliquet nec mauris. Mauris non velit nisi, sed convallis risus. Sed quis lectus ligula. Morbi in nibh elit. Aenean a purus justo. Suspendisse pretium semper faucibus. Proin dictum, justo quis sagittis cursus, erat massa sollicitudin magna, in tempus quam lacus non turpis.
+\end_layout
+
+\begin_layout Standard
+
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam congue magna at est pellentesque nec hendrerit arcu aliquet. Vivamus sem lectus, vehicula elementum accumsan iaculis, condimentum a mi. Proin sit amet justo eleifend massa eleifend lacinia. Mauris nibh nisl, vehicula vel tincidunt ac, varius et odio. Aliquam feugiat nulla ac felis interdum sodales. Etiam mollis arcu et mi scelerisque quis viverra est vestibulum. Mauris at massa libero, sit amet tincidunt elit. Mauris tempor lorem ut purus hendrerit non viverra nisi vehicula.
+\end_layout
+
+\begin_layout Standard
+
+Vivamus ligula dui, semper sed consequat non, tempor ut diam. Morbi metus nisl, adipiscing feugiat malesuada viverra, blandit id nunc. Aliquam sed ante id velit ultricies condimentum. Aenean lacinia elementum lacus sit amet luctus. Vestibulum consequat nibh et tortor laoreet sit amet vehicula orci venenatis. Suspendisse enim velit, hendrerit quis vestibulum sit amet, tincidunt sit amet odio. Sed gravida tellus in nunc egestas porta. Morbi suscipit, dui vel elementum volutpat, lectus nulla elementum lacus, vitae dictum erat turpis ut ligula. Donec sit amet dolor ut urna vestibulum consequat nec et purus. In adipiscing lacus vel tellus fermentum quis cursus sapien egestas. Curabitur id ipsum erat. In lacinia adipiscing sapien at varius.
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Float figure
+placement t
+wide false
+sideways false
+status open
+
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Graphics 
+	filename figures/example
+	width 100col%
+
+\end_inset
+
+ 
+\begin_inset Caption
+
+\begin_layout Standard
+
+An example of an awesome image!
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:example"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+Maecenas non tortor lorem, ac cursus nulla. Ut accumsan, felis vitae sollicitudin imperdiet, magna magna semper neque, faucibus feugiat augue neque vel risus. Quisque suscipit pellentesque felis, quis commodo felis mattis et. Maecenas ac augue sed enim posuere facilisis. Nam fringilla faucibus blandit. Morbi ante nisi, sodales in laoreet eu, fermentum sit amet tellus. Integer vel lorem turpis, eu commodo augue. Etiam vel tellus velit, et hendrerit magna. Nulla vitae tellus ut odio pellentesque varius eu eget turpis. In eros neque, rhoncus ac imperdiet eu, luctus eget mi.
+\end_layout
+
+\begin_layout Standard
+
+Nulla sed lectus pulvinar tellus pretium dignissim pretium in dolor. Sed mollis ornare nisi. Nulla facilisi. Sed porta venenatis ultrices. Sed ut libero nec arcu lobortis suscipit non eget lacus. Donec egestas lacinia ligula, quis tristique eros dapibus eget. Suspendisse iaculis felis id lacus vestibulum malesuada. In vel tincidunt dui. In sed sapien nulla, sit amet venenatis felis. Integer quis leo ipsum, ac sagittis nibh. Curabitur interdum, turpis eu tincidunt ornare, arcu justo aliquet est, ut congue tortor dolor eget leo. Morbi viverra iaculis porttitor. Maecenas eleifend varius tellus, id ultricies sem dapibus id. Fusce lacinia arcu ac odio varius ac ultricies erat mollis. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+\end_layout
+
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+Ut ac ipsum:
+\end_layout
+
+\end_inset
+
+ Ut ac ipsum at velit malesuada tincidunt ornare at sapien. Aenean at dui dolor. Pellentesque sit amet fermentum lorem. Nullam pulvinar diam eget diam hendrerit condimentum. Duis fermentum vulputate ante, a egestas mauris vehicula at. Quisque convallis vestibulum fermentum.
+\end_layout
+
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+Aenean lacinia elementum:
+\end_layout
+
+\end_inset
+
+ Aliquam sed ante id velit ultricies condimentum. Aenean lacinia elementum lacus sit amet luctus. Vestibulum consequat nibh et tortor laoreet sit amet vehicula orci venenatis. Suspendisse enim velit, hendrerit quis vestibulum sit amet, tincidunt sit amet odio.
+\end_layout
+
+\begin_layout Description
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+Phasellus id:
+\end_layout
+
+\end_inset
+
+ Nullam ut est lacinia est auctor consectetur faucibus nec tellus. Phasellus id tincidunt risus. Nulla volutpat quam vel diam vehicula in egestas ligula laoreet.
+\end_layout
+
+\begin_layout Standard
+
+In consequat laoreet blandit. Ut ac ipsum at velit malesuada tincidunt ornare at sapien. Aenean at dui dolor. Pellentesque sit amet fermentum lorem. Nullam pulvinar diam eget diam hendrerit condimentum. Duis fermentum vulputate ante, a egestas mauris vehicula at. Quisque convallis vestibulum fermentum. Aenean molestie dictum libero, a tincidunt lectus vestibulum in. Vivamus consequat purus pellentesque urna elementum consequat. Cras nec tortor felis, ac cursus risus. Morbi gravida ligula nec orci aliquam aliquam. Morbi et ligula diam, vel venenatis eros. Duis rhoncus ultricies mollis. Nullam ut est lacinia est auctor consectetur faucibus nec tellus. Phasellus id tincidunt risus. Nulla volutpat quam vel diam vehicula in egestas ligula laoreet.
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Float table
+placement b
+wide false
+sideways false
+status open
+
+
+\begin_layout Standard
+
+
+\begin_inset Caption
+
+\begin_layout Standard
+
+Tables should look like this (save for the last row). If you know 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+LaTeX
+\end_layout
+
+\end_inset
+
+ better than me, feel free to improve the way of producing these tables.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{tabularx}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+linewidth
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+|l|X|X|
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+rowcolor
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+slightgray
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+T
+\end_layout
+
+\end_inset
+
+ Tables &have gray &headlines
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+cellcolor
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+slightgray
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+T
+\end_layout
+
+\end_inset
+
+ and gray &labels 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+B
+\end_layout
+
+\end_inset
+
+&, too.
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+cellcolor
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+slightgray
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+T
+\end_layout
+
+\end_inset
+
+ T &and B& are used for spacing
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+B
+\end_layout
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+cellcolor
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+{
+\end_layout
+
+\end_inset
+
+slightgray
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\end_inset
+
+ without T & and B& the cells are too small
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+B
+\end_layout
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+hline
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{tabularx}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:example"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum posuere vehicula lorem id commodo. Nam tempor felis quis orci tincidunt suscipit. Morbi dictum purus et nisl porttitor fringilla. Quisque feugiat, tellus quis semper placerat, lectus eros rutrum ipsum, eu elementum nibh nulla eu purus. Vestibulum ultrices varius orci, vitae porta elit laoreet at. Phasellus luctus aliquam molestie. Praesent varius blandit felis eu pellentesque. Aliquam erat volutpat. Morbi at est nibh.
+\end_layout
+
+\begin_layout Standard
+
+Sed a mi tellus, id pellentesque neque. Integer vel volutpat diam. Sed nec lorem eu arcu lobortis porta. Sed quam nunc, luctus quis facilisis nec, aliquet nec mauris. Mauris non velit nisi, sed convallis risus. Sed quis lectus ligula. Morbi in nibh elit. Aenean a purus justo. Suspendisse pretium semper faucibus. Proin dictum, justo quis sagittis cursus, erat massa sollicitudin magna, in tempus quam lacus non turpis.
+\end_layout
+
+\begin_layout Standard
+
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam congue magna at est pellentesque nec hendrerit arcu aliquet. Vivamus sem lectus, vehicula elementum accumsan iaculis, condimentum a mi. Proin sit amet justo eleifend massa eleifend lacinia. Mauris nibh nisl, vehicula vel tincidunt ac, varius et odio. Aliquam feugiat nulla ac felis interdum sodales. Etiam mollis arcu et mi scelerisque quis viverra est vestibulum. Mauris at massa libero, sit amet tincidunt elit. Mauris tempor lorem ut purus hendrerit non viverra nisi vehicula.
+\end_layout
+
+\begin_layout Standard
+
+Vivamus ligula dui, semper sed consequat non, tempor ut diam. Morbi metus nisl, adipiscing feugiat malesuada viverra, blandit id nunc. Aliquam sed ante id velit ultricies condimentum. Aenean lacinia elementum lacus sit amet luctus. Vestibulum consequat nibh et tortor laoreet sit amet vehicula orci venenatis. Suspendisse enim velit, hendrerit quis vestibulum sit amet, tincidunt sit amet odio. Sed gravida tellus in nunc egestas porta. Morbi suscipit, dui vel elementum volutpat, lectus nulla elementum lacus, vitae dictum erat turpis ut ligula. Donec sit amet dolor ut urna vestibulum consequat nec et purus. In adipiscing lacus vel tellus fermentum quis cursus sapien egestas. Curabitur id ipsum erat. In lacinia adipiscing sapien at varius.
+\end_layout
+
+\begin_layout Standard
+
+In consequat laoreet blandit. Ut ac ipsum at velit malesuada tincidunt ornare at sapien. Aenean at dui dolor. Pellentesque sit amet fermentum lorem. Nullam pulvinar diam eget diam hendrerit condimentum. Duis fermentum vulputate ante, a egestas mauris vehicula at. Quisque convallis vestibulum fermentum. Aenean molestie dictum libero, a tincidunt lectus vestibulum in. Vivamus consequat purus pellentesque urna elementum consequat. Cras nec tortor felis, ac cursus risus. Morbi gravida ligula nec orci aliquam aliquam. Morbi et ligula diam, vel venenatis eros. Duis rhoncus ultricies mollis. Nullam ut est lacinia est auctor consectetur faucibus nec tellus. Phasellus id tincidunt risus. Nulla volutpat quam vel diam vehicula in egestas ligula laoreet.
+\end_layout
+
+\begin_layout Standard
+
+Maecenas non tortor lorem, ac cursus nulla. Ut accumsan, felis vitae sollicitudin imperdiet, magna magna semper neque, faucibus feugiat augue neque vel risus. Quisque suscipit pellentesque felis, quis commodo felis mattis et. Maecenas ac augue sed enim posuere facilisis. Nam fringilla faucibus blandit. Morbi ante nisi, sodales in laoreet eu, fermentum sit amet tellus. Integer vel lorem turpis, eu commodo augue. Etiam vel tellus velit, et hendrerit magna. Nulla vitae tellus ut odio pellentesque varius eu eget turpis. In eros neque, rhoncus ac imperdiet eu, luctus eget mi.
+\end_layout
+
+\begin_layout Standard
+
+Nulla sed lectus pulvinar tellus pretium dignissim pretium in dolor. Sed mollis ornare nisi. Nulla facilisi. Sed porta venenatis ultrices. Sed ut libero nec arcu lobortis suscipit non eget lacus. Donec egestas lacinia ligula, quis tristique eros dapibus eget. Suspendisse iaculis felis id lacus vestibulum malesuada. In vel tincidunt dui. In sed sapien nulla, sit amet venenatis felis. Integer quis leo ipsum, ac sagittis nibh. Curabitur interdum, turpis eu tincidunt ornare, arcu justo aliquet est, ut congue tortor dolor eget leo. Morbi viverra iaculis porttitor. Maecenas eleifend varius tellus, id ultricies sem dapibus id. Fusce lacinia arcu ac odio varius ac ultricies erat mollis. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+\end_layout
+
+\begin_layout Standard
+
+These are reference and cite examples. See Figure
+\begin_inset space ~
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:example"
+
+\end_inset
+
+, Table
+\begin_inset space ~
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:example"
+
+\end_inset
+
+, and Listing
+\begin_inset space ~
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lst:example"
+
+\end_inset
+
+. Cite early and often
+\begin_inset space ~
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "exampleentry"
+
+\end_inset
+
+ is a good rule of thumb. 
+\end_layout
+
+\end_body
+\end_document
