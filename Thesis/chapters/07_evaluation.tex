@@ -1,27 +1,66 @@
 \chapter{Evaluation}
 How do we evaluate the Solution?\newline
-  By measuring the overall throughput\newline
+  By measuring the overall throughput and comparing the scenarios\newline
 \section{Test arrangement}
-What was the test-arrangement?
+What was the test-arrangement? \newline
   \subsection{Physical Infrastructure}
+    Image of floorplan \newline
+    Where was the system placed? \newline
+    What are the caracteristics of the physical environment? (Walls/Interference from other devices/...) \newline
+    Limitations due to physical restrictions: \newline
+      Distance between APs maybe not big enough, despite transmission power reduction\newline
+      So the Hidden station Problem not fully visible -> results should be even better compared to base scenario \newline
   \subsection{Network Infrastructure}
+    Image of AutoWDSstatus Topology
+    OpenVZ \newline
+    VLAN \newline
+    IPerf \newline
 \section{Metrics}
-What were the metrics of the test-runs?\newline
   \subsection{Durations}
+    How long were the tests run? \newline
+      10 Minutes
+    Measurement Intervalls? \newline
+      Every 7 Seconds
   \subsection{Channelusage}
+    Which Channels were used and in what combinations? \newline
+      1 \newline
+      36 \newline
+      1,6,11 \newline
+      36,40,44 \newline
+      1,6,11,36,40,44 \newline
   \subsection{Characteristics}
     When did the tests take place?\newline
-    Where?\newline
+      Mainly Sundays / Holidays in the evening \newline
+    Transmission power \newline
+      Antenna gain 3 dB \newline
+      Antenna gain 20 dB + Transmitt power reduction \newline
 \section{Results}
-\subsection{Expectations}
-  What results would we expect?\newline
-\subsection{Actual Results}
-  Do the actual results diverge from the expected ones?\newline
-  By how much is the solution better then before?
+  \subsection{Expectations}
+    What results would we expect?\newline
+  \subsection{Actual Results}
+    Do the actual results diverge from the expected ones?\newline
+    Assessment of the base scenario \newline
+      Base Scanario (uses only 1 Channel for all connections) pretty much broken by design -> Medium totally overloaded -> does not even scale to 3 APs in close proximity \newline
+    By how much is the solution better then before? \newline
+      Despite being actually usable again, Traffic throughput is ~7-10 Times higher
 \section{Reflection on the requirements}
   How far does the solution meet the requirements?\newline
+  \subsection{Increased Throughput}
+    Definitely, see Diagrams \newline
+  \subsection{Reduced Connectivity failures}
+    Not tested, since test equippment lacks support for multi-flow/routing support (only bridged connections between APs) \newline
+  \subsection{Multiple Radios utilized}
+    Surely, with excess radios being usable for client connections \newline
+  \subsection{Solution works within the perimeter}
+    Absolutely, since we can compute CAA on central entity and works best for static scenarios \newline
+  \subsection{Comply with Economic Restrictions}
+    Runtime for Small scenarios (about 13 APs with about 500 Possible connections) on a modern system (fill in description of system) small -> <1 Second
+    Estimate for bigger scenario missing (How do i correctly estimate that?)
 \section{Reflection on related Work}
   Comparison to related Work algorithms\newline
-  By comparing the features\newline
+  \subsection{Features of other Systems}
+  \subsection{Features of our System}
+    
 \section{Discussion}
-  What do the results mean?
+  What do the results mean? \newline
+    Obviously it is useful to use mutliple channels for WDS system \newline

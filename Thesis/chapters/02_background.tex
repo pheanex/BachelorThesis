@@ -1,20 +1,42 @@
 \chapter{Background}
-\section{Accesspoint}
-	How do they work?\newline
-	Usecases of Accesspoints\newline
-\section{Mesh}
-	What is it?\newline
-	How does it work?\newline
-	Alterations in our scenario compared to standard mesh\newline
-\section{WLAN Channel}
-	What Channels are there? \newline
-	How are the channels used (in germany?)\newline
-	WLAN Interference\newline
-	Hidden Station Problem\newline
-	CSMA-CD/CA\newline
+\section{Wireless Network}
+  \subsection{WLAN Channel}
+    %https://de.wikipedia.org/wiki/Wireless_LAN#Frequenzen\newline
+    What is a Channel?\newline
+    Overview on useable frequencies \newline
+    Interference\newline
+    Hidden Station Problem\newline
+    CSMA-CD/CA\newline
+    Analogy switch - collision domain \newline
+  \subsection{Wireless Access-Point}
+    Used to establish wireless connections to devices, like laptops/mobile phones, but also printer and ... 
+    Connecting wired LAN - wireless LAN \newline
+    Mostly provide access to internet\newline
+    Usecases of Accesspoints\newline
+    %https://de.wikipedia.org/wiki/Wireless_Access_Point \newline
+  \subsection{Wireless Mesh Network}
+    %https://de.wikipedia.org/wiki/Ad-hoc-Netz
+    Topology for nodes(devices) in a wireless network.
+    Self healing capabilities.
+    Role of Mesh routers.
+    Redundancy in mesh networks.
+    Autonomy of devices.
+    \cite{Akyildiz2005445}
+    Infrastructure mode vs p2p mode
+    IEEE 802.11
+    \cite{airberry}
+    Alterations in our scenario compared to standard mesh\newline
 \section{Graph theoretic basics}
-	How to we map the real world scenario to graph theory\newline
-	How is our Channel assignment related to the problem COLORING?\newline
-\section{AutoWDS}
-\section{Usecases}
-	Universities, Hotels, stadiums\newline
+  %https://de.wikipedia.org/wiki/Graph_%28Graphentheorie%29
+  How to map the real world scenario to graph theory\newline
+    APs are nodes \newline
+    Also Radio-Modules of APs are nodes and are connected to AP-nodes. Those are called Module-Device edges or fake edges.\newline
+    Connections between nodes are possible Links, meaning if there is a Edge from AP1-Module1 to AP2-Module2, then AP1-Module1 and AP2-Module2 received each others beacons. Those are called Module-Module edges or real edges. \newline
+  How is our Channel assignment related to the problem COLORING?\newline
+    It is realated in the way that we want to assign each Module-Module-Connection a channel/color from a pool of available colors, withouth (if possible) use the same channel/color on neighboring links (meaning Aps that see each other and their traffic could lead to decreased throughput due to interference)
+  What else here?
+\section{Wireless Distribution System}
+  %https://en.wikipedia.org/wiki/Wireless_distribution_system
+  Description of WDS + AutoWDS \newline
+    What is a Wireless Distribution System? \newline
+    How does the Lancom AutoWDS differ from the basic WDS definition? \newline
