@@ -4,23 +4,32 @@ How do we evaluate the Solution?\newline
 \section{Test arrangement}
 What was the test-arrangement? \newline
   \subsection{Physical Infrastructure}
-    Image of floorplan \newline
-    Where was the system placed? \newline
-    What are the caracteristics of the physical environment? (Walls/Interference from other devices/...) \newline
-    Limitations due to physical restrictions: \newline
+    \begin{figure}[t]
+      \centering
+      \includegraphics[width=1\columnwidth]{figures/Lancom-flur-withaps}
+      \caption{Testsetup deployment: Lancom 2nd floor}
+      \label{fig:2ndfloor}
+    \end{figure}
+    \begin{description}
+     \item[Placement of the system?]
+     \item[What are the characteristics of the physical environment? (Walls/Interference from other devices/...)]
+     \item[Limitations due to physical restrictions]
       Distance between APs maybe not big enough, despite transmission power reduction\newline
       So the Hidden station Problem not fully visible -> results should be even better compared to base scenario \newline
+    \end{description}
   \subsection{Network Infrastructure}
-    Image of AutoWDSstatus Topology
+    Image of AutoWDSstatus Topology: (How to place the nodes? What to show?)
     OpenVZ \newline
     VLAN \newline
     IPerf \newline
 \section{Metrics}
   \subsection{Durations}
-    How long were the tests run? \newline
+    \begin{description}
+     \item[How long were the tests run?]
       10 Minutes
-    Measurement Intervalls? \newline
-      Every 7 Seconds
+     \item[Measurement Intervalls]
+      7 Seconds
+    \end{description}
   \subsection{Channelusage}
     Which Channels were used and in what combinations? \newline
       1 \newline
@@ -29,20 +38,24 @@ What was the test-arrangement? \newline
       36,40,44 \newline
       1,6,11,36,40,44 \newline
   \subsection{Characteristics}
-    When did the tests take place?\newline
+    \begin{description}
+     \item [When did the tests take place?]
       Mainly Sundays / Holidays in the evening \newline
-    Transmission power \newline
+     \item[Transmission powers used for the tests]
       Antenna gain 3 dB \newline
       Antenna gain 20 dB + Transmitt power reduction \newline
+    \end{description}
 \section{Results}
   \subsection{Expectations}
     What results would we expect?\newline
   \subsection{Actual Results}
-    Do the actual results diverge from the expected ones?\newline
-    Assessment of the base scenario \newline
+    \begin{description}
+     \item [Do the actual results diverge from the expected ones?]
+     \item[Assessment of the base scenario]
       Base Scanario (uses only 1 Channel for all connections) pretty much broken by design -> Medium totally overloaded -> does not even scale to 3 APs in close proximity \newline
-    By how much is the solution better then before? \newline
+     \item[By how much is the solution better then before?]
       Despite being actually usable again, Traffic throughput is ~7-10 Times higher
+    \end{description}
 \section{Reflection on the requirements}
   How far does the solution meet the requirements?\newline
   \subsection{Increased Throughput}
@@ -61,6 +74,8 @@ What was the test-arrangement? \newline
   \subsection{Features of other Systems}
   \subsection{Features of our System}
 \section{Discussion}
-  What do the results mean? \newline
-    Obviously it is useful to use mutliple channels for WDS system \newline
-  What else questions belong here or is it just the one above?
+  \begin{description}
+   \item [What do the results mean?]
+   Obviously it is useful to use mutliple channels for WDS system
+   \item[What else questions belong here or is it just the one above?]
+  \end{description}

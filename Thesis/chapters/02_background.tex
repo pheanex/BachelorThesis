@@ -1,42 +1,49 @@
 \chapter{Background}
+How shallow / extensive should the description be? Wikipedia like or original techpaper of 802.11 like?
 \section{Wireless Networks}
   \subsection{WLAN Channel}
     %https://de.wikipedia.org/wiki/Wireless_LAN#Frequenzen\newline
-    What is a Channel?\newline
-    Overview on useable frequencies \newline
-    Interference\newline
-    Hidden Station Problem\newline
-    CSMA-CD/CA\newline
-    Analogy switch - collision domain \newline
+    \begin{description}
+    \item[What is a Channel?]
+    \item[Overview on useable frequencies]
+    \item[Interference]
+    \item[Hidden Station Problem]
+    \item[CSMA-CD/CA]
+    \item[Analogy switch - collision domain]
+    \end{description}
   \subsection{Wireless Access-Point}
-    Used to establish wireless connections to devices, like laptops/mobile phones, but also printer and ... 
-    Connecting wired LAN - wireless LAN \newline
-    Mostly provide access to internet\newline
-    Usecases of Accesspoints\newline
+    %Used to establish wireless connections to devices, like laptops/mobile phones, but also printer and ... 
+    %Connecting wired LAN - wireless LAN \newline
+    %Mostly provide access to internet\newline
+    %Usecases of Accesspoints\newline
     %https://de.wikipedia.org/wiki/Wireless_Access_Point \newline
   \subsection{Wireless Mesh Network}
     %https://de.wikipedia.org/wiki/Ad-hoc-Netz
-    Topology for nodes(devices) in a wireless network.
-    Self healing capabilities.
-    Role of Mesh routers.
-    Redundancy in mesh networks.
-    Autonomy of devices.
+    %Topology for nodes(devices) in a wireless network.
+    %Self healing capabilities.
+    %Role of Mesh routers.
+    %Redundancy in mesh networks.
+    %Autonomy of devices.
+    %Infrastructure mode vs p2p mode
+    %IEEE 802.11
+    %Alterations in our scenario compared to standard mesh\newline
     \cite{Akyildiz2005445}
-    Infrastructure mode vs p2p mode
-    IEEE 802.11
     \cite{airberry}
-    Alterations in our scenario compared to standard mesh\newline
     \subsection{Wireless Distribution System}
     %https://en.wikipedia.org/wiki/Wireless_distribution_system
     Description of WDS + AutoWDS \newline
-      What is a Wireless Distribution System? \newline
-      How does the Lancom AutoWDS differ from the basic WDS definition? \newline
+      \begin{description}
+       \item[What is a Wireless Distribution System?]
+       \item[How does the Lancom AutoWDS differ from the basic WDS definition?]
+      \end{description}
 \section{Graph theoretic basics}
   %https://de.wikipedia.org/wiki/Graph_%28Graphentheorie%29
-  How to map the real world scenario to graph theory\newline
+  \begin{description}
+   \item[How to map the real world scenario to graph theory]
     APs are nodes \newline
     Also Radio-Modules of APs are nodes and are connected to AP-nodes. Those are called Module-Device edges or fake edges.\newline
     Connections between nodes are possible Links, meaning if there is a Edge from AP1-Module1 to AP2-Module2, then AP1-Module1 and AP2-Module2 received each others beacons. Those are called Module-Module edges or real edges. \newline
-  How is our Channel assignment related to the problem COLORING?\newline
+   \item[How is our Channel assignment related to the problem COLORING?]
     It is realated in the way that we want to assign each Module-Module-Connection a channel/color from a pool of available colors, withouth (if possible) use the same channel/color on neighboring links (meaning Aps that see each other and their traffic could lead to decreased throughput due to interference)
-  What else here?
+    \item[What else here?]
+ \end{description}
