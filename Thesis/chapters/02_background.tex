@@ -1,5 +1,6 @@
 \chapter{Background}
-How shallow / extensive should the description be? Wikipedia like or original techpaper of 802.11 like?
+General discription of used terms/systems in wikipedia like style. This means the description should not be too extensive.
+And refer to further papers for more extensive descriptions.
 \section{Wireless Networks}
   \subsection{WLAN Channel}
     %https://de.wikipedia.org/wiki/Wireless_LAN#Frequenzen\newline
@@ -35,6 +36,8 @@ How shallow / extensive should the description be? Wikipedia like or original te
       \begin{description}
        \item[What is a Wireless Distribution System?]
        \item[How does the Lancom AutoWDS differ from the basic WDS definition?]
+	 Intended centralized solution compüared to WDS systems due to better managability.
+	 Also security is a key element for this system => that's why central entity + CAPWAP
       \end{description}
 \section{Graph theoretic basics}
   %https://de.wikipedia.org/wiki/Graph_%28Graphentheorie%29
@@ -45,5 +48,5 @@ How shallow / extensive should the description be? Wikipedia like or original te
     Connections between nodes are possible Links, meaning if there is a Edge from AP1-Module1 to AP2-Module2, then AP1-Module1 and AP2-Module2 received each others beacons. Those are called Module-Module edges or real edges. \newline
    \item[How is our Channel assignment related to the problem COLORING?]
     It is realated in the way that we want to assign each Module-Module-Connection a channel/color from a pool of available colors, withouth (if possible) use the same channel/color on neighboring links (meaning Aps that see each other and their traffic could lead to decreased throughput due to interference)
-    \item[What else here?]
+    Why is it not just coloring?
  \end{description}
