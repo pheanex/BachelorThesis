@@ -41,12 +41,31 @@ And refer to further papers for more extensive descriptions.
       \end{description}
 \section{Graph theoretic basics}
   %https://de.wikipedia.org/wiki/Graph_%28Graphentheorie%29
-  \begin{description}
-   \item[How to map the real world scenario to graph theory]
-    APs are nodes \newline
-    Also Radio-Modules of APs are nodes and are connected to AP-nodes. Those are called Module-Device edges or fake edges.\newline
-    Connections between nodes are possible Links, meaning if there is a Edge from AP1-Module1 to AP2-Module2, then AP1-Module1 and AP2-Module2 received each others beacons. Those are called Module-Module edges or real edges. \newline
-   \item[How is our Channel assignment related to the problem COLORING?]
+  TODO: Describe directed/undirected weighted graph
+  What does connected graph mean; path
+   \subsection{Mapping of real world data}
+    For our solution we will use the following mapping from devices and modules to a undirected, weighted graph. (Formale beschreibung hilfreich?)
+    Each accesspoint and each module of those accesspoints is represented by a node.
+    For each accesspoint we add edges with the highest weight to each module of its corresponding accesspoint. 
+    We describe those edges as artificial or device-module edges.
+    If two modules of different accesspoints are within receive range of each other, 
+    we are adding an edge between the corresponding module nodes with the average signal-to-noise ratio as the edge-weight.
+    We call those edges module-module connections or real connections.
+    Since the average of the two SNR's might not adequately represent the actual quality of those connections,
+    we alternatively can easily adjust the edge-weight to the minimum or maximum of those values.
+    While the average seems to be a good compromise for a general description of the underlying network, the minimum might be a better representation for 
+    a more pessimistic setup, since the connection is then guaranteed to have at least this SNR in both directions. 
+    Furthermore we are ignoring onesided connections, i.e. one module receives one or a few beacons of the other module but not the other way round.
+    Not only are the SNRs of those connections mostly very poor, but they are also very rare in our target scenarios with omnidirectional antennas.
+    So mostly either the modules receive each others beacons, or both do not.
+    \begin{figure}[t]
+      \centering
+      \includegraphics[width=0.5\columnwidth]{figures/apgraph.png}
+      \caption{Graph representation of one and two connected accesspoints}
+      \label{fig:apgraph}
+    \end{figure}
+   \subsection{Relevance of COLORING}
+   \subsection{Dijkstras algorithm}
+   TODO: How is our Channel assignment related to the problem COLORING?
     It is realated in the way that we want to assign each Module-Module-Connection a channel/color from a pool of available colors, withouth (if possible) use the same channel/color on neighboring links (meaning Aps that see each other and their traffic could lead to decreased throughput due to interference)
     Why is it not just coloring?
- \end{description}

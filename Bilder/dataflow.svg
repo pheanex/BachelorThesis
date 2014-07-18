@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="45cm" height="9cm" viewBox="80 395 887 169" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <image x="818.5" y="451.364" width="56" height="48" xlink:href="file:///home/kmanna/BA/Bilder/pc.png"/>
+    <text font-size="12.8" style="fill: #297bb2;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:700" x="845.5" y="513.364">
+      <tspan x="845.5" y="513.364">PC</tspan>
+    </text>
+  </g>
+  <g>
+    <image x="487" y="460" width="122" height="24.2357" xlink:href="file:///home/kmanna/BA/Bilder/wlc.png"/>
+    <text font-size="12.8" style="fill: #297bb2;text-anchor:start;font-family:monospace;font-style:normal;font-weight:700" x="536" y="499">
+      <tspan x="536" y="499">WLC</tspan>
+    </text>
+  </g>
+  <g>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="80.1591" y="410.75">
+      <tspan x="80.1591" y="410.75"></tspan>
+    </text>
+    <g>
+      <ellipse style="fill: #ffffff" cx="206.659" cy="470.75" rx="95.5" ry="74"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #297bb2" cx="206.659" cy="470.75" rx="95.5" ry="74"/>
+      <text font-size="1.59998" style="fill: #297bb2;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="206.659" y="471.25">
+        <tspan x="206.659" y="471.25"></tspan>
+      </text>
+    </g>
+    <g>
+      <image x="142.759" y="423.75" width="32.5" height="23" xlink:href="file:///home/kmanna/BA/Bilder/ap.png"/>
+      <text font-size="1.6" style="fill: #6fa2c5;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:700" x="163.959" y="462.75">
+        <tspan x="163.959" y="462.75">AP</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #6fa2c5;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="159.159" y="462.75">
+        <tspan x="159.159" y="462.75">AP</tspan>
+      </text>
+    </g>
+    <g>
+      <image x="226.059" y="416.25" width="32.5" height="23" xlink:href="file:///home/kmanna/BA/Bilder/ap.png"/>
+      <text font-size="1.6" style="fill: #6fa2c5;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:700" x="247.259" y="455.25">
+        <tspan x="247.259" y="455.25">AP</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #6fa2c5;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="242.459" y="455.25">
+        <tspan x="242.459" y="455.25">AP</tspan>
+      </text>
+    </g>
+    <g>
+      <image x="189.959" y="457.75" width="32.5" height="23" xlink:href="file:///home/kmanna/BA/Bilder/ap.png"/>
+      <text font-size="1.6" style="fill: #6fa2c5;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:700" x="211.159" y="496.75">
+        <tspan x="211.159" y="496.75">AP</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #6fa2c5;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="206.359" y="496.75">
+        <tspan x="206.359" y="496.75">AP</tspan>
+      </text>
+    </g>
+    <g>
+      <image x="138.859" y="480.25" width="32.5" height="23" xlink:href="file:///home/kmanna/BA/Bilder/ap.png"/>
+      <text font-size="1.6" style="fill: #6fa2c5;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:700" x="160.059" y="519.25">
+        <tspan x="160.059" y="519.25">AP</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #6fa2c5;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="155.259" y="519.25">
+        <tspan x="155.259" y="519.25">AP</tspan>
+      </text>
+    </g>
+    <g>
+      <image x="237.759" y="484.75" width="32.5" height="23" xlink:href="file:///home/kmanna/BA/Bilder/ap.png"/>
+      <text font-size="1.6" style="fill: #6fa2c5;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:700" x="258.959" y="523.75">
+        <tspan x="258.959" y="523.75">AP</tspan>
+      </text>
+      <text font-size="12.8" style="fill: #6fa2c5;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="254.159" y="523.75">
+        <tspan x="254.159" y="523.75">AP</tspan>
+      </text>
+    </g>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="342.477" y="456.204">
+    <tspan x="342.477" y="456.204">1.Gather Data</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="665.886" y="454.045">
+    <tspan x="665.886" y="454.045">2.Query Data</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="889.989" y="465.219">
+    <tspan x="889.989" y="465.219">3.Compute</tspan>
+    <tspan x="889.989" y="481.219">  Solution</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="668.25" y="513.25">
+    <tspan x="668.25" y="513.25">4.Write Data</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="347.059" y="517.173">
+    <tspan x="347.059" y="517.173">5.Push Config</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:monospace;font-style:italic;font-weight:700" x="206.99" y="560.991">
+    <tspan x="206.99" y="560.991">6.Reconfigure</tspan>
+  </text>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="319.159" y1="461.182" x2="457.817" y2="462.003"/>
+    <polygon style="fill: #000000" points="457.787,467.003 467.817,462.062 457.847,457.003 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="457.787,467.003 467.817,462.062 457.847,457.003 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="465.453" y1="499.909" x2="332.66" y2="500.685"/>
+    <polygon style="fill: #000000" points="332.631,495.685 322.66,500.744 332.689,505.685 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="332.631,495.685 322.66,500.744 332.689,505.685 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="640.44" y1="459.876" x2="779.098" y2="460.698"/>
+    <polygon style="fill: #000000" points="779.069,465.698 789.098,460.757 779.128,455.698 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="779.069,465.698 789.098,460.757 779.128,455.698 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="786.735" y1="498.603" x2="653.941" y2="499.38"/>
+    <polygon style="fill: #000000" points="653.912,494.38 643.941,499.438 653.97,504.38 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="653.912,494.38 643.941,499.438 653.97,504.38 "/>
+  </g>
+</svg>
