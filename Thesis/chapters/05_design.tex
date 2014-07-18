@@ -1,6 +1,6 @@
 \chapter{Design}
 Calculating a solution for a specific scenario is split into two parts. At first the underlying connection topology is determined.
-Subsequently a channel assignment is computed for this specific topology. As input we need a connected, undirected, weigthed graph.
+Subsequently a channel assignment is computed for this specific topology. As input we expect a connected, undirected, weigthed graph.
   \begin{figure}[htbp]
     \centering
     \includegraphics[width=1\columnwidth]{figures/graphseen.png}
@@ -84,6 +84,7 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   \begin{figure}[htbp]
     \centering
     \includegraphics[width=1\columnwidth]{figures/caa_algo}
-    \caption{Network topology with red nodes highlighting a channel-group.}
+    \caption{Example channel assignment for a network with 8 Accesspoints with 2 and 3 modules equipped and available channels [1,11,36]. 
+    The first four graphs represent the first 4 rounds. Red marked nodes represent a channel-group.}
     \label{fig:caa_algo}
   \end{figure}

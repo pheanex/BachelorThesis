@@ -1,5 +1,7 @@
 \chapter{Requirement Analysis}
-  Up to now AutoWDS automatically uses just one or a random set of channels for its backbone wireless connections. 
+  AutoWDS as it is currently implemented from now on shall be referred to as 
+  AutoWDS basic and the improved system with the features of this requirements analysis realized shall be called AutoWDS extended.
+  Up to now AutoWDS basic automatically uses just one or a random set of channels for its backbone wireless connections. 
   Additionally the topology it creates often reassembles a tree like structure, since the APs connect themselves 
   to the first AP that comes into range and there is no fallback, if a link fails. This results not only in huge bottlenecks for throughput,
   it also leads to greater downtimes if a link happens to fail. Although the APs automatically rejoin the network if possible, it takes
@@ -19,17 +21,27 @@ General answer to question of feasibility
   thus it is also the key metric for quality in AutoWDS. Furthermore not a single stream of data should be granted exclusively access to the radio, but
   many streams in parallel are desired.
   \section{Reduce Network Connectivity Failures}
+  AutoWDS basic is due to its tree like structure very susceptible to disconnections of accesspoints and the infrastructure behind it.
+  As this may be just an inconvenience to users of devices like cellphones or laptops who are running uncritical programs, 
+  staying connected in an industrial environment gains in importance. Hence AutoWDS extended shall provide the possibility to create 
+  redundant connections in the network topology. The failing scenario is defined as one link breaks while others still being usable.
 \section{Utilize variable Number of Radios}
-  Should utilize multiple Radios per AP\newline
-  Currently homogenous 2, Later 3, sometimes just 1 \newline
-  Also should be able to handle heterogenous environments with respect to number of equipped radios \newline
+  AutoWDS extended will operate with currently up to about 100 accesspoints with a variable amount of radio-modules per accesspoint.
+  Current versions of accesspoints are equipped with one up to three radios each. It is supposed to work in heterogenous environment with 
+  different numbers of radio-modules per accesspoint. As a consequence the available radio modules 
+  have to be utilized as much as possible to achieve gains in overall throughput.
+  Switching channels in short intervals to serve more than one channel is explicitly not desired.
   \section{Capability of using variable channels}
-  Not just fixed amount, but depending on the usecase, like: only 1 and 11 or only 36,40,44
+  AutoWDS extended will be used in variable environments and hence may face several restrictions with respect to the channels that are able to be used.
+  Thus AutoWDS extended must accept a list of channels only of which it may chose from for channel assignment.
   \section{Restrictions}
   \subsection{Centralized Computation}
-    Run on central entity (WLC), not distributed \newline 
+    AutoWDS extended must also be able to compute its solution on a central entity in contrast to a distributed fashion.
+    Reconfiguration of accesspoints and collection of data from the accesspoint-network will only be able through a central wireless lan controller.
   \subsection{Static Environment}
-    System is only used for static environments (APs are not mobile) \newline
+    AutoWDS basic and extended is and will be designed for a static environment of accesspoints. That means there will be no highly frequent changes in
+    network topology or in link-quality. Although this does not completely render accesspoints immobile, changes if any are expected to be slow and gradually.
 \section{Economical Restrictions}
-  Ressource restrictions (Processing Power limited) \newline
-  Duration (Results have to be available in limited time) \newline
+  Neither the central entity nor the accesspoints are limited regarding energy. Both will be permanently connected to the power grid and there is no power saving mode
+  which could affect the design or computation.
+  AutoWDS extended has to be able to find a solution on demand and in a short timeframe.
