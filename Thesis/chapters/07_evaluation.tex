@@ -1,24 +1,51 @@
 \chapter{Evaluation}
-How do we evaluate the Solution?\newline
-  By measuring the overall throughput and comparing the scenarios\newline
+The goal of this paragraph is to assure that the changes we made to AutoWDS basic actually improved its performance.
+Due to extent this work is aimed at, it was not feasible to implement all the systems of the related solutions on this field on a common environment
+to get a fair assessment for each work. For this the overview papers on this area like \cite{overview_caa} may serve its purpose.
+The following subsections will mainly focus on the comparison between AutoWDS basic and the extended version.
 \section{Test arrangement}
-What was the test-arrangement? \newline
+Since the main goal is to increase overall throughput performance as described in the requirements analysis, our basic evaluation approach is
+to find by how much we were able to increase this metric. Therefore we ran both systems under equal circumstances with various settings and multiple runs
+and compared its capacities.
   \subsection{Physical Infrastructure}
+    For the test arrangement we used the following hardware:
+      11 Accesspoints, 1 WLC and 2 Switches among those
+      \begin{itemize}
+       \item 3 x Lancom L322agn dual Wireless //cite the website or product catalog?
+       \item 3 x Lancom L-452agn dual Wireless
+       \item 6 x Hirschmann OpenBAT-R
+       \item 1 x Lancom WLC-4100
+       \item 2 x Lancom GS-2352P
+      \end{itemize}
+      running on Firmware Version <<insert version here>>. We deployed them at a typical office environment as depicted in the figure.
+      Only omnidirectional antennas for the accesspoints were used for this setup. As we had to connect each of the accesspoints also
+      per cable to the monitoring station and power grid in order to route traffic through them and the network they're spanning,
+      we could not set them further appart.
+      Increasing the distance between the single APs would have lead to a sparser network topology and so the hidden station problem would have occured
+      more often. Thus the actual interference would have gone up, since with a lower Signal to Noise ratio the APs would not be able to recognize each others 
+      transmissions as those and categorize it as interference instead of applying CSMA/CD, leading to more corrupt packets.
+      We were able to simulate this problem with a reduced transmit-power,
+      but even on the lowest setting most of the accesspoints were able to receive each others beacons. With this limitation kept in mind we expect
+      the gap between the two scenarios in the following results to be even greater.
+      Since this test was conducted at a research facility for wireless LAN devices, especially the 2.4Ghz band was quite heavily utilized as you will notice
+      in the performance charts.
     \begin{figure}[t]
       \centering
       \includegraphics[width=1\columnwidth]{figures/Lancom-flur-withaps}
-      \caption{Testsetup deployment: Lancom 2nd floor}
+      \caption{Physical arrangement of accesspoints in an area of rougly 15m x 40m}
       \label{fig:2ndfloor}
     \end{figure}
-    \begin{description}
-     \item[Placement of the system?]
-     \item[What are the characteristics of the physical environment? (Walls/Interference from other devices/...)]
-     \item[Limitations due to physical restrictions]
-      Distance between APs maybe not big enough, despite transmission power reduction. Limitations due to cabling\newline
-      So the Hidden station Problem not fully visible -> results should be even better compared to base scenario \newline
-    \end{description}
   \subsection{Network Infrastructure}
-    Image of AutoWDSstatus Topology: (How to place the nodes? What to show?)
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.3\textwidth]{figures/testsetup_logic}%
+	\includegraphics[width=0.7\textwidth]{figures/testsetup_openvz}%
+	\caption{Example for the logical arrangement of accesspoints with systems attached by cable, which generate broadcast traffic that is routed through the 
+	wireless network spanned by the accesspoints. And on the right side implementation of the test arrangement with available hardware.}
+      } % TODO: Bilder besser anordnen/anpassen
+      \label{fig:testsetup_logic}
+    \end{figure}
+    To 
     OpenVZ \newline
     VLAN \newline
     IPerf \newline
@@ -32,6 +59,7 @@ What was the test-arrangement? \newline
     \end{description}
   \subsection{Channelusage}
     Which Channels were used and in what combinations? \newline
+    Image of AutoWDSstatus Topology: (How to place the nodes? What to show?)
       1 \newline
       36 \newline
       1,6,11 \newline
