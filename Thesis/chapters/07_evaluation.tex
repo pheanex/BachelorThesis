@@ -2,7 +2,10 @@
 The goal of this paragraph is to assure that the changes we made to AutoWDS basic actually improved its performance.
 Due to extent this work is aimed at, it was not feasible to implement all the systems of the related solutions on this field on a common environment
 to get a fair assessment for each work. For this the overview papers on this area like \cite{overview_caa} may serve its purpose.
-The following subsections will mainly focus on the comparison between AutoWDS basic and the extended version.
+The following subsections will mainly focus on the comparison between AutoWDS basic and the extended version. Also we were not able to evaluate the performance gains
+of some metrics like the survival path feature since the current implementation of AutoWDS only uses network bridges to connect the networks and no real routing infrastructure.
+Due to this restriction only we are limited to spanning trees for the network since otherwise the STP would force shutdown the redundant links to eliminate
+circles in the topology.
 \section{Test arrangement}
 Since the main goal is to increase overall throughput performance as described in the requirements analysis, our basic evaluation approach is
 to find by how much we were able to increase this metric. Therefore we ran both systems under equal circumstances with various settings and multiple runs
@@ -20,7 +23,7 @@ and compared its capacities.
       running on Firmware Version <<insert version here>>. We deployed them at a typical office environment as depicted in the figure.
       Only omnidirectional antennas for the accesspoints were used for this setup. As we had to connect each of the accesspoints also
       per cable to the monitoring station and power grid in order to route traffic through them and the network they're spanning,
-      we could not set them further appart.
+      we could not set them further apart.
       Increasing the distance between the single APs would have lead to a sparser network topology and so the hidden station problem would have occured
       more often. Thus the actual interference would have gone up, since with a lower Signal to Noise ratio the APs would not be able to recognize each others 
       transmissions as those and categorize it as interference instead of applying CSMA/CD, leading to more corrupt packets.
@@ -32,50 +35,96 @@ and compared its capacities.
     \begin{figure}[t]
       \centering
       \includegraphics[width=1\columnwidth]{figures/Lancom-flur-withaps}
-      \caption{Physical arrangement of accesspoints in an area of rougly 15m x 40m}
+      \caption{Physical arrangement of accesspoints in a typical office complex spread over an area of rougly 15m x 40m}
       \label{fig:2ndfloor}
     \end{figure}
   \subsection{Network Infrastructure}
     \begin{figure}[h]
       \centerline{
-	\includegraphics[width=0.3\textwidth]{figures/testsetup_logic}%
-	\includegraphics[width=0.7\textwidth]{figures/testsetup_openvz}%
+	\includegraphics[width=0.3\textwidth]{figures/testsetup_logic}
 	\caption{Example for the logical arrangement of accesspoints with systems attached by cable, which generate broadcast traffic that is routed through the 
-	wireless network spanned by the accesspoints. And on the right side implementation of the test arrangement with available hardware.}
-      } % TODO: Bilder besser anordnen/anpassen
+	wireless network spanned by the accesspoints.}
+      }
       \label{fig:testsetup_logic}
     \end{figure}
-    To 
-    OpenVZ \newline
-    VLAN \newline
-    IPerf \newline
+    The basic approach for measuring the throughput is to attach traffic generators to the accesspoints and make those send as much broadcast traffic to all
+    other stations which are part of this network and therefore saturate the throughput capabilities of the network.
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.6\textwidth]{figures/testsetup_openvz}%
+	\caption{Implementation of the test arrangement with available hardware.}
+      }
+      \label{fig:testsetup_openvz}
+    \end{figure}
+    We simulated the traffic generating systems with OpenVZ //Cite OpenVZ on one Host with a VLAN for each system. The VLAN infrstructure is completely transparent
+    to the VZ containers and the accesspoints since the monitoring stations encapsulates all frames before sending if over the VLAN Trunk to the switch, which again 
+    decapsulates the frames before sending them to the accesspoints.
+    To generate the traffic we used IPerf \cite{tirumala2005iperf} on the attached systems in UDP mode with a datarate of 1Mbit per second for a total of 10 Minutes.
+    Since we could not directly send UDP frames to broadcast addresses with iperf, we ran multiple instances of iperf with different target ip addresses.
+    Although 1Mbit for each stream may not seem much, but after multiplying it with the number of targets and the up- and downstreams the effective rate results in
+    1Mbit * 12 * 2 = 24Mbit/s for each accesspoint. As we will see later on this will turn out to be enough to completely saturate the wireless network but still within
+    the capabilities of the used Gigabit Ethernet to get the data to the accesspoints, as 24Mbit/s * 11 = 264Mbit/s does not exceed the 1000Mbit/s VLAN Trunk connection
+    as possible bottleneck.
+    \begin{listing}[t]
+      \begin{lstlisting}
+iperf -u -c 172.16.40.2* -t 600 -b 1M
+      \end{lstlisting}
+      \caption{IPerf's parameters to generate the traffic.}
+      \label{lst:iperf}
+    \end{listing}
 \section{Metrics}
-  \subsection{Durations}
-    \begin{description}
-     \item[How long were the tests run?]
-      10 Minutes
-     \item[Measurement Intervalls]
-      7 Seconds
-    \end{description}
+  \subsection{Test Duration}
+     Each testcase was run for a total of 10 minutes as this should be enough to transgress any temporary effects. To get status snapshots we querried the accesspoints
+     every 7 seconds for their state, which includes the bytes transferred and received so far. We did not query them more often since this could have 
+     affected the accesspoints transfer performance as reading its internal tables and sending the results back means additional stress.
   \subsection{Channelusage}
-    Which Channels were used and in what combinations? \newline
-    Image of AutoWDSstatus Topology: (How to place the nodes? What to show?)
-      1 \newline
-      36 \newline
-      1,6,11 \newline
-      36,40,44 \newline
-      1,6,11,36,40,44 \newline
-  \subsection{Characteristics}
-    \begin{description}
-     \item [When did the tests take place?]
-      Mainly Sundays / Holidays in the evening \newline
-     \item[Transmission powers used for the tests]
-      Antenna gain 3 dB \newline
-      Antenna gain 20 dB + Transmitt power reduction \newline
-    \end{description}
+    For AutoWDS basic we configured the Accesspoints to only use the following Channelsets:
+    \begin{itemize}
+     \item 1 (2.4 GHz only)
+     \item 36 (5GHz only)
+    \end{itemize}
+    For the extended version of AutoWDS we used the following channels as input for the allocation algorithm: 
+    \begin{itemize}
+     \item 1,6,11 (2.4 GHz only)
+     \item 36,40,44 (5GHz only)
+     \item 1,6,11,36,40,44 (2.4/5 Ghz mixed)
+    \end{itemize}
+    
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.7\textwidth]{figures/topo_chan_1}%
+	\caption{Topology of the testnetwork with only channel 1 being used. Different colors indicate different channels}
+      }
+      \label{fig:topo_chan_1}
+    \end{figure}
+    
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.7\textwidth]{figures/topo_chan_36_40_44}%
+	\caption{Topology of the testnetwork with only channel 36,40,44 being used.}
+      }
+      \label{fig:topo_chan_36_40_44}
+    \end{figure}
+
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.7\textwidth]{figures/topo_chan_1_6_11_36_40_44}%
+	\caption{Topology of the testnetwork with only channel 1,6,11,36,40,44 being used.}
+      }
+      \label{fig:topo_chan_1_6_11_36_40_44}
+    \end{figure}
+    
+    \subsection{Characteristics}
+    Due to the exceptional utilization of the 2.4 Ghz band in the area around the test arrangement, we had to carefully chose time and day
+    for running the tests. We noticed a significant drop in radio usage for weekends and evenings and were able to schedule our tests in those timeframes.
+    We additionally ran the testcases with two different settings to simulate the hidden station problem. Therefore we first set the radios to full power 
+    resulting in a high connectivity between the nodes and on a second run decreased the transmit power as much as possbile to get a network with a smaller degree
+    of interconnectivity.
 \section{Results}
   \subsection{Expectations}
-    What results would we expect?\newline
+    We would expect a significant increase of data that has been able to transmit due to the usage of multiple collision domains the same one could
+    expect by comparing a network hub, which as essentially just one collision domain and a network switch which has multiple domains and does not have
+    to wait until the medium is free for sending again.
   \subsection{Actual Results}
     \begin{description}
      \item [Do the actual results diverge from the expected ones?]
