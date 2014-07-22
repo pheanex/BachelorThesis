@@ -59,7 +59,7 @@ and compared its capacities.
     We simulated the traffic generating systems with OpenVZ //Cite OpenVZ on one Host with a VLAN for each system. The VLAN infrstructure is completely transparent
     to the VZ containers and the accesspoints since the monitoring stations encapsulates all frames before sending if over the VLAN Trunk to the switch, which again 
     decapsulates the frames before sending them to the accesspoints.
-    To generate the traffic we used IPerf \cite{tirumala2005iperf} on the attached systems in UDP mode with a datarate of 1Mbit per second for a total of 10 Minutes.
+    To generate the traffic we used IPerf \cite{iperf} on the attached systems in UDP mode with a datarate of 1Mbit per second for a total of 10 Minutes.
     Since we could not directly send UDP frames to broadcast addresses with iperf, we ran multiple instances of iperf with different target ip addresses.
     Although 1Mbit for each stream may not seem much, but after multiplying it with the number of targets and the up- and downstreams the effective rate results in
     1Mbit * 12 * 2 = 24Mbit/s for each accesspoint. As we will see later on this will turn out to be enough to completely saturate the wireless network but still within
