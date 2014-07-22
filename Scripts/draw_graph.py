@@ -40,7 +40,7 @@ def write_graph(title, ylabel, data1, data2, filename):
     boxplot(boxplotlist)
     plt.title(title)
     plt.ylabel(ylabel)
-    plt.xlabel("Used Channels")
+    plt.xlabel("Used Channels/Band")
     savefig(filename + "_boxplot.svg", bbox_inches='tight')
     clf()
 
@@ -168,7 +168,7 @@ for reportfile in ["rx_errors", "tx_errors", "retries", "rx_packets", "tx_packet
     boxplot(boxplot_data_list)
     plt.title(title)
     plt.ylabel(ylabel)
-    plt.xlabel("Used Channels")
+    plt.xlabel("Used Channels/Band")
     savefig(reportfile + "_boxplot.svg", bbox_inches='tight')
     clf()
 
