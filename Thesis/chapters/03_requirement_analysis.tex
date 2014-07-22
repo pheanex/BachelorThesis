@@ -7,6 +7,7 @@
   it also leads to greater downtimes if a link happens to fail. Although the APs automatically rejoin the network if possible, it takes
   a considerable amount of time until they are fully reconnected. This is somehow undesirable for the Systems that use this AP as an uplink connection to
   the network. The following requirements for an improved Version of AutoWDS are supposed to tackle those shortcomings.
+  TODO: Für die einzelnen Anforderungen erklären, was wäre wenn wir diese nicht umsetzten würden.
   \begin{figure}[t]
     \centering
     \includegraphics[width=0.3\columnwidth]{figures/autowds_basic_graph}
@@ -25,13 +26,13 @@ General answer to question of feasibility
   As this may be just an inconvenience to users of devices like cellphones or laptops who are running uncritical programs, 
   staying connected in an industrial environment gains in importance. Hence AutoWDS extended shall provide the possibility to create 
   redundant connections in the network topology. The failing scenario is defined as one link breaks while others still being usable.
-\section{Utilize variable Number of Radios}
+\section{Utilize Variable Number of Radios}
   AutoWDS extended will operate with currently up to about 100 accesspoints with a variable amount of radio-modules per accesspoint.
   Current versions of accesspoints are equipped with one up to three radios each. It is supposed to work in heterogenous environment with 
   different numbers of radio-modules per accesspoint. As a consequence the available radio modules 
   have to be utilized as much as possible to achieve gains in overall throughput.
   Switching channels in short intervals to serve more than one channel is explicitly not desired.
-  \section{Capability of using variable channels}
+  \section{Capability of Using Variable Channels}
   AutoWDS extended will be used in variable environments and hence may face several restrictions with respect to the channels that are able to be used.
   Thus AutoWDS extended must accept a list of channels only of which it may chose from for channel assignment.
   \section{Restrictions}

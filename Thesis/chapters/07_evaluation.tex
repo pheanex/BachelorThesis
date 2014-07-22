@@ -6,7 +6,7 @@ The following subsections will mainly focus on the comparison between AutoWDS ba
 of some metrics like the survival path feature since the current implementation of AutoWDS only uses network bridges to connect the networks and no real routing infrastructure.
 Due to this restriction only we are limited to spanning trees for the network since otherwise the STP would force shutdown the redundant links to eliminate
 circles in the topology.
-\section{Test arrangement}
+\section{Test Arrangement}
 Since the main goal is to increase overall throughput performance as described in the requirements analysis, our basic evaluation approach is
 to find by how much we were able to increase this metric. Therefore we ran both systems under equal circumstances with various settings and multiple runs
 and compared its capacities.
@@ -146,10 +146,10 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
   \subsection{Comply with Economic Restrictions}
     Runtime for Small scenarios (about 13 APs with about 500 Possible connections) on a modern system (fill in description of system) small -> <1 Second
     Estimate for bigger scenario missing (How do i correctly estimate that?)
-\section{Reflection on related Work}
+\section{Reflection on Related Work}
   Comparison to related Work algorithms\newline
-  \subsection{Features of other Systems}
-  \subsection{Features of our System}
+  \subsection{Features of Related Work Systems}
+  \subsection{Features of Our System}
 \section{Discussion}
   \begin{description}
    \item [Checking the coloring and channel assignment after the algo run]

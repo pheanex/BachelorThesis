@@ -41,11 +41,11 @@ And refer to further papers for more extensive descriptions.
       \end{description}
       \subsection{VLAN}
       \subsection{Spanning Tree + STP}
-\section{Graph theoretic basics}
+\section{Graph-theoretic Basics}
   %https://de.wikipedia.org/wiki/Graph_%28Graphentheorie%29
   TODO: Describe directed/undirected weighted graph
   What does connected graph mean; path
-   \subsection{Mapping of real world data}
+   \subsection{Mapping Data to Graph}
     For our solution we will use the following mapping from devices and modules to a undirected, weighted graph. (Formale beschreibung hilfreich?)
     Each accesspoint and each module of those accesspoints is represented by a node.
     For each accesspoint we add edges with the highest weight to each module of its corresponding accesspoint. 
@@ -67,7 +67,7 @@ And refer to further papers for more extensive descriptions.
       \label{fig:apgraph}
     \end{figure}
    \subsection{Relevance of COLORING}
-   \subsection{Dijkstras algorithm}
+   \subsection{Dijkstra's Algorithm}
    TODO: How is our Channel assignment related to the problem COLORING?
     It is realated in the way that we want to assign each Module-Module-Connection a channel/color from a pool of available colors, withouth (if possible) use the same channel/color on neighboring links (meaning Aps that see each other and their traffic could lead to decreased throughput due to interference)
     Why is it not just coloring?
