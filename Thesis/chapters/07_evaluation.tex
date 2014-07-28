@@ -132,7 +132,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \centerline{
 	\includegraphics[width=0.62\textwidth]{figures/TestDataDiagramme/20/rx_bytes}%
 	\includegraphics[width=0.38\textwidth]{figures/TestDataDiagramme/20/rx_bytes_boxplot}%
-	\caption{Received bytes wit decreased antenna transmit power}
+	\caption{Received bytes with decreased antenna transmit power}
       }
       \label{fig:rx20_bytes}
     \end{figure}
@@ -167,16 +167,6 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     
     The results perfectly match our expectations. They also confirm that the 5Ghz band is superior to the 2.4Ghz with respect to throughput and reliability.
     We used the following channel sets for the actual implementation:
-      
-    \begin{tabular}{|r|l|}[h]
-      Channel Set & Channels utilized \\
-      \hline
-      1 in 2.4Ghz & 11 \\
-      1 in 5Ghz & 36 \\
-      3 in 2.4Ghz & 1,6,11 \\
-      3 in 5Ghz & 36,40,44 \\
-      6 in 2.4/5Ghz & 1,6,11,36,40,44 \\
-    \end{tabular}
       
     \subsubsection{Assessment of AutoWDS basic}
       Using only a single channel for each wireless link does not scale very well in either of the two power setups, independant of the band used (2.4Gz or 5Ghz).
@@ -243,14 +233,34 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \label{fig:moduletospare}
     \end{figure}
   \subsection{Solution Works Within the Perimeter}
-    Absolutely, since we can compute CAA on central entity and works best for static scenarios \newline
+    The requirement dictates that computing a solution should be possible on a centralized entity (Servers/WLC).
+    Our algorithm was implemented as a python script and can be run on a single system if given the right input data.
+    Also the second requirement is fullfilled, since our algorithm is specially designed for a static environment where link quality and linkstate stay the same
+    for a foreseeable time. If major changes in network connectivity or link quality occur the chosen network topology and channel assignment
+    may lead to suboptimal results, therefore also a recomputation of the network topology has to be triggered.
+    Currently there are no automatic triggers implemented, but planned in the future.
   \subsection{Comply with Economic Restrictions}
-    Runtime for Small scenarios (about 13 APs with about 500 Possible connections) on a modern system (fill in description of system) small -> <1 Second
-    Estimate for bigger scenario missing (How do i correctly estimate that?)
+    The Runtime of the algorithms is mainly dependent on the number of connections between the nodes. Calculating the initial spanning tree is done in BFS mode and 
+    therefore has quadratic runtime for the worst cast, depending on how sparse the graph is. The following calculation of the survival paths has also quadratic runtime 
+    since we iterate over all connections and for each connection in the worst case over all other connections to find the backup path. The channel assignment is then again
+    In a common deployment scenario the underlying network graph will be very sparsly connected since the number of accesspoints used and placement are carefully selected.
+    Mostly they are placed in a way that they span a network over an area as far as possible.
+    Current deployments and deployments in near future won't exceed 100 accesspoints. Even if fully meshed with a total of \(\sum \limits_{i=1}^{100} i = \frac{100(100+1)}{2}=5050\)
+    edges it won't pose a problem to the capabilities of a WLC or an administrators machine.
+    \subsection{Utilize Variable Number of Radios}
+      TODO
 \section{Reflection on Related Work}
-  Comparison to related Work algorithms\newline
+  Comparing our solution to those of others would need some common ground. For example hardware requirements, number of modules and in general heterogenity/homgenity of
+  the network are factor that could play in favor of some algorithms and therefore won't lead to fair results. Additionally different solutions were designed to 
+  achieve different goals like throughput, latency or weighted throughput networks. Certainly there we could agree on this common deployment and compare each solution for random
+  networks with respect to throughput, but this would require a full-scale simulation as hardware-resources are limited and too easily prone to real world difficulties.
+  Although maybe a key aspect of this work, we did not have enough time to simulate even our own solution and therefore neither those of others. Nevertheless we would appreciate
+  if someone further work on this field. In order to at least provide some kind of comparison we take a look at the features of each solution.
   \subsection{Features of Related Work Systems}
+    TODO:
   \subsection{Features of Our System}
+    TODO:
+    
 \section{Discussion}
   \begin{description}
    \item [Checking the coloring and channel assignment after the algo run]
