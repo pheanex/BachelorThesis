@@ -78,7 +78,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
      every 7 seconds for their state, which includes the bytes transferred and received so far. We did not query them more often since this could have 
      affected the accesspoints transfer performance as reading its internal tables and sending the results back means additional stress.
   \subsection{Channelusage}
-    For AutoWDS basic we configured the Accesspoints to only use the following Channelsets:
+    For AutoWDS basic we configured the Accesspoints to only use the following sets of Channels:
     \begin{itemize}
      \item 1 (2.4 GHz only)
      \item 36 (5GHz only)
@@ -93,7 +93,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     \begin{figure}[h]
       \centerline{
 	\includegraphics[width=0.7\textwidth]{figures/topo_chan_1}%
-	\caption{Topology of the testnetwork with only channel 1 being used. Different colors indicate different channels}
+	\caption{Topology of the testnetwork with only channel 1 used. Different colors indicate different channels}
       }
       \label{fig:topo_chan_1}
     \end{figure}
@@ -123,25 +123,126 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 \section{Results}
   \subsection{Expectations}
     We would expect a significant increase of data that has been able to transmit due to the usage of multiple collision domains the same one could
-    expect by comparing a network hub, which as essentially just one collision domain and a network switch which has multiple domains and does not have
-    to wait until the medium is free for sending again.
+    expect by comparing a network hub, which has essentially just one collision domain and a network switch which has multiple domains and does not have
+    to wait until the medium is free for sending again. The second source for an increased throughput would be the number of packets that could be received
+    without errors due to interference.
   \subsection{Actual Results}
-    \begin{description}
-     \item [Do the actual results diverge from the expected ones?]
-     \item[Assessment of the base scenario]
-      Base Scanario (uses only 1 Channel for all connections) pretty much broken by design -> Medium totally overloaded -> does not even scale to 3 APs in close proximity \newline
-     \item[By how much is the solution better then before?]
-      Despite being actually usable again, Traffic throughput is ~7-10 Times higher
-    \end{description}
-\section{Reflection on the requirements}
+    
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.62\textwidth]{figures/TestDataDiagramme/20/rx_bytes}%
+	\includegraphics[width=0.38\textwidth]{figures/TestDataDiagramme/20/rx_bytes_boxplot}%
+	\caption{Received bytes wit decreased antenna transmit power}
+      }
+      \label{fig:rx20_bytes}
+    \end{figure}
+    
+    
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.62\textwidth]{figures/TestDataDiagramme/3/rx_bytes}%
+	\includegraphics[width=0.38\textwidth]{figures/TestDataDiagramme/3/rx_bytes_boxplot}%
+	\caption{Received bytes with full transmit power}
+      }
+      \label{fig:rx3_bytes}
+    \end{figure}
+    
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.56\textwidth]{figures/TestDataDiagramme/3/recpackerr}%
+	\includegraphics[width=0.44\textwidth]{figures/TestDataDiagramme/3/recpackerr_boxplot}%
+	\caption{Ratio of successfully received packets to packets containing errors for reduced transmit power scenario}
+      }
+      \label{fig:3recpackerr}
+    \end{figure}
+    
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.56\textwidth]{figures/TestDataDiagramme/20/recpackerr}%
+	\includegraphics[width=0.44\textwidth]{figures/TestDataDiagramme/20/recpackerr_boxplot}%
+	\caption{Ratio of successfully received packets to packets containing errors for full transmit power scenario}
+      }
+      \label{fig:20recpackerr}
+    \end{figure}
+    
+    The results perfectly match our expectations. They also confirm that the 5Ghz band is superior to the 2.4Ghz with respect to throughput and reliability.
+    We used the following channel sets for the actual implementation:
+      
+    \begin{tabular}{|r|l|}[h]
+      Channel Set & Channels utilized \\
+      \hline
+      1 in 2.4Ghz & 11 \\
+      1 in 5Ghz & 36 \\
+      3 in 2.4Ghz & 1,6,11 \\
+      3 in 5Ghz & 36,40,44 \\
+      6 in 2.4/5Ghz & 1,6,11,36,40,44 \\
+    \end{tabular}
+      
+    \subsubsection{Assessment of AutoWDS basic}
+      Using only a single channel for each wireless link does not scale very well in either of the two power setups, independant of the band used (2.4Gz or 5Ghz).
+      Although the 5Ghz channels perform a little better in the high power setup, there seems no recognizable difference for the low power scenario.
+      TODO: Explain why 5Ghz better in this scenario.
+      Also with an increased transmit-power the number of packets which contain errors increases dramatically from an average of 10 percent to an average of 
+      65 percent. TODO: How to explain this?
+      Surprisingly the error rates for the 5Ghz channels already start high but seem to increase less than the 2.4Ghz channels.
+      The results also affirm our estimate that the current version is not capable of transferring a little more than the control data.
+      While setting up our test environment we also noticed that this effect of medium overload is no result of the size of our network.
+      Whereas two unimpeded accesspoints were able to achieve a throughput of about 2Mbit in each direction, adding a third one would dramatically 
+      decrease overall throughput down to about 100kbit or less, growing worse with each newly added accesspoint in receive-range. Even spreading the 
+      accesspoints further apart would not promise better results since the inhering problem of using the same channel for the forwarding and receiving 
+      link restricts the forwarding capabilities rigorously.
+    \subsubsection{Assessment of AutoWDS extended}
+      As the figures show, the outcome is dependent on the number of channels used as a setup with only 3 distinct channels allowed yields still better
+      results than a mono-channel-setup but is inferior to a setup where we can use more channels as this gives us the possibility to use more collision domains
+      which results in a higher available bandwidth and therefore increased throughput. In our example we used accesspoints with only two radios equipped, which
+      limits us in selecting separate modules for different connections so that an accesspoint which already established two connections over its two modules
+      would have to share one of its modules in order to apply a new link to a foreign accesspoint in order to maintain connectivity.
+      \begin{figure}[h]
+	\centerline{
+	  \includegraphics[width=0.56\textwidth]{figures/3modulesvs2}%
+	  \caption{Link separation capability for an accesspoint with 3 modules compared to an accesspoints with 2 modules.}
+	}
+	\label{fig:3modulesvs2}
+      \end{figure}
+      Compared to the base scenario our link selection and channel assignment algorithm was able to double the throughput with every channel added. Of course this
+      effect is limited by using a separate channel for each link and also by the number of modules for an accesspoint 
+      since the former effectively assigns each link its own private channel and the latter is a question of practical relevance as current accesspoints are only 
+      shipped with 2 or a maximum of 3 radio modules. As our gathered data indicate it is obviously an improvement to utilize multiple channels and modules
+      compared to the basic AutoWDS, but in how far our solution comes in range of a theoretical optimal solution for a given scenario is still a question to be
+      answered.
+\section{Reflection on the Requirements}
   How far does the solution meet the requirements?\newline
   \subsection{Increased Throughput}
-    Definitely, see Diagrams \newline
-  \subsection{Reduced Connectivity failures}
-    Not tested, since test equippment lacks support for multi-flow/routing support (only bridged connections between APs) \newline
-  \subsection{Multiple Radios utilized}
-    Surely, with excess radios being usable for client connections \newline
-  \subsection{Solution works within the perimeter}
+    Our measurement results indicate that throughput could significantly be increased. How much is determined by the input parameters of the algorithms like
+    channels that can be utilized and hardware environments like the number of radio modules available at the accesspoints. 
+  \subsection{Reduced Connectivity Failures}
+    The survival path property takes care of this requirement. That is for the given error-scenario of one failing connection at a time, there is always
+    a backup connection over a different link available as far as the underlying topology permits. As we were not able to test this feature 
+    with the given implementation we are nevertheless confident that also this requirement has been met.
+    If multi-flow / routing support will be implemented for our hardware in the future a decrease in node separation should be recognizable.
+  \subsection{Multiple Radios Utilized}
+    Our algorithm utilizes the radio-modules as far as they are relevant for creating links between accesspoints with a high estimated throughput.
+    Depending on the given infrastructure not all radio modules are necessarily used, since not all of them are needed in order to create a connected network topology.
+    Moreover using all available links would not be beneficial as the hop distance would decrease but the effective throughput would also decrease by a factor 
+    more than the number of participants in that channel.       
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.56\textwidth]{figures/lessismore}%
+	\caption{Due to the channel separation and exclusive access to one channel the left scenario is more favourable than the right, since throughput empirically
+	exponentially decreases and is far below the 33 percent which those links would have to yield in order to at least provide the same throughput}
+      }
+      \label{fig:lessismore}
+    \end{figure}
+    In addition having some radio modules to spare gives us the opportunity to use those for client connections and assigning them a channel which does not interfere with the
+    wireless backbone.
+    \begin{figure}[h]
+      \centerline{
+	\includegraphics[width=0.56\textwidth]{figures/moduletospare}%
+	\caption{Unused Modules used for separate client connections without interfering wlan backbone}
+      }
+      \label{fig:moduletospare}
+    \end{figure}
+  \subsection{Solution Works Within the Perimeter}
     Absolutely, since we can compute CAA on central entity and works best for static scenarios \newline
   \subsection{Comply with Economic Restrictions}
     Runtime for Small scenarios (about 13 APs with about 500 Possible connections) on a modern system (fill in description of system) small -> <1 Second
