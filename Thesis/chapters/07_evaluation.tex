@@ -247,8 +247,9 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     Mostly they are placed in a way that they span a network over an area as far as possible.
     Current deployments and deployments in near future won't exceed 100 accesspoints. Even if fully meshed with a total of \(\sum \limits_{i=1}^{100} i = \frac{100(100+1)}{2}=5050\)
     edges it won't pose a problem to the capabilities of a WLC or an administrators machine.
-    \subsection{Utilize Variable Number of Radios}
-      TODO
+  \subsection{Utilize Variable Number of Radios}
+    As requested our algorithm selects channels from a given input set of channels. Only those channels are then used to determine the channel assignment.
+    It is even possible to specify only one channel, resulting in a topology optimized network graph only.
 \section{Reflection on Related Work}
   Comparing our solution to those of others would need some common ground. For example hardware requirements, number of modules and in general heterogenity/homgenity of
   the network are factor that could play in favor of some algorithms and therefore won't lead to fair results. Additionally different solutions were designed to 
