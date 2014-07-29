@@ -13,10 +13,8 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   In order to select those edges we want to use for creating connections between the APs, we use a derivation of the dijkstra algorithm. (cite dijkstra)
   We start by selecting an arbitray initial node and marking it as visited. All edges from this set of visited nodes to unvisited nodes are called productive edges.
   We keep those productive edges in a list sorted by their scores. The score of an edge is determined by the following formula:
-  $$Edgescore=\frac{\alpha}{(\beta + 1 )* \gamma}$$
-  where $$\alpha = \text{Expected Bandwidth}\newline$$
-  $$\beta = \text{Number of interfering modules}\newline$$
-  $$\gamma = \text{Connected count}\newline$$
+  $$ES=\frac{bw}{(im + 1 )* cc}$$
+  where \textit{ES} is the Score of this Edge, \textit{bw} is the expected bandwidth, \textit{im} is the number of interfering modules and \textit{cc} is the connected count of the corresponding nodes.
   \begin{description}
     \item[Expected Bandwidth]
     describes the expected available bandwidth we assume to get for this link depending on the Signal-to-Noise-Ratio.
@@ -28,7 +26,7 @@ Subsequently a channel assignment is computed for this specific topology. As inp
     A higher connected count diminishes the importance of this edge, since this value controls how many channels we can use later for the overall graph.
     If this value would not be taken into consideration for calculating the score, the algorithm would rather create long chains of connected modules. 
     Those links in this chain would admittedly have the best SNR values, but since they have to share the same channel, it would result in lowering the overall throughput.
-    Granting this value a higher impact in the formula, like for example in $$Edgescore=\frac{\alpha}{(\beta + 1 )* \gamma^2}$$, would have the effect of overemphasizing 
+    Granting this value a higher impact in the formula, like for example in  $$ES=\frac{bw}{(im + 1 )* cc^2}$$, would have the effect of overemphasizing 
     the channel distribution and lead to poor choices in links with respect to SNR - lowering overall throughput again.
     This simple, linear impact in the formula has been shown to achieve the best tradeoff between those two extremes.
     \item[Interfering Modules]
