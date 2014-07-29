@@ -56,7 +56,7 @@ and compared its capacities.
       }
       \label{fig:testsetup_openvz}
     \end{figure}
-    We simulated the traffic generating systems with OpenVZ //Cite OpenVZ on one Host with a VLAN for each system. The VLAN infrstructure is completely transparent
+    We simulated the traffic generating systems with OpenVZ \cite{openvz} on one Host with a VLAN for each system. The VLAN infrstructure is completely transparent
     to the VZ containers and the accesspoints since the monitoring stations encapsulates all frames before sending if over the VLAN Trunk to the switch, which again 
     decapsulates the frames before sending them to the accesspoints.
     To generate the traffic we used IPerf \cite{iperf} on the attached systems in UDP mode with a datarate of 1Mbit per second for a total of 10 Minutes.
