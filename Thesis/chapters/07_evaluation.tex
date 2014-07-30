@@ -168,7 +168,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     We used the following channel sets for the actual implementation:
       
     \subsubsection{Assessment of AutoWDS basic}
-      Using only a single channel for each wireless link does not scale very well in either of the two power setups, independant of the band used (2.4Gz or 5Ghz).
+      Using only a single channel for each wireless link does not scale very well in either of the two power setups, independent of the band used (2.4Gz or 5Ghz).
       Although the 5Ghz channels perform a little better in the high power setup, there seems no recognizable difference for the low power scenario.
       TODO: Explain why 5Ghz better in this scenario.
       Also with an increased transmit-power the number of packets which contain errors increases dramatically from an average of 10 percent to an average of 
@@ -260,15 +260,3 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     TODO:
   \subsection{Features of Our System}
     TODO:
-    
-\section{Discussion}
-  \begin{description}
-   \item [Checking the coloring and channel assignment after the algo run]
-   this might not be the best place for this point, but serves just as a reminder.
-   \item [What do the results mean?]
-   Obviously it is useful to use mutliple channels for WDS system
-   \item[What could'nt we measure?]
-   What measurements are still missing:  run testcases for each parameter like formula,...
-   Evaluate the redundant paths feature.
-   Simulate the system with more accesspoints and various parameteres
-  \end{description}

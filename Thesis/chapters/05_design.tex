@@ -68,6 +68,9 @@ Subsequently a channel assignment is computed for this specific topology. As inp
     Finding a survival path for node A and B. Eventually all connections have a survival path.}
     \label{fig:survival_algo}
   \end{figure}
+  The survival path atribute for a graph can be expressed ind the following way:
+  For each edge (a,b) of the calculated spanning tree graph G', find a path from a to b without traversing (a,b), 
+  in a way that the the sum of the Edgescores of the path is maximal.
 
 \section{Channel Assignment Algorithm}
   For a given network topology graph and a set of channel to chose from, we can now assign channels to the module-nodes. Therefore we iterate over all 
