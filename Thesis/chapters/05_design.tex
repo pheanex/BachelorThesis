@@ -13,7 +13,7 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   In order to select those edges we want to use for creating connections between the APs, we use a derivation of the dijkstra algorithm. (cite dijkstra)
   We start by selecting an arbitray initial node and marking it as visited. All edges from this set of visited nodes to unvisited nodes are called productive edges.
   We keep those productive edges in a list sorted by their scores. The score of an edge is determined by the following formula:
-  \begin{equation}
+  \begin{equation} \label{eq:edgescore}
     ES=\frac{b}{(i + 1 )* c}
   \end{equation}
   where \textit{ES} is the Score of this Edge, \textit{b} is the expected bandwidth, \textit{i} is the number of interfering modules and \textit{c} is the connected count of the corresponding nodes.

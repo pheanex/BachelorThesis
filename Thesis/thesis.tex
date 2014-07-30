@@ -18,7 +18,7 @@
 
 \usepackage[hang,center,nooneline]{caption}
 \captionsetup[figure]{font={small,sf}}
-\captionsetup[table]{font={small,sf}}
+%\captionsetup[table]{font={small,sf}}
 \captionsetup[listing]{font={small,sf}}
 \usepackage{etoolbox}
 
@@ -192,7 +192,7 @@
 \phantomsection % phantomsection wird benötigt, damit z.B. hyperref die richtige Seite verlinkt.
 \addcontentsline{toc}{chapter}{Bibliography}
 \nocite{*} %Auch nicht-zitierte BibTeX-Einträge werden angezeigt.
-\bibliography{literature/literature}%Eine Datei 'literatur.bib' wird hierfür benötigt.
+\bibliography{literature/literature.bib}%Eine Datei 'literatur.bib' wird hierfür benötigt.
 \bibliographystyle{styles/acmurl}%Art der Ausgabe: plain / apalike / amsalpha / ...
 }
 
