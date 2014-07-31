@@ -51,46 +51,73 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   Finally we have to update the scores for each affected link and continue with the next round until all nodes are marked visited.
   The outcome is a minimal spanning tree for this graph with a custom evaluation function.
   \subsection{Survival Path}
-  Since a spanning tree is very susceptible to graph partition by just removing or failing one link we have to add redundant connections.
-  Those redundant connections have to be carefully chosen in order not to negatively impact the successive channel assignment and neither to push interference.
-  We accomplish this by iterating over all the edges of the spanning tree and simulate each connection failing. We then check if there is still exists 
-  a path from Node A to Node B of this failing connection. Only if there is no path to the other node, we separate the nodes into two groups:
-  The nodes we can reach from node A become group A and those nodes we can reach from node B become group B.
-  Notice, that we do not have to separate the nodes into device and modules for the process of reconnection.
+  A spanning tree is very susceptible to graph partition by just removing or failing one link so we have to add redundancies in form of supplementary connections.
+  However those redundant connections have to be carefully chosen in order not to negatively impact the successive channel assignment and neither to push interference.
+  We accomplish this by iterating over all the edges of the spanning tree and simulate each connection failing. We then check if there still exists 
+  a path from Node A to Node B of this failing connection. Only if this failing connection cuts the graph in half and there is no path to the other side,
+  we start looking for a backup route in the following fashion:
+  First we separate the the graph into two groups: Group A with all nodes and links reachable from Node A and Group B the same for Node B.
   We create a list with unused edges which connect the two groups and calculate the scores on them and pick again the edge with the highest score.
-  This edge is, considering to the formula, the best edge to reconnect the two parts shall be known as part of the survival path.
+  This edge is, considering to the formula, the best edge to reconnect the two parts is called the survival edge for this scenario.
   Nevertheless we have to be aware that it might not be feasible to reconnect those parts if the underlying structure does not permit it.
-  This results in a robust network topology, which yields a high overall throughput.
+  For example if the link between nodes \(E\) and \(F\) in \ref{fig:survival_algo} might be the only connection possible and failing it would cause network disruption.
+  This results in a robust network topology, which despite the added interfering links still yields a high overall throughput with redundant paths.
   \begin{figure}[h]
     \centering
-    \includegraphics[width=1\columnwidth]{figures/survival_algo}
+    \includegraphics[width=1\columnwidth]{figures/survival_algo2}
     \caption{Finding survival paths. Simulation of connection between node A and node B failing, creating two groups.
-    Finding a survival path for node A and B. Eventually all connections have a survival path.}
+    Finding a survival path for node A and B. Eventually all connections have a survival path. Here no redundant link possible for failing connection E,F.}
     \label{fig:survival_algo}
   \end{figure}
-  The survival path atribute for a graph can be expressed ind the following way:
+  The survival path attribute for a graph can be expressed ind the following way:
   For each edge (a,b) of the calculated spanning tree graph G', find a path from a to b without traversing (a,b), 
   in a way that the the sum of the Edgescores of the path is maximal.
 
 \section{Channel Assignment Algorithm}
-  For a given network topology graph and a set of channel to chose from, we can now assign channels to the module-nodes. Therefore we iterate over all 
-  edges and assign channels to the adjacent module-nodes if they do not already have one assigned. The channel for an edge, 
-  or its corresponding module-nodes is chosen by the following pattern:
-  Select all the modules which are connected by module-module edges. This set of nodes is called the channel-group. //explain the channel-list better//
-  For all neighbouring modules which are not part of this group, if those modules have channels assigned to them, 
-  increase the counter for this channel in the channel-list by one. At the beginning of the selection-process for a channel-group, the channel-list contains
-  all available channels and their corresponding counter is set to 0.
-  If all the modules have been processed, the channel-list shows us the local utilization of each channel which would lead to interference.
-  From this list we pick those channels which have been used the least. If two or more channels are tied even on occurences, we select those channels which have
-  been used the least in the overall graph. As a last resort if this still gives us more than one channel, we select one at random.
-  Note that we can beyond respecting our own channel allocations in the channel-list also take those modules with their channels into consideration, 
-  which are not part of our network - i.e. foreign radio modules. This allows us to even better adapt to the local environment and lets us for example
-  avoid using heavily utilized channels like 1,6 and 11 in the 2.4Ghz Band if possible.
-  The designated channel will then be assigend to all module nodes in the channel-group.
+  For a given network topology graph and a set of channel to chose from, we can now assign channels to the module-nodes or if you like the links
+  between those. Therefore we iterate over all module-module edges and assign channels to the adjacent module-nodes if they do not already have one assigned.
+  The channel for an edge is chosen by the following pattern for each channel-group:
+  Select all the modules which are connected by module-module edges. This set of nodes is called the channel-group.
+  For this channel group we create a list of channels and corresponding interference occurrences.
+  Among these we pick those channels from the set of all possible channels, which have been used the least in this channel-list. If there is a tie in usage
+  we can also respect foreign networks by taking the occurrences of foreign radio modules into account or as a last resort-tie-breaker select one at random.
+  Especially respecting foreign networks allows use to evade heavily used
+  bands and channels like for example 1 and 11 in the 2.4Ghz band which are used by devices out of our control.
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{figures/channel-list}
+    \caption{Assigning channels to the channel-set for nodes A,B,C. Since A,B and C are in the receive range of D,E,F,G,H,I they are possible sources
+    of interference if we use the same channel as those. Therefore we survey how often every channel interferes, where one module can also interfere multiple times.
+    For example does module F which already has channel 36 assigned interfere 4 times with the channel-set A,B,C ((A,F),(C,F),(C,D),(A,D)). If we only could choose from 
+    channel 1,11 and 36 we would then decide to use Channel 1 or 11 to assign to the channel-set depending on how often we overall used those already.
+    If however we want to take foreign networks into our consideration and lets say modules A and C would both detect two other \ac{WLAN} networks at channel 11 and two
+    at channel 1, then we would add another 4 for channel 11 and 1 in the channel-list, leading to Channel 36 as the best choice. Note modules G and H are ignored 
+    for the counting process since they do not have links or channels assigned.}
+    \label{fig:channel-list}
+  \end{figure}
+  
+  \begin{table}
+    \begin{tabular}{|c|c|}\hline
+      Channel & Interference Count\\ \hline
+      36 & 4 \\ \hline
+      11 & 1 \\ \hline
+      1 & 1 \\ \hline
+      \caption{Channel-list without foreign influence}
+    \end{tabular}
+    \begin{tabular}{|c|c|}\hline
+      Channel & Interference Count\\ \hline
+      36 & 4 \\ \hline
+      11 & 5 \\ \hline
+      1 & 5 \\ \hline
+      \caption{Channel-list with foreign influence}
+    \end{tabular}
+  \end{table}
+ 
   \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{figures/caa_algo}
-    \caption{Example channel assignment for a network with 8 Accesspoints with 2 and 3 modules equipped and available channels [1,11,36]. 
+    \caption{Bigger picture channel assignment showing the results after each assingment to the channel-groups. 
+    Example-assignment for a network with 8 Accesspoints with 2 and 3 modules equipped and available channels [1,11,36] without foreign influence. 
     The first four graphs represent the first 4 rounds. Red marked nodes represent a channel-group.}
     \label{fig:caa_algo}
   \end{figure}
