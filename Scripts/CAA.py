@@ -429,10 +429,11 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
         module_b_interface_name = "WLAN-" + str(module_b_interface_nr)
 
         # Form: AUTOWDS_PROFILE 0 AP1 IFC1 AP2 IFC2
-        #if not wlc_connection.runscript(['set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE 0 ' + module_a_device + ' ' + module_a + ' ' + module_b_device + ' ' + module_b]):
+        #if not wlc_connection.runscript(['set /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE 0 ' + module_a_device + ' ' + module_a + ' ' + module_b_device + ' '+module_b]):
         #    logger.error("Could not write a link to table")
         #    exit(1)
-        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * {5}'.format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name, continuation_time))
+        lcos_script.append('add /Setup/WLAN-Management/AP-Configuration/AutoWDS-Topology/AUTOWDS_PROFILE {0} {1} {2} {3} {4} "12345678" 1 * * * {5}'
+                           .format(prio_counter, module_a_device, module_a_interface_name, module_b_device, module_b_interface_name, continuation_time))
         prio_counter += 1
 
     # Assign channels to the modules
@@ -465,7 +466,8 @@ def write_graph_to_wlc(wlan_modules, address, username, password, pmst_graph_wit
             band = "2"
         corresponding_device_name = pmst_graph_with_channels_assigned.node[module_name]["module-of"]
 
-        lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} {4}'.format(corresponding_device_name, module_number_name, band, module_channel_list_name, channel))
+        lcos_script.append('set /Setup/WLAN-Management/AP-Configuration/Accesspoints/{0} {{{1}}} {2} {{{3}}} {4}'
+                           .format(corresponding_device_name, module_number_name, band, module_channel_list_name, channel))
 
     # Really write it now
     for line in lcos_script:
@@ -680,10 +682,10 @@ def calculate_mst(graphname, wlan_modules):
             mst.node[node][key] = graphname.node[node][key]
 
     # Devices are all those nodes which are not modules
-    devices = [node for node in graphname.nodes() if node not in wlan_modules]
+    not_wlan_modules = [node for node in graphname.nodes() if node not in wlan_modules]
 
     # Select random Device to start with
-    start_node = random.choice(list(devices))
+    start_node = random.choice(list(not_wlan_modules))
 
     # Add the edges originating from start node to edge_list
     visited_nodes.add(start_node)
@@ -779,9 +781,9 @@ def calculate_backup_links(mst, basic_con_graph, wlan_modules):
 
                 # Find edges connecting Group A and B
                 connecting_edges = list()
-                for edge in mst.edges():
-                    if edge[0] in group0 and edge[1] in group1 or edge[0] in group1 and edge[1] in group0:
-                        connecting_edges.add(edge)
+                for cedge in mst.edges():
+                    if cedge[0] in group0 and cedge[1] in group1 or cedge[0] in group1 and cedge[1] in group0:
+                        connecting_edges.append(cedge)
 
                 # Calculate scores for those survival edges
                 for con_edge in connecting_edges:
@@ -838,7 +840,7 @@ def get_connected_channels_for_edge(graphname, node_a, node_b, wlan_modules):
     return channel_group
 
 
-def count_local_interference(graphname, connectivity_graph, channel_group, wlan_modules):
+def count_local_interference(graphname, connectivity_graph, channel_group):
     """ Counts which channels interfere for a given channel-group
 
     Keyword arguments:
@@ -867,7 +869,7 @@ def count_local_interference(graphname, connectivity_graph, channel_group, wlan_
         for neighbor in neighbors:
 
             # Internal Interference
-            channel = graphname.node[module_a]["channel"]
+            channel = graphname.node[neighbor]["channel"]
             if channel:
                 internal_channel_counter[channel] += 1
 
@@ -900,7 +902,7 @@ def calculate_caa_for_graph(graphname, connectivity_graph, wlan_modules, overall
             channel_group = get_connected_channels_for_edge(graphname, edge[0], edge[1], wlan_modules)
 
             # For each module in channel group, count the channel usages
-            internal_interference, external_interference = count_local_interference(graphname, connectivity_graph, wlan_modules)
+            internal_interference, external_interference = count_local_interference(graphname, connectivity_graph, channel_group)
 
             election_counter = collections_enhanced.Counter()
             for channel in Assignable_Channels:
@@ -939,6 +941,8 @@ def calculate_caa_for_graph(graphname, connectivity_graph, wlan_modules, overall
 # Configuration
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
+
+
 if len(sys.argv) < 6:
     sys.exit("Usage: python CAA.py <wlc-address> <wlc-username> <wlc_password> <usable-channels> <continuation_time in min>")
 wlc_address = sys.argv[1]
