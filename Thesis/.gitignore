@@ -9,6 +9,8 @@
 /thesis.toc
 /chapters/*.aux
 /thesis.synctex.gz
+/thesis.fdb_latexmk
 /thesis.bbl
 /thesis.blg
+/thesis.fls
 /.build/
