@@ -1,6 +1,6 @@
 PRIMARIES:=thesis.pdf
 BUILDDIR:=.build
-EXTRADIRS:=chapters literature figures
+EXTRADIRS:=chapters literature figures styles logos
 
 ROOTTEXFILES:=$(wildcard *.tex)
 LIGHTTEXFILES:=$(patsubst %,$(BUILDDIR)/%,$(ROOTTEXFILES))
