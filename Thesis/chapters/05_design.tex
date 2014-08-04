@@ -69,9 +69,18 @@ Subsequently a channel assignment is computed for this specific topology. As inp
     Finding a survival path for node A and B. Eventually all connections have a survival path. Here no redundant link possible for failing connection E,F.}
     \label{fig:survival_algo}
   \end{figure}
-  The survival path attribute for a graph can be expressed ind the following way:
-  For each edge (a,b) of the calculated spanning tree graph G', find a path from a to b without traversing (a,b), 
-  in a way that the the sum of the Edgescores of the path is maximal.
+  The survival path attribute for a graph can be expressed in the following way:
+  \begin{quote}
+For each edge (a,b) of the calculated spanning tree graph G', find a path from a to b without traversing (a,b), 
+in a way that the the sum of the Edgescores of the path is maximal.
+  \end{quote}
+  Formal description:
+  $$\textit{G}=(\textit{V},\textit{E}) \quad
+    \forall \textit{edge}_\textit{a,b} \exists \textit{path}_\textit{a,b} | \textit{edge}_\textit{a,b} \notin \textit{path}_\textit{a,b} \quad
+    \textit{a,b} \in \textit{V}, \textit{edge}_\textit{a,b} \in \textit{E}$$
+    Finding the optimal edge:
+    $$\textit{max}(\textit{edgescore}(\textit{path}_\textit{a,b})) |
+    \textit{edgescore}(\textit{path}_\textit{a,b})) = \sum_{\substack{e \in \textit{path}_\textit{a,b}}} \textit{edgescore}(e)$$
 
 \section{Channel Assignment Algorithm}
   For a given network topology graph and a set of channel to chose from, we can now assign channels to the module-nodes or if you like the links
