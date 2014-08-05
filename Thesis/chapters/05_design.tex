@@ -23,6 +23,12 @@ Subsequently a channel assignment is computed for this specific topology. As inp
     For a given Signal-to-Noise-Ratio we can estimate the maximal possible thoughput.
     The bandwidth was chosen as the numerator, since it is effectively shared by those the radio modules within range.
     As we can see from the diagram, a higher SNR value results in more bandwidth available and works in favor of this edge.
+    \begin{figure}[h]
+      \centering
+      \includegraphics[width=0.5\columnwidth]{figures/snr_tp}
+      \caption{Expected throughput for different \ac{SNR}-values by \cite{expected_snr}}
+      \label{fig:snr_tp}
+    \end{figure}
     \item[Connected Count]
     Number of nodes we can reach from Module A and Module B by just using module-module edges. 
     A higher connected count diminishes the importance of this edge, since this value controls how many channels we can use later for the overall graph.
