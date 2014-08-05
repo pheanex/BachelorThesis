@@ -1,6 +1,6 @@
 \chapter{Implementation}
   The language of choice we used for the implementation is python2.7. Although we also could have implemented the extension in c/c++ since the basic version
-  was already written in this language, but python does have some key benefits we did not want to miss.
+  was already written in this language, python does have some key advantages we did not want to miss.
   \begin{description}
     \item [Rapid prototyping]
     Since our algorithms can easily work on a given set of data completely independent and the interfaces to get the data from are clearly defined and accessible,
@@ -29,14 +29,25 @@
 \section{Dependencies}
   As already mentioned we used NetworkX\cite{hagberg-2008-exploring} to model our graphs and work with its elements.
   NetworkX's rich features like ``has\_path'' made things especially easy in computing the survival paths.
-  Another library we used is collections. \cite{python_collections}
-  This library implements specialized container datatypes additionally to those shipped with python already.
+  Another library we used is python collections. \cite{python_collections}
+  This library implements specialized container datatypes additionally to those shipped with standard python.
   It's `Counter` structure is used to create the channel-lists and retrieve the most or least used elements.
   We extended this library for our convencience since it did only provide the functionality for getting the most common element from its list and not the least common,
   which we needed. \footnote{It is worth mentioning that the request for including this method was already issued at 01/2013 http://bugs.python.org/issue16994}
-  The only closed source library we used is the herein before mentioned library to query the WLC for the data of the APs. Nevertheless Gathering the data can also
-  easily be separated and outsourced.
+  The only closed source library we used is the herein before mentioned library to query the WLC for the data of the APs. Nevertheless gathering the data can also
+  easily be separated and outsourced to different interfaces.
 \section{Structure of the Code}
+  The code is split in three sections where the first and the fourth section are just auxiliary in order to communicate with the \ac{WLC}.
+  \subsection{Input Collection and Output Generation}
+  write back the solution to the WLC
+    As usual we let the initial part take care of the data the user provided like the 'seen'-graph and the allowed channels. To provide a nice interface we
+    facilitated the argparse library of python \cite{argparse}.
+  \subsection{Input Transformation} Transformation of data read in to NetworkX graphs
+    As we need the data in a format we can work with, we thereon transform it to a networkX graph. 
+    Therefore we create a weighted undirected networkX graph from the given directed weighted graph and take the 
+   \subsection{Work on the Graphs} Working on NetworkX Graphs to find the desired solution
+  
+
   Kann man den Code in gruppen einteilen, wenn ja in welche? Welche Funktionen gibt es? Was tun diese?
   \subsection{Selecting the Network Topology}
     \subsubsection{Minimal Spanning Tree}
