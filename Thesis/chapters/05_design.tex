@@ -10,7 +10,7 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   \end{figure}
 \section{Topology Creation}
   \subsection{Minimal/Optimal Spanning Tree Topology}
-  In order to select those edges we want to use for creating connections between the APs, we use a derivation of the dijkstra algorithm. (cite dijkstra)
+  In order to select those edges we want to use for creating connections between the APs, we use a derivation of the dijkstra algorithm.
   We start by selecting an arbitray initial node and marking it as visited. All edges from this set of visited nodes to unvisited nodes are called productive edges.
   We keep those productive edges in a list sorted by their scores. The score of an edge is determined by the following formula:
   \begin{equation} \label{eq:edgescore}
@@ -53,7 +53,8 @@ Subsequently a channel assignment is computed for this specific topology. As inp
     The value is incremented by one, because if this connection would be used, itself again acts as a source for interference.
     With an increasing count in interfering modues, the value of the link decreases and vice versa. This reflects perfectly the concept of a shared medium.
   \end{description}
-  For each round we determine from this list the edge with the highest score and mark the new node as visited and add also the new links to the list.
+  For each round we determine from this list the edge with the highest score. If we encounter a tie in scores, we chose those edges which have the highest SNR value and as a last
+  resort we pick one at random. We then mark the new node as visited and add also the new links to the list.
   Finally we have to update the scores for each affected link and continue with the next round until all nodes are marked visited.
   The outcome is a minimal spanning tree for this graph with a custom evaluation function.
   \subsection{Survival Path}

@@ -579,7 +579,7 @@ def calculate_caa_for_graph(graphname, basic_con_graph, allowed_channel_list):
         if is_fake_edge(graphname, edge[0], edge[1]):
             continue
 
-        # Skip this channel group if it is already has a channel assigned
+        # Skip this channel group if it already has a channel assigned
         if has_channel_assigned(graphname, edge[0], edge[1]):
             continue
 
