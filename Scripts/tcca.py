@@ -3,6 +3,7 @@ import random
 import copy
 import networkx as nx
 import collections_enhanced
+import json
 
 __author__ = 'kmanna'
 
@@ -10,13 +11,80 @@ edge_max_score = 1000  # The score for node-module connections, this has to be h
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
+
+def write_json(graph, filename="autowds-graph.json"):
+    """Writes the given graph to a json file in a format that can be read by AutoWDSstatus
+
+     Keyword arguments:
+        filename - String, name of the file where the json should be written to, defaultname is "autowds-graph.json"
+    """
+
+    wlan_modules = get_modules_of_graph(graph)
+    i = 0
+    nodes_dict_index = dict()
+    nodes_dict_name = dict()
+    nodetype = dict()
+    channel = dict()
+    for key in graph.nodes():
+        nodes_dict_index[i] = key
+        nodes_dict_name[key] = i
+        if key in wlan_modules:
+            nodetype[i] = "IFC"
+            if "channel" in graph.node[key]:
+                channel[i] = graph.node[key]["channel"]
+            else:
+                channel[i] = ""
+        else:
+            nodetype[i] = "AP"
+            channel[i] = ""
+        i += 1
+
+    connections = list()
+    for (A, B) in graph.edges():
+        if A in wlan_modules and B in wlan_modules:
+            if "channel" in graph.edge[A][B]:
+                connectiontype = "real"
+                state = "Active"
+            else:
+                connectiontype = "seen"
+                state = "possible"
+            snr = graph.edge[A][B]["snr"]
+        else:
+            connectiontype = "fake"
+            state = "Active"
+            snr = 200
+        connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, connectiontype, state))
+
+    json_dict = {"nodes": [{"index": index,
+                            "ip": "",
+                            "connectiontype": "WLAN-AutoWDS",
+                            "label": nodes_dict_index[index],
+                            "mac": "",
+                            "type": nodetype[index],
+                            "channel": channel[index]} for index in nodes_dict_index.keys()],
+                 "links": [{"sourcenoise": "",
+                            "sourcemac": "",
+                            "source": source,
+                            "sourceage": 0,
+                            "sourcestrength": snr,
+                            "targetage": 0,
+                            "targetnoise": "",
+                            "target": target,
+                            "targetstrength": snr,
+                            "targetmac": "",
+                            "connectiontype": connectiontype,
+                            "state": state} for source, target, snr, connectiontype, state in connections]}
+    with open(filename, 'w') as outfile:
+        json.dump(json_dict, outfile, indent=4)
+
+
 def module_is_used(mst_graphname, module):
     """Check if module is used
 
      Go through all neighbors, and if there is one neighbor, which is not reached over a real-connection, then this module is used
     """
     for neighbor in mst_graphname.neighbors(module):
-        if isRealEdge(mst_graphname, module, neighbor):
+        if is_real_edge(mst_graphname, module, neighbor):
             return True
     return False
 
@@ -145,7 +213,7 @@ def calculate_score_for_edge(curr_mst_graph, basic_con_graph, node_a, node_b, wl
     returns score as float
     """
 
-    if isFakeEdge(basic_con_graph, node_a, node_b):
+    if is_fake_edge(basic_con_graph, node_a, node_b):
         return edge_max_score
 
     node_a_connected_count = count_connected_module_edges_for_module(curr_mst_graph, node_a, wlan_modules)
@@ -239,7 +307,18 @@ def calculate_mst(graphname):
 
         # Find the best new edge and add it to the mst
         # Therefore just take the edge with the highest score
-        (bestedge_node_a, bestedge_node_b), highest_score = edge_list.most_common(1)[0]
+        # If there is a tie, select the edge with the best snr
+        bestedges = edge_list.most_common_all()
+        if len(bestedges) > 1:
+            snrscore = collections_enhanced.Counter()
+            for edge in bestedges:
+                snrscore[edge] = graphname.edge[edge[0]][edge[1]]["snr"]
+            bestedge = snrscore.most_common(1)[0]
+            bestedge_node_a = bestedge[0][0]
+            bestedge_node_b = bestedge[0][1]
+            highest_score = bestedge[1]
+        else:
+            (bestedge_node_a, bestedge_node_b), highest_score = edge_list.most_common(1)[0]
 
         # Mark node as visited
         visited_nodes.add(bestedge_node_b)
@@ -265,17 +344,20 @@ def calculate_mst(graphname):
     return mst
 
 
-def calculate_backup_links(mst, basic_con_graph, wlan_modules):
+def calculate_backup_links(mst_original, basic_con_graph):
     """ Finds the best backup links for a given mst graph
 
     Keyword arguments:
-    mst -- The NetworkX Maximal spanning tree we created in step 1
-    basic_con_graph -- the underlying connectivity graph
-    wlan_modules -- list of names of nodes of the basic_con_graph
+    mst -- undirected weighted NetworkX Maximal spanning tree we created in step 1
+    basic_con_graph -- undirected NetworkX graph - the underlying connectivity graph
     returns a 2-edge-connected MST NetworkX graph
     """
 
     logger.info("Calculating Backup links for Graph...")
+
+    wlan_modules = get_modules_of_graph(basic_con_graph)
+
+    mst = copy.deepcopy(mst_original)
 
     mst_edges = copy.copy(mst.edges())
     for edge in mst_edges:
@@ -288,12 +370,13 @@ def calculate_backup_links(mst, basic_con_graph, wlan_modules):
             # If we have still a path to edge[1], then we are done
             # else select second highest rated edge to get there
             if not nx.has_path(mst, edge[0], edge[1]):
+                logger.debug("Edge " + str(edge) + " has no backup, searching one")
                 edge_list = collections_enhanced.Counter()
 
                 connected_components = nx.connected_components(mst)
                 if len(connected_components) != 2:
                     logger.error("Could not split graph into two groups")
-                    exit(1)
+                    return 1
 
                 # Create Group A and B
                 if edge[0] in connected_components[0]:
@@ -305,20 +388,31 @@ def calculate_backup_links(mst, basic_con_graph, wlan_modules):
 
                 # Find edges connecting Group A and B
                 connecting_edges = list()
-                for cedge in mst.edges():
+                for cedge in basic_con_graph.edges():
                     if cedge[0] in group0 and cedge[1] in group1 or cedge[0] in group1 and cedge[1] in group0:
-                        connecting_edges.append(cedge)
+                        if not ((cedge[0] == edge[0] and cedge[1] == edge[1]) or (cedge[1] == edge[0] and cedge[0] == edge[1])):
+                            connecting_edges.append(cedge)
 
                 # Calculate scores for those survival edges
                 for con_edge in connecting_edges:
                     edge_list[(con_edge[0], con_edge[1])] = calculate_score_for_edge(mst, basic_con_graph, con_edge[0], con_edge[1], wlan_modules)
 
+                # If there is no connection that reconnects the two groups, then we can't do anything about it
+                if len(connecting_edges) == 0:
+                    logger.warning("Could not find backup for edge " + str(edge))
+                    continue
+
                 # Add edges with higest score that connects those two groups to the graph
                 (bestedge_node_a, bestedge_node_b), highest_score = edge_list.most_common(1)[0]
+
+                logger.debug("The backup for edge " + str(edge) + " is: ('" + str(bestedge_node_a) + "', '" + str(bestedge_node_b) + "')")
+
                 mst.add_edge(bestedge_node_a, bestedge_node_b)
                 mst.edge[bestedge_node_a][bestedge_node_b]["backup-link"] = True
                 for key in basic_con_graph.edge[bestedge_node_a][bestedge_node_b].keys():
                     mst.edge[bestedge_node_a][bestedge_node_b][key] = basic_con_graph.edge[bestedge_node_a][bestedge_node_b][key]
+            else:
+                logger.debug("Edge " + str(edge) + " already has backup, moving to next edge")
 
             # Add the removed edge again
             mst.add_edge(edge[0], edge[1])
@@ -343,28 +437,25 @@ def get_connected_channels_for_edge(graphname, node_a, node_b, wlan_modules):
     """
 
     channel_group = set()
-    modules_done = set()
-    modules_todo = set()
+    modules_todo = list()
     if node_a in wlan_modules:
-        modules_todo.add(node_a)
+        modules_todo.append(node_a)
     if node_b in wlan_modules:
-        modules_todo.add(node_b)
+        modules_todo.append(node_b)
 
     channel_group.add((node_a, node_b))
 
     for module in modules_todo:
         neighbors = graphname.neighbors(module)
         for neighbor in neighbors:
-            if neighbor in wlan_modules and neighbor not in modules_done:
-                modules_todo.add(neighbor)
+            if neighbor in wlan_modules and neighbor not in modules_todo:
+                modules_todo.append(neighbor)
                 channel_group.add((module, neighbor))
-
-        modules_done.add(module)
 
     return channel_group
 
 
-def count_local_interference(graphname, connectivity_graph, channel_group):
+def count_local_interference(graphname, connectivity_graph, channel_group, wlan_modules):
     """ Counts which channels interfere for a given channel-group
 
     Keyword arguments:
@@ -373,9 +464,9 @@ def count_local_interference(graphname, connectivity_graph, channel_group):
     channel_group -- A List of tuples which represent links in a channel-group
     wlan_modules -- List of nodenames of graphname which are modules, the rest (all nodes - modules) are device nodes
 
-    Requires the nodes of graphname to have attributes: "seen_channels"  which is a list of foreign wlans
-                                                        "channel" which is None if no channel is assigned to
-                                                        that node or the channel which has been assigned to that connection
+    Requires the module-nodes of graphname to have the following attributes:
+    "seen_channels"  which is a list of foreign wlans like [1,6,11,11,36]
+    "channel" which is None if no channel is assigned to that node or the channel which has been assigned to that connection
 
     Returns two collections_enhanced.Counter with the number of internal interference counts for each channel and external interference
     """
@@ -388,18 +479,30 @@ def count_local_interference(graphname, connectivity_graph, channel_group):
         modules.add(module_a)
         modules.add(module_b)
 
+    logger.debug("  Interferences for channel-group: " + str(channel_group))
+    logger.debug("      Modules are: " + str(modules))
+
     for module in modules:
+
         neighbors = connectivity_graph.neighbors(module)
+
         for neighbor in neighbors:
 
-            # Internal Interference
-            channel = graphname.node[neighbor]["channel"]
-            if channel:
-                internal_channel_counter[channel] += 1
+            logger.debug("      Neigh for module: " + str(module) + ": " + str(neighbor))
 
-        # External Interference
-        for external_channel in graphname.node[module]["seen_channels"]:
-            external_channel_counter[external_channel] += 1
+            if neighbor in wlan_modules:
+
+                # Internal Interference
+                channel = graphname.node[neighbor]["channel"]
+                if channel:
+                    internal_channel_counter[channel] += 1
+                    logger.debug("          For " + str(module) + " : " + str(neighbor) + " @Channel:" + str(channel))
+                else:
+                    logger.debug("          Ignoring neigh: " + str(neighbor) + "(no channel)")
+
+            # External Interference
+            for external_channel in graphname.node[module]["seen_channels"]:
+                external_channel_counter[external_channel] += 1
 
     return internal_channel_counter, external_channel_counter
 
@@ -411,69 +514,127 @@ def assign_channel_to_channel_group(channel, channel_group, graphname, overall_c
         graphname.node[node_b]["channel"] = channel
         graphname.edge[node_a][node_b]["channel"] = channel
 
-    # Increase overall channel counter
-    overall_channel_counter[channel] += 1
+        # Increase overall channel counter
+        overall_channel_counter[channel] += 1
 
 
-def isFakeEdge(graphname, nodeA, nodeB):
+def is_fake_edge(graphname, node_a, node_b):
     """ Returns True if one of the nodes A or B has its flag "isModule" set to False, which makes this connection a fake connection
     """
-    if graphname.node[nodeA]["isModule"] and graphname.node[nodeB]["isModule"]:
+    if graphname.node[node_a]["isModule"] and graphname.node[node_b]["isModule"]:
         return False
     else:
         return True
 
 
-def isRealEdge(graphname, nodeA, nodeB):
+def is_real_edge(graphname, node_a, node_b):
     """ Returns True if both nodes A and B have its flag "isModule" set to True, which makes this connection a real connection
     """
-    if isFakeEdge(graphname, nodeA, nodeB):
+    if is_fake_edge(graphname, node_a, node_b):
         return False
     else:
         return True
 
-def calculate_caa_for_graph(graphname, connectivity_graph, wlan_modules, overall_channel_counter):
-    """ Calculate a Channel Assignment for a given NetworkX graph"""
+
+def has_channel_assigned(graph, node_a, node_b):
+    """ Returns True if the given edge already has a channel assigned, False if not
+    """
+
+    if graph.edge[node_a][node_b]["channel"]:
+        return True
+    else:
+        return False
+
+
+def calculate_caa_for_graph(graphname, basic_con_graph, allowed_channel_list):
+    """ Assigns channel fro the allowed_channel_list to the edges of the graphname graph
+
+    Keyword arguments:
+    graphname -- undirected weighted NetworkX graph
+    basic_con_graph -- undirected NetworkX graph - the underlying connectivity graph
+    returns a colored/channel assigned networkx graph
+    """
+
     logger.info("Calculating channel assignment for graph...")
+
+    wlan_modules = get_modules_of_graph(basic_con_graph)
+
+    overall_channel_counter = collections_enhanced.Counter()
+    for channel in allowed_channel_list:
+        overall_channel_counter[channel] = 0
+
+    # Initialize the edge- and node-channels
+    for edge in graphname.edges():
+        if is_real_edge(graphname, edge[0], edge[1]):
+            graphname.edge[edge[0]][edge[1]]["channel"] = None
+    for node in graphname.nodes():
+        if node in wlan_modules:
+            graphname.node[node]["channel"] = None
+            graphname.node[node]["seen_channels"] = []
 
     # Iterate over all Edges
     for edge in graphname.edges():
-        if isRealEdge(graphname, edge[0], edge[1]):
-            # Get the channel group for this edge
-            channel_group = get_connected_channels_for_edge(graphname, edge[0], edge[1], wlan_modules)
 
-            # For each module in channel group, count the channel usages
-            internal_interference, external_interference = count_local_interference(graphname, connectivity_graph, channel_group)
+        # Only assign channel to real connections
+        if is_fake_edge(graphname, edge[0], edge[1]):
+            continue
 
-            election_counter = collections_enhanced.Counter()
-            for channel in overall_channel_counter:
-                election_counter[channel] = 0
+        # Skip this channel group if it is already has a channel assigned
+        if has_channel_assigned(graphname, edge[0], edge[1]):
+            continue
 
-            # Respect internal interference
-            for channel in internal_interference:
-                if channel in election_counter:
-                    election_counter[channel] += internal_interference[channel]
+        # Get the channel group for this edge
+        channel_group = get_connected_channels_for_edge(graphname, edge[0], edge[1], wlan_modules)
 
-            # Respect external interference
-            for channel in external_interference:
-                if channel in election_counter:
-                    election_counter[channel] += external_interference[channel]
+        logger.debug("Coloring Channel-Group: " + str(channel_group))
 
-            # Select the channel that has been used the least
-            best_channels = election_counter.least_common_all()
+        # For each module in channel group, count the channel usages
+        internal_interference, external_interference = count_local_interference(graphname, basic_con_graph, channel_group, wlan_modules)
+        logger.debug("  Internal-Interference: " + str(internal_interference))
+        logger.debug("  External-Interference: " + str(external_interference))
+
+        election_counter = collections_enhanced.Counter()
+        for channel in allowed_channel_list:
+            election_counter[channel] = 0
+
+        # Respect internal interference
+        for channel in internal_interference:
+            if channel in election_counter:
+                election_counter[channel] += internal_interference[channel]
+
+        # Respect external interference
+        for channel in external_interference:
+            if channel in election_counter:
+                election_counter[channel] += external_interference[channel]
+
+        logger.debug("  Election-Counter: " + str(election_counter))
+
+        # Select the channel that would cause the least local interference
+        best_channels = election_counter.least_common_all().keys()
+        if len(best_channels) == 1:
+            best_channel = best_channels[0]
+        else:
+
+            # Tie occurred, which channel has been overall used the least?
+            second_election = collections_enhanced.Counter()
+            for channel in best_channels:
+                second_election[channel] = overall_channel_counter[channel]
+
+            logger.debug("  Overall-Channel-Counter: " + str(overall_channel_counter))
+            logger.debug("  Second-Election-Counter because of tie: " + str(second_election))
+
+            best_channels = second_election.least_common_all().keys()
             if len(best_channels) == 1:
                 best_channel = best_channels[0]
             else:
-                second_election = collections_enhanced.Counter()
-                for channel in best_channels:
-                    second_election[channel] = overall_channel_counter[channel]
-                    best_channels = second_election.least_common_all()
-                    if len(best_channels) == 1:
-                        best_channel = best_channels[0]
-                    else:
-                        best_channel = random.choice(best_channels)
 
-            # Assign the best channel to the channel group
-            assign_channel_to_channel_group(best_channel, channel_group, graphname, overall_channel_counter)
+                logger.debug("  Random-Pick because of tie")
+
+                best_channel = random.choice(best_channels)
+
+        logger.debug("  Using channel " + str(best_channel) + " for channel-group")
+
+        # Assign the best channel to the channel group
+        assign_channel_to_channel_group(best_channel, channel_group, graphname, overall_channel_counter)
 
     return graphname

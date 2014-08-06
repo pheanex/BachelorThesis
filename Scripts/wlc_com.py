@@ -1,4 +1,3 @@
-import json
 import os
 import logging
 
@@ -143,43 +142,6 @@ def get_modules_of_graph(graphname):
     """
 
     return [node for (node, attributes) in graphname.nodes(data=True) if attributes["isModule"]]
-
-
-def write_json(graph, filename="graph.json"):
-    """Writes the given graph to a json file in a format that can be read by AutoWDSstatus
-
-     Keyword arguments:
-        filename - String, name of the file where the json should be written to, defaultname is "graph.json"
-    """
-
-    wlan_modules = get_modules_of_graph(graph)
-    i = 0
-    nodes_dict_index = dict()
-    nodes_dict_name = dict()
-    for key in graph.nodes():
-        nodes_dict_index[i] = key
-        nodes_dict_name[key] = i
-        i += 1
-
-    connections = list()
-    for (A, B) in graph.edges():
-        if A in wlan_modules and B in wlan_modules:
-            if "channel" in graph.edge[A][B]:
-                color = "green"
-            else:
-                color = "grey"
-            snr = graph.edge[A][B]["snr"]
-            dash = "5,5"
-        else:
-            dash = "0,0"
-            snr = 200
-            color = "black"
-        connections.append((nodes_dict_name[A], nodes_dict_name[B], snr, color, dash))
-
-    json_dict = {"nodes": [{"index": index, "ip": "", "connectiontype": "WLAN-AutoWDS", "label": nodes_dict_index[index], "mac": "", "type": ""} for index in nodes_dict_index.keys()],
-                 "links": [{"source": source, "target": target, "value": value, "color": color, "dash": dash} for source, target, value, color, dash in connections]}
-    with open(filename, 'w') as outfile:
-        json.dump(json_dict, outfile, indent=4)
 
 
 def translate_wlan_mac_to_interface_nr(module_wlan_mac):
