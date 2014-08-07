@@ -39,7 +39,7 @@
 \section{Structure of the Code}
   We split the code into two modules. The one handling connections, sending/receiving and transforming data to and from networkX graphs and the other one 
   deals with only with graphs and therefore the theoretical problem.
-  \subsection{Interfacing Outer World and Managing Data}
+  \subsubsection{Interfacing Outer World and Managing Data}
     The name of the module is \textit{wlc\_com}. This module's responsibilites include the following.
     \begin{description}
     \item[Receiving the necessary data]
@@ -155,17 +155,19 @@ ca_survival_graph = tcca.calculate_ca(survival_graph, graph, [1, 6, 11])
       which is our library for topology creation and channel assignment.}
     \end{table}
     
-    \subsection{Selecting the Network Topology}
-      \subsubsection{Minimal Spanning Tree}
-	In the first phase we create a spanning tree on the graph over the highest edge scores.
-	The "calculate\_st"-function requires a networkX graph as single parameter and returns a networkX spanning tree graph (Line 43/left figure in \ref{fig:3x3second}).
-      \subsubsection{Adding Redundand Paths}
-	If desired, the creation of the spanning tree is followed by adding redundant edges which act as backup links 
-	for failing edges (Line 45/right figure in \ref{fig:3x3second}). 
-	To get a networkX survival-graph, we run the "calculate\_survival\_links"-function,
-	and supply it the spanning tree graph from step one to make its topology redundant and also 
-	the initial topology graph to determine interference groups.
-    \subsection{Coloring the Edges/Modules}
+    \subsubsection{Selecting the Network Topology}
+      \begin{description}
+	\item [Optimal Spanning Tree]
+	  In the first phase we create a spanning tree on the graph over the highest edge scores.
+	  The "calculate\_st"-function requires a networkX graph as single parameter and returns a networkX spanning tree graph (Line 43/left figure in \ref{fig:3x3second}).
+	\item[Adding Redundand Paths]
+	  If desired, the creation of the spanning tree is followed by adding redundant edges which act as backup links 
+	  for failing edges (Line 45/right figure in \ref{fig:3x3second}). 
+	  To get a networkX survival-graph, we run the "calculate\_survival\_links"-function,
+	  and supply it the spanning tree graph from step one to make its topology redundant and also 
+	  the initial topology graph to determine interference groups.
+      \end{description}
+    \subsubsection{Coloring the Edges/Modules}
       Finally we can assign channels to either only the mst graph or the survival graph, (Lines 47/49 and \ref{fig:3x3third}).
       As parameters it takes the networkX graph we want to assign channels to, the basic connectivity graph to dertermine 
       interference groups again and the allowed channel list to select channels from. 
@@ -210,13 +212,12 @@ ca_survival_graph = tcca.calculate_ca(survival_graph, graph, [1, 6, 11])
   \end{figure}
   
 \section{Problems and Aids}
-\begin{itemize}
-
- \item While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
+  \subsection{Representation of Tables in Lancom Devices}
+    While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
     they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
     nice tables like \ref{tab:wlc} we can work with. Nevertheless we dealt with it, althhough the code for it is somewhat longer and unhandy.
 
-  \item Another great idea turned out to be the utilization of pythons logger module. We ecessivly made use of its Error/Warning/Info/Debug statements which made debugging
-  a lot easier without being an obstacle if you don't need the output as you can just switch to a different level of logging.
-\end{itemize}
+  \subsection{Python Logging Module}
+    Another great idea turned out to be the utilization of pythons logger module. We ecessivly made use of its Error/Warning/Info/Debug statements which made debugging
+    a lot easier without being an obstacle if you don't need the output as you can just switch to a different level of logging.
   
