@@ -10,7 +10,7 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   \end{figure}
 \section{Topology Creation}
   \subsection{Minimal/Optimal Spanning Tree Topology}
-  In order to select those edges we want to use for creating connections between the APs, we use a derivation of the dijkstra algorithm.
+  In order to select those edges we want to use for creating connections between the APs, we use a derivation of the dijkstra shortest paths algorithm \cite{dijkstra1959note}.
   We start by selecting an arbitray initial node and marking it as visited. All edges from this set of visited nodes to unvisited nodes are called productive edges.
   We keep those productive edges in a list sorted by their scores. The score of an edge is determined by the following formula:
   \begin{equation} \label{eq:edgescore}
