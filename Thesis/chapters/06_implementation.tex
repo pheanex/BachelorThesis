@@ -100,6 +100,7 @@
     With a given undirected networkX graph we can compute a solution in three phases.
     To give you a short example, we create a grid network with random edge weights (Line 5 - 41).
     \begin{table}
+      \lstset{language=Python}
       \begin{lstlisting}
 import networkx as nx
 import random
@@ -215,9 +216,9 @@ ca_survival_graph = tcca.calculate_ca(survival_graph, graph, [1, 6, 11])
   \subsection{Representation of Tables in Lancom Devices}
     While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
     they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
-    nice tables like \ref{tab:wlc} we can work with. Nevertheless we dealt with it, althhough the code for it is somewhat longer and unhandy.
+    nice tables like \ref{tab:wlc} we can work with. Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
 
   \subsection{Python Logging Module}
-    Another great idea turned out to be the utilization of pythons logger module. We ecessivly made use of its Error/Warning/Info/Debug statements which made debugging
-    a lot easier without being an obstacle if you don't need the output as you can just switch to a different level of logging.
+    Another great idea turned out to be the utilization of pythons logger module. We excessively made use of its Error/Warning/Info/Debug statements which made debugging
+    a lot easier without being an obstacle if we did not need the output as we could just switch to a different level of logging and enjoy the silence.
   
