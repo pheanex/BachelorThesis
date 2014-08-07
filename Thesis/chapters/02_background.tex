@@ -56,8 +56,8 @@ And refer to further papers for more extensive descriptions.
    \subsection{Mapping Data to Graph}
     For our solution we will use the following mapping from devices and modules to a undirected, weighted graph. (Formale beschreibung hilfreich?)
     Each accesspoint and each module of those accesspoints is represented by a node.
-    For each accesspoint we add edges with the highest weight to each module of its corresponding accesspoint. 
-    We describe those edges as artificial or device-module edges.
+    For each accesspoint we add edges with a special attribute "fake" to each module of its corresponding accesspoint. Those edges also have their SNR value set to 
+    the maximum value possible. We describe those edges as artificial or device-module edges.
     If two modules of different accesspoints are within receive range of each other, 
     we are adding an edge between the corresponding module nodes with the average signal-to-noise ratio as the edge-weight.
     We call those edges module-module connections or real connections.

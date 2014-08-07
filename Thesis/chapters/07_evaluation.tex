@@ -208,7 +208,8 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     The survival path property takes care of this requirement. That is for the given error-scenario of one failing connection at a time, there is always
     a backup connection over a different link available as far as the underlying topology permits. As we were not able to test this feature 
     with the given implementation we are nevertheless confident that also this requirement has been met.
-    If multi-flow / routing support will be implemented for our hardware in the future a decrease in node separation should be recognizable.
+    If multi-flow / routing support will be implemented for our hardware in the future a decrease in node separation for failing links should be recognizable.
+    Therefore we also met the successfully met the requirement of a two-edge-connected network topology.
   \subsection{Multiple Radios Utilized}
     Our algorithm utilizes the radio-modules as far as they are relevant for creating links between accesspoints with a high estimated throughput.
     Depending on the given infrastructure not all radio modules are necessarily used, since not all of them are needed in order to create a connected network topology.
