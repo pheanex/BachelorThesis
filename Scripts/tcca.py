@@ -245,7 +245,7 @@ def get_modules_of_graph(graphname):
     return [node for (node, attributes) in graphname.nodes(data=True) if attributes["isModule"]]
 
 
-def calculate_mst(graphname):
+def calculate_st(graphname):
     """ Find the maximal spanning tree
 
     Keyword arguments:
@@ -546,7 +546,7 @@ def has_channel_assigned(graph, node_a, node_b):
         return False
 
 
-def calculate_ca_for_graph(graphname, basic_con_graph, allowed_channel_list):
+def calculate_ca(graphname, basic_con_graph, allowed_channel_list):
     """ Assigns channel fro the allowed_channel_list to the edges of the graphname graph
 
     Keyword arguments:
