@@ -16,7 +16,8 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   \begin{equation} \label{eq:edgescore}
     ES=\frac{b}{(i + 1 )* c}
   \end{equation}
-  where \textit{ES} is the Score of this Edge, \textit{b} is the expected bandwidth, \textit{i} is the number of interfering modules and \textit{c} is the connected count of the corresponding nodes.
+  where \textit{ES} is the Score of this Edge, \textit{b} is the expected bandwidth, \textit{i} is the number of 
+  interfering modules and \textit{c} is the connected count of the corresponding nodes.
   \begin{description}
     \item[Expected Bandwidth]
     describes the expected available bandwidth we assume to get for this link depending on the Signal-to-Noise-Ratio.
@@ -96,7 +97,10 @@ in a way that the the sum of the Edgescores of the path is maximal.
   Select all the modules which are connected by module-module edges. This set of nodes is called the channel-group.
   For this channel group we create a list of channels and corresponding interference occurrences.
   Among these we pick those channels from the set of all possible channels, which have been used the least in this channel-list. If there is a tie in usage
-  we can also respect foreign networks by taking the occurrences of foreign radio modules into account or as a last resort-tie-breaker select one at random.
+  we can also respect foreign networks by taking the occurrences of foreign radio modules into account. Since we do not know how much traffic the foreign 
+  channels carry and therefore how much they utilize the channels, we can only weight them equally compared to our own channel-usage instead of a more fine-grained subdivision.
+  As a further tie-breaker we pick those channels which have been used the least in general.
+  At last we resort to just select one channel at random.
   Especially respecting foreign networks allows use to evade heavily used
   bands and channels like for example 1 and 11 in the 2.4Ghz band which are used by devices out of our control.
   \begin{figure}[h]
