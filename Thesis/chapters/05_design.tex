@@ -22,12 +22,15 @@ Subsequently a channel assignment is computed for this specific topology. As inp
     \item[Expected Bandwidth]
     describes the expected available bandwidth we assume to get for this link depending on the Signal-to-Noise-Ratio.
     For a given Signal-to-Noise-Ratio we can estimate the maximal possible thoughput.
-    The bandwidth was chosen as the numerator, since it is effectively shared by those the radio modules within range.
+    The bandwidth was chosen as the numerator, since it is effectively shared by the radio modules within range.
     As we can see from the diagram, a higher SNR value results in more bandwidth available and works in favor of this edge.
     \begin{figure}[h]
       \centering
       \includegraphics[width=0.5\columnwidth]{figures/snr_tp}
-      \caption{Expected throughput for different \ac{SNR}-values by \cite{expected_snr}}
+      \caption{Expected throughput for different \ac{SNR}-values by \cite{expected_snr}. For our implementation we always expect to get the best possible
+      throughput for a given SNR and therefore take the maximum value we can get for a SNR, assuming that a better rate is automatically chosen by the devices if possible.
+      Note that mapping of SNR to achievable throughput maybe has to be readjusted for different hardware/devices. In general the behaviour will stay the same, as 
+      a higher SNR will probably always result in a higher throughput, but the steepness of the function might change, leading to a different priorization of edges.}
       \label{fig:snr_tp}
     \end{figure}
     \item[Connected Count]
