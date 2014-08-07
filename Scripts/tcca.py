@@ -344,7 +344,7 @@ def calculate_mst(graphname):
     return mst
 
 
-def calculate_backup_links(mst_original, basic_con_graph):
+def calculate_survival_links(mst_original, basic_con_graph):
     """ Finds the best backup links for a given mst graph
 
     Keyword arguments:
@@ -353,7 +353,7 @@ def calculate_backup_links(mst_original, basic_con_graph):
     returns a 2-edge-connected MST NetworkX graph
     """
 
-    logger.info("Calculating Backup links for Graph...")
+    logger.info("Calculating Survival links for Graph...")
 
     wlan_modules = get_modules_of_graph(basic_con_graph)
 
