@@ -1,23 +1,11 @@
 \chapter{Introduction}
 TODO: high level beschreibung (das hier erst am Ende schreiben): roter faden; Big Picture; Was muss man zuerst tun?
 \section{Motivation}
-\begin{description}
-\item[Description of Status Quo]
-\item[What is the Problem?]
-AutoWDS does not scale/work well
-\item[What do we want?]
-Make AutoWDS Useful/scalable/work again
-\item[Why are we doing this?]
-Provide a system to easily deploy of a set of accesspoints for creating a wireless lan infrastructure
-\item[How do we want to do/solve this?]
-Using multiple Channels
-Using Redundant Paths Using a better Network Topology
-\item[What problems could arise?]
-Finding a good network-topology/CAA tricky
-\item[How are we planing on dealing with these problems?]
-\item[What (data) do we need to solve the Problem?]
-Central Inter-AP SNR
-\end{description}
-
+  We want to create an easily deployable \ac{WDS} for a set of accesspoints in order to create a wireless infrastructure for a specific area.
+  Therefore we use AutoWDS which already does this, but currently in a very poor manner as throughput performance 
+  and connectivity failures leave a lot to be desired. Our goal is to optimize its performance so that it's up to its job of routing a lot of data through its wireless backbone.
+  We want to achieve this by utilizing multiple radios, channels and redundant links for establishing connections among the accesspoints.
+  The problem we face doing this, and this work will elaborate on is, that a good selection of links and channels is not trivial even for a moderately sized scenario.
+  To tackle this issue we use centrally run greedy algorithms to give us a very good solution to our problem.
 \section{Structure of Thesis}
 Description of what's in the chapters.
