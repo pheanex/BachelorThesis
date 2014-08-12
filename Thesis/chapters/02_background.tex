@@ -1,6 +1,15 @@
 \chapter{Background}
-General discription of used terms/systems in wikipedia like style. This means the description should not be too extensive.
-And refer to further papers for more extensive descriptions.
+This chapter provides background information on Wireless Networks and recalls some graph-theoretic basics we use for our purposes.
+
+At first we will take a close look at the modes of operation of wireless accesspoints followed by the bigger picture on how to use these accesspoints
+within a wireless mesh network. Then we examine the way accesspoints communicate with each other through channels, how those communications are affected by interference and
+how they deal with accessing the shared medium. Finally we will outline the implementation of the \ac{WDS} we want to optimize and emphasize where it differs from a common
+\ac{WDS}.
+
+In the second part we shortly explain spanning trees on graphs and illustrate graph attributes like edge and vertex connectivities.
+Subsequently we will give a detailed description of how we map our real world \ac{WMN} setups to network graphs in order to compute solutions and conclude this part by
+discussion the relevance of the problem COLORING for our approach.
+
 \section{Wireless Networks}
   Wireless networks are computer networks which use radio-waves instead of cables in order two communicate.
   They are used in scenarios where using wires for connections are not possible or cumbersome like systems where devices are mobile.
@@ -13,7 +22,7 @@ And refer to further papers for more extensive descriptions.
       \item Large scale systems like television broadcasting with \ac{DVB-T} through satellites with typical ranges of up to 35400 kilometers.
     \end{itemize}
   \subsection{Wireless Access-Point}
-    Is a device which allows other devices with wireless adapters to connect to its network.
+    A Wireless Access-Point is a device which allows other devices with wireless adapters to connect to its network.
     Mostly it serves as an entry point to a network-infrastructure and ultimately the internet like a common network switch, 
     but accesspoints have more modes of operation. Those are in general the following
     \begin{description}
@@ -32,6 +41,8 @@ And refer to further papers for more extensive descriptions.
 	ad-hoc systems. For example a laptop could be connected to an accesspoint through wire and then this accesspoint connects iteself to another network.
     \end{description}
     
+    <Auf fotos/Antwort von wilfried warten und heir einfügen!>
+    
   \subsection{\ac{WMN}}
     A mesh is a topology with no firm structure. Therefore a wireless mesh network is a network of wireless devices creating a mesh topology with connections between the participants.
     A Wireless mesh network consist of mesh routers and mesh clients, where routers form the backbone and forward packets on behalf of other nodes (especially the clients).
@@ -40,7 +51,7 @@ And refer to further papers for more extensive descriptions.
     as spontaneously new connections are established between the nodes and redundand or backup paths are formed. 
     The drawback of this feature lies in its declining performance with increasing size of the network due to the locally optimal choices.
     The IEEE 802.11s standard describes how to from such wireless mesh networks. \cite{GRH_WLANMeshStandard_IEEEWiCom2010} 
-    \begin{figure}[t]
+    \begin{figure}[th!]
       \centering
       \includegraphics[width=0.8\columnwidth]{figures/mesh.png}
       \caption{A \ac{WMN} illustrated by \cite{Akyildiz2005445}}
@@ -52,7 +63,7 @@ And refer to further papers for more extensive descriptions.
     This is done to transmit data from a Sender station to a receiver station and creates a link between two Nodes in a \ac{WMN}. 
     
     \ac{WLAN} uses the two license-free frequency bands at 2.4Ghz and additionally certain bands at 5Ghz.
-    \begin{figure}[t]
+    \begin{figure}[th!]
       \centering
       \includegraphics[width=0.8\columnwidth]{figures/wlan_channels.png}
       \caption{Mapping of channels to frequencies for the 2.4 Ghz band. \cite{wlan_channels}}
@@ -75,9 +86,9 @@ And refer to further papers for more extensive descriptions.
 	
 	The Hidden-Station-Problem describes an undesired scenario where an Accesspoint B is in range of A and C but A and C are note in range, see \ref{fig:csmaca}.
 	
-	\begin{figure}[t]
+	\begin{figure}[th!]
 	  \centering
-	  \includegraphics[width=0.8\columnwidth]{figures/csmaca.png}
+	  \includegraphics[width=0.6\columnwidth]{figures/csmaca.png}
 	  \caption{Hidden-Station Problem and the RTS/CTS solution. When A sends data to B in Step 1, 
 	    it first waits until the medium is free and then begins transmitting its data to B. 
 	    Because of the range-limitation, C does not recognize the transmission of A to B. 
@@ -98,40 +109,82 @@ And refer to further papers for more extensive descriptions.
 	Additionally at a certain signal-strength level a station, while doing its carrier sensing, isn't able to differentiate noise from another stations transmission.
 	      
     \subsection{Automatic Wireless Distribution System}
-    %https://en.wikipedia.org/wiki/Wireless_distribution_system
-    Description of WDS + AutoWDS \newline
-      \begin{description}
-       \item[What is a Wireless Distribution System?]
-       How does the Lancom \ac{AutoWDS},differ from the basic WDS definition?
-	 Intended centralized solution compüared to WDS systems due to better managability.
-	 Also security is a key element for this system => that's why central entity + CAPWAP
-      \end{description}
-
+      \begin{itemize}
+       \item What is a WDS and how does it work?
+       \item How is the lancom WDS different from a normal WDS?
+      \end{itemize}
+      
 \section{Graph-theoretic Basics}
-  Since we are using a graph based approahc in finding a solution we model a \ac{WMN} to a graph with a vertex set and an edge set. The goal is then to assign channels
-  to the edges of this graph.
-  %https://de.wikipedia.org/wiki/Graph_%28Graphentheorie%29
-  TODO: Describe directed/undirected weighted graph
-  What does connected graph mean; path
-  \subsection{\ac{BFS}}
-  \subsection{Spanning Tree}
-  \subsection{k-connectivity, k-edge-connectivity}
+  A graph in graphtheory is a set of nodes and edges between those nodes. 
+  
+  A directed graph/digraph has directions on its edges defined.
+  
+  A weighted graph has weights attached to its edges.
+  
+  A graph is called connected if every pair of nodes is connected. 
+  Two nodes a,b are connected if there exists a path from a to b.
+  A path is a sequence of edges where each edge has to fit to the next, like in the game of domino.
+  
+  \begin{figure}[th!]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{figures/graphen.png}
+    \caption{Example graphs - 1: undirected 2: directed 3:weighted, directed 4: disconnected}
+    \label{fig:graphen}
+  \end{figure}
+
+  We chose to use graphtheory to represent our networks as structures for two reasons:
+  \begin{itemize}
+   \item We are able to express all and only the necessary data with elements of a graph, like
+    accesspoints and modules by nodes, links between accesspoints with edges and signal to noise ratio with weightedness. 
+   \item Graph theory is a well reseached field and a lot of problems in graphtheory can be solved efficiently and intuitively 
+    as we will show later with the \ac{DJP} algorithm in \ref{fig:djp}.
+  \end{itemize}
+    
+  \subsection{Minimum Spanning Tree}
+    A spanning tree is a subgraph for a given graph which contains all nodes of the original graph, but only the necessary subset of edges which are needed to connect each vertice
+    to the component. In order to find a minimum spanning tree for a non-negative weighted graph we use the DJP algorithm (quelle?).
+    It works as described by the following:
+    \begin{enumerate}
+     \item Initialize the minimum tree with a single, randomly chosen vertex from the given graph.
+     \item For all edges originating the set of nodes in the minimum tree to nodes which have not been visited yet, select the edge with the lowest score and add it and its nodes 
+      to the minimum tree.
+     \item Repeat step two as long as not all vertices of the given graph are visited.
+    \end{enumerate}
+    \begin{figure}[th!]
+      \centering
+      \includegraphics[width=0.8\columnwidth]{figures/djp.png}
+      \caption{DJP algorithm calculating a minimal spanning tree.}
+      \label{fig:djp}
+    \end{figure}
+    
+  \subsection{k-vertex-connectivity, k-edge-connectivity}
+    A graph is said to be \textit{k-vertex-connected} if there exists a set of \textit{k} vertices whose removal disconnects parts of the graph.\newline
+    A graph is said to be \textit{k-edge-connected} if the graph is still connected after the removal of \textit{k} edges.
+    \begin{figure}[th!]
+      \centering
+      \includegraphics[width=0.5\columnwidth]{figures/connectivity.png}
+      \caption{Graph-connectivity attributes from left to right: 1-vertex/3-edge, 0-vertex/1-edge, 0-vertex/0-vertex}
+      \label{fig:connectivity}
+    \end{figure}
+    
   \subsection{Mapping Data to Graph}
-    For our solution we will use the following mapping from devices and modules to a undirected, weighted graph. (Formale beschreibung hilfreich?)
-    Each accesspoint and each module of those accesspoints is represented by a node.
-    For each accesspoint we add edges with a special attribute "fake" to each module of its corresponding accesspoint. Those edges also have their SNR value set to 
-    the maximum value possible. We describe those edges as artificial or device-module edges.
-    If two modules of different accesspoints are within receive range of each other, 
+    For our purposes we will use the following mapping from devices and modules to a undirected, weighted graph.
+    Each accesspoint and each module of our accesspoints is represented by a node.
+    
+    For each accesspoint we add edges with a special attribute "artificial" 
+    to each module of its corresponding accesspoint and describe those edges as artificial or device-module-edges.
+    Those edges also have their SNR value set to the maximum value possible. 
+    
+    If two modules are within receive range of each other, 
     we are adding an edge between the corresponding module nodes with the average signal-to-noise ratio as the edge-weight.
     We call those edges module-module connections or real connections.
-    Since the average of the two SNR's might not adequately represent the actual quality of those connections,
-    we alternatively can easily adjust the edge-weight to the minimum or maximum of those values.
-    While the average seems to be a good compromise for a general description of the underlying network, the minimum might be a better representation for 
-    a more pessimistic setup, since the connection is then guaranteed to have at least this SNR in both directions. 
-    Furthermore we are ignoring onesided connections, i.e. one module receives one or a few beacons of the other module but not the other way round.
-    Not only are the SNRs of those connections mostly very poor, but they are also very rare in our target scenarios with omnidirectional antennas.
+    Since the average of the two SNR values might not describe all scenarios well enough (in a scenario where SNR values differ broadly),
+    we easily can adjust the edge-weight to the minimum or maximum of those values.
+    
+    Furthermore we ignore onesided connections, i.e. one module receives one or a few beacons of the other module but not the other way round.
+    Not only are the SNRs of those connections mostly very low/poor, but they are also very rare in our target scenarios with omnidirectional antennas.
     So mostly either the modules receive each others beacons, or both do not.
-    \begin{figure}[t]
+    \begin{figure}[th!]
       \centering
       \includegraphics[width=0.5\columnwidth]{figures/apgraph.png}
       \caption{Graph representation of one (upper) and two connected accesspoints(lower)}
@@ -139,7 +192,15 @@ And refer to further papers for more extensive descriptions.
     \end{figure}
     
   \subsection{Relevance of COLORING}
-  \subsection{Dijkstra's Algorithm}
-    TODO: How is our Channel assignment related to the problem COLORING?
-    It is realated in the way that we want to assign each Module-Module-Connection a channel/color from a pool of available colors, withouth (if possible) use the same channel/color on neighboring links (meaning Aps that see each other and their traffic could lead to decreased throughput due to interference)
-    Why is it not just coloring?
+    Is this point interesting/relevant?
+    If yes, i would write here:
+      \begin{itemize}
+       \item What is coloring?
+       \item How related work uses coloring for this problem (CAA)
+       \item Why our solution is not directly related to coloring
+	\begin{itemize}
+	 \item Does not say anything about topology
+	 \item Coloring finds theoretical optimal solution or none, 
+	  we live in the grey area between (we have interference, probably there is no optimal solution => we try minimizing interference)
+	\end{itemize}
+      \end{itemize}
