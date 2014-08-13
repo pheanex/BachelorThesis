@@ -1,23 +1,31 @@
 \chapter{Conclusion}
-\section{Limitations}
-  The requirements analysis explicitly mentioned a static scenario only, therefore our solution won't yield good results for more volatile setups where link quality or network topology
-  changes frequently. This would be the case for example if accesspoints were mobile.
-  Since also a key requirement, this solution works best in a centralized managed scenario. For a distributed algorithm see related work.
-\section{Future Work}
-  Open issues which could not be addressed by us due to the lack of time, but nevertheless would like 
-  to see implemented or tested are the following:
-  \begin{description}
-    \item [Further Evaluation]
-      We are aware that our evaluation is more a proof of concept instead of an elaborate audit. As described we ran our throughput-tests only in our lab environment, 
-      which was also designed with other metrics and scenarios in mind. Therefore a more thorough appraoch would include increased hardware diversity, in general the full scale
-      testing of up to 100 devices and longer test-periods with varying deployment parameters like transmit-power, configuration timings and different topolgies.
-      Especially simulating our solution with random graph layouts and different underlying topolgies could provide opportunities to even further increase throughput.
-      Also the feature of evading foreign used channels should be evaluated if the implementation of AutoWDS permitts as this will be one of the factors which strongly affect performance.
-    \item[Extensive Comparison to Related Work]
-      As we only compared our work by listing features, a true comparison still has to be done if one would like to know the strength and weaknesses considering actual throughput-performance.
-      As noted this will probably take quite some time as all the solutions would have to be implemented in presumably the same language. And then deciding on the environmental settings
-      like interference by other devices and node connectivity will create new challenges.
-    \item[Further Optimize Algorithms]
-      Algorithm runtime is not in the focus of concern at the moment but could be in the future. As a result and in order to more closely integrate the solution into AutoWDS extended,
-      porting the code to a native language like C/C++ could give some additional performance gains.
-  \end{description}
+  
+  \section{Limitations}
+    The requirements analysis explicitly mentioned a static scenario only, therefore our solution won't yield good 
+    results for more volatile setups where link quality or network topology
+    changes frequently. This would be the case for example if accesspoints are mobile.
+    Since also a key requirement, this solution works best in a centralized managed scenario. 
+    For a distributed algorithm see related work.
+  \section{Future Work}
+    Open issues which could not be addressed by us due to the lack of time, but nevertheless would like 
+    to see implemented or tested are the following:
+    \begin{description}
+      \item [Further Evaluation]
+	Our evaluation is more a proof of concept instead of an elaborate audit. As described we ran our throughput-tests only in our lab environment, 
+	which was also designed with other metrics and scenarios kept in mind. Therefore a more thorough appraoch would include increased hardware diversity, 
+	in general the full scale testing of up to 100 devices and longer test-periods with varying deployment parameters like transmit-power, 
+	configuration timings and different topolgies.
+	Especially simulating our solution with random graph layouts and different underlying topolgies could provide opportunities to even further increase throughput.
+	Also the feature of evading foreign used channels should be evaluated if the implementation of 
+	AutoWDS permitts as this will be one of the factors which strongly affect performance.
+      \item[Extensive Comparison to Related Work]
+	As we only compared our work by listing features, a true comparison still has to be done if one would 
+	like to know the strength and weaknesses considering actual throughput-performance.
+	As noted this will probably take quite some time as all the solutions would have to be 
+	implemented in presumably the same language. And then deciding on the environmental settings
+	like interference by other devices and node connectivity will create new challenges.
+      \item[Further Optimize Algorithms]
+	Algorithm runtime is not in the focus of concern at the moment but could be in the future. 
+	As a result and in order to more closely integrate the solution into AutoWDS extended,
+	porting the code to a native language like C/C++ could give some additional performance gains.
+    \end{description}
