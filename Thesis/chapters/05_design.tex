@@ -44,7 +44,20 @@ Subsequently a channel assignment is computed for this specific topology. As inp
     \end{equation}
     , would have the effect of overemphasizing 
     the channel distribution and lead to poor choices in links with respect to SNR - lowering overall throughput again.
-    This simple, linear impact in the formula has been shown to achieve the best tradeoff between those two extremes.
+    The simple, linear impact in the formula has been shown to achieve the best tradeoff between those two extremes.
+    
+    \begin{figure}[h]
+      \centering
+      \includegraphics[width=1\columnwidth]{figures/formula_graphic}
+      \caption{Impact of the connected count in the formula. On the left a resulting connection topology in case the connected count is underemphasized,
+      which leads to long chains of possibly very high quality links, with the drawback of having to assign the same channel to all connected links, 
+      diminishing effective throughput as the channel has to be shared amongst several links. 
+      On the right a resulting connection topology in case of an overemphasized connected count. As the algorithm avoids reutilizing already used modules,
+      links with low quality are preferred. This leads again to a lowered throughput as indeed each link uses its own unimpeded channel, but since link quality is low, also 
+      the throughput results will be low.}
+      \label{fig:formula_graphic}
+    \end{figure}
+    
     \item[Interfering Modules]
     Since the channel assignment has not taken place yet, we do not know which modules are actually interfering with this link if we would use it.
     However we do know to which other modules this module already has connections to and since those have to use the same channel in order to communicate with each
