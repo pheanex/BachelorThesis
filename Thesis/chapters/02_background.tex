@@ -111,7 +111,7 @@ discussion the relevance of the problem COLORING for our approach.
 	  \centering
 	  \includegraphics[width=0.8\columnwidth]{figures/wlc_aps}
 	  \caption{Common accesspoint deployment. Accesspoints connected to backbone via wire.}
-	  \label{fig:autowds}
+	  \label{fig:wlc_aps}
 	\end{figure}
 	The procedure of establishing such a network are as follows:
 	\begin{enumerate}
@@ -190,7 +190,7 @@ discussion the relevance of the problem COLORING for our approach.
     \begin{figure}[th!]
       \centering
       \includegraphics[width=0.5\columnwidth]{figures/connectivity.png}
-      \caption{Graph-connectivity attributes from left to right: 1-vertex/3-edge, 0-vertex/1-edge, 0-vertex/0-vertex}
+      \caption{Graph-connectivity attributes from left to right: 1-vertex and 2-edge, 0-vertex and 1-edge, 0-vertex and 0-vertex}
       \label{fig:connectivity}
     \end{figure}
     
@@ -219,15 +219,13 @@ discussion the relevance of the problem COLORING for our approach.
     \end{figure}
     
   \subsection{Relevance of COLORING}
-    Is this point interesting/relevant?
-    If yes, i would write here:
-      \begin{itemize}
-       \item What is coloring?
-       \item How related work uses coloring for this problem (CAA)
-       \item Why our solution is not directly related to coloring
-	\begin{itemize}
-	 \item Does not say anything about topology
-	 \item Coloring finds theoretical optimal solution or none, 
-	  we live in the grey area between (we have interference, probably there is no optimal solution => we try minimizing interference)
-	\end{itemize}
-      \end{itemize}
+    Other pursuits on this problem including \cite{BFS-CA}, \cite{CTA}, \cite{caa_tricky} and \cite{katzela} mention a kinship to the problem COLORING on graphs.
+    On the other hand \cite{caa_tricky} also mentions:
+    \begin{quote}
+     At first glance, this problem appears to be a graph-coloring problem. However, standard graph-coloring algorithms cannot really capute the specification and constraints 
+     of the channel assignment problem. A node-multi-coloring formulation fails to capture [...] communicating nodes need[ing] a common color. On the other hand,
+     an edge-coloring formulation fails to capture the [...] constraint where no more than \textit{q} (number of NICs per node) colors can be incident to a node.
+     While a constraint edge-coloring might be able to roughly model the remaining constraints, it is incapable of satisfying the constraint of limited channel capacity.
+    \end{quote}
+    In addition to the modeling problems, a potential result of such a COLORING solution still would not make a point on the topology to use,
+    as COLORING works on given network graphs and therefore topolgies, but we also have to decide how to create and select the network topology.
