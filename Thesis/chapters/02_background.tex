@@ -93,12 +93,54 @@ discussion the relevance of the problem COLORING for our approach.
 	there are still some situations where collisions and therefore interference can occur.
 	Additionally at a certain signal-strength level a station, while doing its carrier sensing, isn't able to differentiate noise from another stations transmission.
 	      
-    \subsection{Automatic Wireless Distribution System}
-      \begin{itemize}
-       \item What is a WDS and how does it work?
-       \item How is the lancom WDS different from a normal WDS?
-      \end{itemize}
+    \subsection{Wireless Distribution System}
+      \subsubsection{\ac{WLC}}
+	The purpose of a \ac{WLC} is to manage and configure many accesspoints centrally and automatically - effectively ease the job of the administrator responsible for a 
+	wireless infrastructure. They are usually located in central networking-cabinets next to other network core components like switches and servers.
+	\begin{figure}[h!]
+	  \centering
+	  \includegraphics[width=0.8\columnwidth]{figures/wlc}
+	  \caption{A Lancom \ac{WLC}}
+	  \label{fig:wlc}
+	\end{figure}
       
+      \subsubsection{WLC Aided Configuration}
+	For a common WLAN infrastructe deployment all accesspoints are connected to the wired backbone and use their radios in infrastructe mode to 
+	offer clients an entry point into the network.
+	\begin{figure}[h!]
+	  \centering
+	  \includegraphics[width=0.8\columnwidth]{figures/wlc_aps}
+	  \caption{Common accesspoint deployment. Accesspoints connected to backbone via wire.}
+	  \label{fig:autowds}
+	\end{figure}
+	The procedure of establishing such a network are as follows:
+	\begin{enumerate}
+	 \item Accesspoints search for a \ac{WLC} on the wired network by IP broadcast.
+	 \item After authentication of the \ac{AP}, the \ac{WLC} responds and establishes a secure channel to the \ac{AP} through a \ac{CAPWAP}-Layer.
+	 \item \ac{AP} receives a configuration from the \ac{WLC} through the secure channel and reconfigures itself accordingly.
+	\end{enumerate}
+	
+      \subsubsection{Automatic \ac{WDS}}
+      AutoWDS is then an extension to the WLC aided configuration by also allowing such a configuration procedure over wireless links instead of solely wired connections.
+            
+      \begin{figure}[h!]
+	  \centering
+	  \includegraphics[width=0.8\columnwidth]{figures/autowds}
+	  \caption{Autowds configuration setup. Only a few accesspoints are connected to the backbone via wire. 
+	  Other accesspoints use their radios to connect to accesspoints that are connected to backbone via wire (first \ac{AP}) or relay accesspoints(second \ac{AP}).}
+	  \label{fig:autowds}
+      \end{figure}
+      The procedure is enhanced accordingly:
+      \begin{enumerate}
+       \item The first \ac{AP} finds a WLC and proceeds as usual. Additionally it announces its connection to the WLC over its radios to other accesspoints.
+       \item The second \ac{AP} does not find a \ac{WLC} on its LAN inferface and extends its search on the radios where it receives the announce of the first \ac{AP}.
+	On its other radios it offers its services to clients.
+       \item The second \ac{AP} establishes a secure connection (\ac{DTLS}) to the first \ac{AP} and continues its search for a \ac{WLC} over this link, 
+	where it find the \ac{WLC} and also receives a configuration and proceeds as \ac{AP} one.
+	\item Gradually all the accesspoints connect each other to the backbone and receive a configuration.
+      \end{enumerate}
+
+	
 \section{Graph-theoretic Basics}
   A graph in graphtheory is a set of nodes and edges between those nodes. 
   
