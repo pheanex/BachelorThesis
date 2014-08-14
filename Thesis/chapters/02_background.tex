@@ -41,14 +41,21 @@ discussing the relevance of the problem COLORING for our approach.
 	ad-hoc systems. For example a laptop could be connected to an accesspoint through wire and then this accesspoint connects iteself to another network.
     \end{description}
     
-    <Auf fotos/Antwort von wilfried warten und heir einfügen!>
+    \begin{figure}[h!]
+      \centerline{
+	\includegraphics[width=0.5\textwidth]{figures/L-322agn.jpg}
+	\includegraphics[width=0.5\textwidth]{figures/outdoor_berge.JPG}
+      }
+      \caption{Indoor accesspoint (left) and an outdoor accesspoint deployed (right) \cite{lancom}}
+      \label{fig:L-322agn}
+    \end{figure}
      
   \subsection{\ac{WLAN} Channel}
     A \ac{WLAN} Channel as specified by IEEE 802.11 family uses a specific frequency-range in the \ac{UHF} or \ac{SHF} radio-scope in order to digitally modulate data on carrier waves.
     This is done to transmit data from a Sender station to a receiver station and creates a link between two Nodes in a \ac{WMN}. 
     
     \ac{WLAN} uses the two license-free frequency bands at 2.4Ghz and additionally certain bands at 5Ghz.
-    \begin{figure}[th!]
+    \begin{figure}[h!]
       \centering
       \includegraphics[width=0.8\columnwidth]{figures/wlan_channels.png}
       \caption{Mapping of channels to frequencies for the 2.4 Ghz band. \cite{wlan_channels}}
@@ -86,12 +93,29 @@ discussing the relevance of the problem COLORING for our approach.
 	\end{figure}
 
       \subsubsection{Interference}
-	We define interference in wireless connections for our purpose as any kind of disruption in communication. Sources for interference can hence be
-	of cooperative nature, like neighboring radios using the same channel and therefore claiming the medium (co-channel/adjacent-channel interference)
-	or uncooperative interference like noise from devcies, which do not use the medium to transmit data, like microwaves or cordless phones.
-	Despite solutions like RTS/CTS and others that also solve the exposed station problem (and alleviate the cooperative interference),
-	there are still some situations where collisions and therefore interference can occur.
-	Additionally at a certain signal-strength level a station, while doing its carrier sensing, isn't able to differentiate noise from another stations transmission.
+	Wireless interference occurs if two sender at the same time transmit data on the same carrier frequency. If so the waves may interfere and be wrongly detected
+	by the receiving stations. This leads to changed bits in the derived data and in turn to corrupt messages. Calculating the checksum on those packets will then 
+	show that there have been errors while transmitting the data which will make the receiving station throw away this packet.
+	As the receiving station will not acknowledge the receipt of the packet, the sender will assume the packet was not transmitted correctly and therefore try 
+	to send the same packet again. If this process happens more often, throughput performance will suffer as it takes more time to send the same amount of data.
+	This kind of interference is called of cooperative nature and occurs if two radios claim the same channel/medium (co-channel/adjacent-channel interference).
+	Whereas there is also uncooperative interference from devices like microwaves or cordless phones which do not access the medium purposefully but rather
+	emit noise by accident, nevertheless the effect is the same.
+	
+	For our purposes we define interference in wireless connections as any kind of disruption in communication, that includes both cooperative and non-coopertive interference.
+	
+	Despite solutions like RTS/CTS and others that mitigate the hidden station problem (and alleviate the cooperative interference),
+	there are still some situations where collisions and therefore interference occurs.
+	Additionally at a certain signal-strength level a station, while doing its carrier sensing, may not be able to differentiate noise from another stations transmission.
+	As \cite{padhye2005estimation} mentions that interference is the key cause of performance degradiation in wireless networks, our goal is to increase throughput 
+	performance by reducing interference as much as possible.
+	
+	\begin{figure}[h!]
+	  \centering
+	  \includegraphics[width=0.8\columnwidth]{figures/interferenz}
+	  \caption{When using the same carrier frequencies, waves may interfere and result in falsely detected bits and render the data corrupt.}
+	  \label{fig:interferenz}
+	\end{figure}
 	      
     \subsection{Wireless Distribution System}
       \subsubsection{\ac{WLC}}
