@@ -51,21 +51,27 @@ discussing the relevance of the problem COLORING for our approach.
     \end{figure}
      
   \subsection{\ac{WLAN} Channel}
-    A \ac{WLAN} Channel as specified by IEEE 802.11 family uses a specific frequency-range in the \ac{UHF} or \ac{SHF} radio-scope in order to digitally modulate data on carrier waves.
-    This is done to transmit data from a Sender station to a receiver station and creates a link between two Nodes in a \ac{WMN}. 
-    
+    A \ac{WLAN} Channel as specified by IEEE 802.11 family uses a specific frequency-range in the \ac{UHF} or \ac{SHF} radio-scope in order 
+    to digitally modulate data on carrier waves.
+    This is done to transmit data from a Sender station to a receiver station and creates a link between them.
     \ac{WLAN} uses the two license-free frequency bands at 2.4Ghz and additionally certain bands at 5Ghz.
+    As we can see in \ref{fig:wlan_channels}, certain channels have overlapping regions. 
+    Two independent pairs of radios in the same area can communicate almost completely free of interference, if they use different, non-overlapping channels.
+    Some accesspoints use channels with 40 Mhz bandwidth in order to further increase throughput with the drawback of creating more overlapping frequencies regions
+    and therefore possibly creating sources of interference with for other channels.
+    The overlapping regions are a problem especially in the 2.4Ghz band but with widened channels the 5Ghz band is also affected, although not as bad since per default
+    channels do not overlap.
+    
     \begin{figure}[h!]
       \centering
       \includegraphics[width=0.8\columnwidth]{figures/wlan_channels.png}
       \caption{Mapping of channels to frequencies for the 2.4 Ghz band. \cite{wlan_channels}}
       \label{fig:wlan_channels}
     \end{figure}
-    As we can see in \ref{fig:wlan_channels}, certain channels have overlapping regions.
     
       \subsubsection{\ac{CSMA/CA}}
 	\ac{CSMA/CA} is a network protocol that describes how to access a shared medium, like a shared WLAN channel.
-	It works as described by the following:
+	It behaves as described by \cite{csma_techo}:
 	\begin{quotation}
 	  CSMA works on the principle that only one device can transmit signals on the network, 
 	  otherwise a collision will occur resulting in the loss of data packets or frames. 
@@ -74,21 +80,30 @@ discussing the relevance of the problem COLORING for our approach.
 	  If it senses a transmission, the device will wait for it to end. Once the transmission is completed, 
 	  the waiting device can transmit its data/signals. However, if multiple devices access it simultaneously and a collision occurs, 
 	  they both have to wait for a specific time before reinitiating the transmission process. 
-	\end{quotation} \cite{csma_techo}
+	\end{quotation}
 	
-	The Hidden-Station-Problem describes an undesired scenario where an Accesspoint B is in range of A and C but A and C are note in range, see \ref{fig:csmaca}.
+	For a sizeable accesspoint-deployment the accumulated backoff-waiting times increase as more data is trasmitted and this backoff-timer is triggered more often.
+	This effect also quickly degrades network performance in a mono-channel setup.
+	
+	Another interesting, but undesired problem in accessing the medium despite following the CSMA algorithm is the hidden-station-problem.
+	It describes a scenario where an \ac{AP} B is in range of A and C but A and C do not see each other, see \ref{fig:csmaca}.
+	If then the situation occurs that the two outer accesspoints simultaneously want to send data to the \ac{AP} in the middle, as they can not notice the 
+	other accesspoint sending data, their packets collide at B and therefore effectively transmit less or nothing at all.
+	The effect is the same like two people talking to one at the same time.
+	To alleviate the problem the RTS/CTS extension was introduced, which introduces small \ac{RTS}-requests and \ac{CTS}-announcements. 
+	This is basically the station/person that is talked to announcing to whom it is going to listen for the
+	next period of time.
 	
 	\begin{figure}[th!]
 	  \centering
-	  \includegraphics[width=0.6\columnwidth]{figures/csmaca.png}
-	  \caption{Hidden-Station Problem and the RTS/CTS solution. When A sends data to B in Step 1, 
-	    it first waits until the medium is free and then begins transmitting its data to B. 
+	  \includegraphics[width=1\columnwidth]{figures/csmaca.png}
+	  \caption{Hidden-Station Problem and the RTS/CTS solution. A sends data to B in Step 1.
 	    Because of the range-limitation, C does not recognize the transmission of A to B. 
-	    If B then wants to also transmit data to B, it also checks if the medium is free, which it falsely assumes
+	    If B then wants to also transmit data to B, it checks if the medium is free, which it falsely assumes
 	    and then starts to transmit its data. This leads to collisions at B in step 2 and the data received will be corrupt.
-	    The RTS/CTS protocol tries to mitigate the problem bei introducing send-requests. In Step 1 A asks B to send data to it, which B agrees on and sends the OK to
-	    A and C. This is followed by A sending its data to B and C trying to get a CTS from B, which collidies with A's data, but as RTSs are very small, the impact
-	    is limited. Eventually succeedes in getting its CTS and is able to also transmit its data to B without collisions.}
+	    First A asks B to send data to it, which B agrees on and sends the OK to everyone listening (A and C). 
+	    Then A sends its data to B while C tries to get B\'s attention by requesting a CTS from it, which collidies with A's data and is ignored there.
+	    Eventually C succeedes in getting its CTS and is able to also transmit its data to B without collisions.}
 	  \label{fig:csmaca}
 	\end{figure}
 
