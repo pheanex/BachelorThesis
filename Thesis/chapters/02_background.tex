@@ -24,7 +24,7 @@ discussing the relevance of the problem COLORING for our approach.
   \subsection{Wireless Access-Point}
     A Wireless Access-Point is a device which allows other devices with wireless adapters to connect to its network.
     Mostly it serves as an entry point to a network-infrastructure and ultimately the internet like a common network switch, 
-    but accesspoints have more modes of operation. Those are in general the following
+    but accesspoints have far more uses than this. In the following we will describe the modes we use accesspoints in:
     \begin{description}
       \item[Infrastructure-mode]
 	Using this mode, the clients connect themselves to the accesspoints in order to get access to the network behind the accesspoints, like fileservers or the internet.
@@ -32,15 +32,16 @@ discussing the relevance of the problem COLORING for our approach.
 	the name/identifier of the wireless network. This is done 
 	so that multiple wireless networks can be differentiated from each other. Those SSIDs, if received, are then used by the clients to
 	establish a link to the herein before mentioned accesspoints.
-      \item [Ad-hoc-mode]
-	In an ad-hoc network all participants (accesspoints and clients) use the same \ac{SSID} and create spontaneous connections between each other in order to 
-	exchange data. Note that also the former end-user-devices like laptops or smartphones are now nodes in this network and route packets instead of just originating or
-	terminating them. \cite{Akyildiz2005445}.
-     \item [Client-mode]
-	Here the accesspoint acts the same as the wireless adapter of ordinary end-user-devices and establish links to other infrastructure-serving accesspoints or 
-	ad-hoc systems. For example a laptop could be connected to an accesspoint through wire and then this accesspoint connects iteself to another network.
+
+      \item [Point-to-Point mode]
+	
+      \item [Client-mode]
+	Here the accesspoint behave the same as ordinary clients like laptops or smartphones would.
+	They search for announced accesspoints in infrastructure mode announcing a \ac{WLAN} and connect themselves to those.
+	Often this setup/mode is used to enable devices which lack 802.11-hardware to access WLANs through a wired link to those accesspoints.
+
     \end{description}
-    
+    \cite{Akyildiz2005445}.
     \begin{figure}[h!]
       \centerline{
 	\includegraphics[width=0.5\textwidth]{figures/L-322agn.jpg}
@@ -133,13 +134,14 @@ discussing the relevance of the problem COLORING for our approach.
 	\end{figure}
 	      
     \subsection{Wireless Distribution System}
+      
       \subsubsection{\ac{WLC}}
 	The purpose of a \ac{WLC} is to manage and configure many accesspoints centrally and automatically - effectively ease the job of the administrator responsible for a 
 	wireless infrastructure. They are usually located in central networking-cabinets next to other network core components like switches and servers.
 	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=0.8\columnwidth]{figures/wlc}
-	  \caption{A Lancom \ac{WLC}}
+	  \caption{A LANCOM \ac{WLC}}
 	  \label{fig:wlc}
 	\end{figure}
       

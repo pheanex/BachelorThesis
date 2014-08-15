@@ -26,6 +26,7 @@
     \caption{General flow of information for our scenario}
     \label{fig:dataflow}
   \end{figure}
+  
 \section{Dependencies}
   As already mentioned we used NetworkX\cite{hagberg-2008-exploring} to model our graphs and work with its elements.
   NetworkX's rich features like ``has\_path'' made things especially easy in computing the survival paths.
@@ -39,7 +40,7 @@
 \section{Structure of the Code}
   We split the code into two modules. The one handling connections, sending/receiving and transforming data to and from networkX graphs and the other one 
   deals with only with graphs and therefore the theoretical problem.
-  \subsubsection{Interfacing Outer World and Managing Data}
+  \subsection{Interfacing Outer World and Managing Data}
     The name of the module is \textit{wlc\_com}. This module's responsibilites include the following.
     \begin{description}
     \item[Receiving the necessary data]
@@ -53,7 +54,7 @@
 	  ece55574a4a5 & ece555ffd667 & ece555ffd5d6 & 33 \\
 	  ... & ... & ... & ...
 	\end{tabular}
-	\caption{Mesh network topology representation in table format on a lancom WLC. Device mac address is the LAN mac address, the module mac address is
+	\caption{Mesh network topology representation in table format on a LANCOM WLC. Device mac address is the LAN mac address, the module mac address is
 	the address of the module which is equipped on the device and which receives the Beacons with the ESSIDs of other modules, which in turn translates
 	the ESSID to the mac address of the opposing module. The \ac{SNR} describes thereon the quality of the link between those two modules.}
 	\label{tab:wlc}
@@ -213,11 +214,10 @@ ca_survival_graph = tcca.calculate_ca(survival_graph, graph, [1, 6, 11])
   \end{figure}
   
 \section{Problems and Aids}
-  \subsection{Representation of Tables in Lancom Devices}
+  \subsection{Representation of Tables in LANCOM Devices}
     While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
     they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
     nice tables like \ref{tab:wlc} we can work with. Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
-
   \subsection{Python Logging Module}
     Another great idea turned out to be the utilization of pythons logger module. We excessively made use of its Error/Warning/Info/Debug statements which made debugging
     a lot easier without being an obstacle if we did not need the output as we could just switch to a different level of logging and enjoy the silence.
