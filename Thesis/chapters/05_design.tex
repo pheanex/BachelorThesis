@@ -1,4 +1,4 @@
-\chapter{Design}
+\chapter{Algorithmical Design}
 Calculating a solution for a specific scenario is split into two parts. At first the underlying connection topology is determined.
 Subsequently a channel assignment is computed for this specific topology. As input we expect a connected, undirected, weigthed graph.
   \begin{figure}[htbp]
@@ -77,6 +77,8 @@ Subsequently a channel assignment is computed for this specific topology. As inp
   \subsection{Survival Path}
   A spanning tree is very susceptible to graph partition by just removing or failing one link so we have to add redundancies in form of supplementary connections.
   However those redundant connections have to be carefully chosen in order not to negatively impact the successive channel assignment and neither to push interference.
+  Note that this is an optional feature, since for some usecases a spanning tree topology is enough or a topology with redundand links is not easily implemented.  
+  
   We accomplish this by iterating over all the edges of the spanning tree and simulate each connection failing. We then check if there still exists 
   a path from Node A to Node B of this failing connection. Only if this failing connection cuts the graph in half and there is no path to the other side,
   we start looking for a backup route in the following fashion:
