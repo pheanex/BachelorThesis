@@ -10,6 +10,7 @@ circles in the topology.
 Since the main goal is to increase overall throughput performance as described in the requirements analysis, our basic evaluation approach is
 to find by how much we were able to increase this metric. Therefore we ran both systems under equal circumstances with various settings and multiple runs
 and compared its capacities.
+  \newpage
   \subsection{Physical Infrastructure}
     For the test arrangement we used the following hardware:
       11 Accesspoints, one WLC and two Switches among those
@@ -46,19 +47,11 @@ and compared its capacities.
     to implement a custom traffic generator in LCOS are the reason for this approach.
     \begin{figure}[h!]
       \centerline{
-	\includegraphics[width=0.6\textwidth]{figures/testsetup_logic}
+	\includegraphics[width=0.55\textwidth]{figures/testsetup_logic}
 	\caption{Example for the logical arrangement of accesspoints with systems attached by cable, which generate broadcast traffic that is routed through the 
 	wireless network spanned by the accesspoints.}
       }
       \label{fig:testsetup_logic}
-    \end{figure}
-    
-    \begin{figure}[h!]
-      \centerline{
-	\includegraphics[width=0.8\textwidth]{figures/testsetup_openvz}%
-	\caption{Implementation of the test arrangement with available hardware.}
-      }
-      \label{fig:testsetup_openvz}
     \end{figure}
     We simulated the traffic generating systems with OpenVZ \cite{openvz} on one Host with a VLAN for each system. The VLAN infrstructure is completely transparent
     to the VZ containers and the accesspoints since the monitoring stations encapsulates all frames before sending if over the VLAN Trunk to the switch, which again 
@@ -76,6 +69,18 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \caption{IPerf's parameters to generate the traffic.}
       \label{lst:iperf}
     \end{listing}
+    
+    
+    \begin{figure}[h!]
+      \centerline{
+	\includegraphics[width=1\textwidth]{figures/testsetup_openvz}%
+	\caption{Implementation of the test arrangement with available hardware.}
+      }
+      \label{fig:testsetup_openvz}
+    \end{figure}
+    
+    
+
 
 \section{Metrics}
   \subsection{Test Duration}
