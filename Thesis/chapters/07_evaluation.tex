@@ -125,6 +125,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     We additionally ran the testcases with two different settings to simulate the hidden station problem. Therefore we first set the radios to full power 
     resulting in a high connectivity between the nodes and on a second run decreased the transmit power as much as possbile to get a network with a smaller degree
     of interconnectivity.
+    
 \section{Results}
   We would expect a significant increase of data that has been able to transmit due to the usage of multiple collision domains the same one could
   expect by comparing a network hub, which has essentially just one collision domain and a network switch which has multiple domains and does not have
@@ -140,6 +141,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \caption{Received bytes with decreased antenna transmit power}
       \label{fig:rx20_bytes}
     \end{figure}
+    
     \begin{figure}[h!]
       \centerline{
 	\includegraphics[width=0.62\textwidth]{figures/TestDataDiagramme/3/rx_bytes}%
@@ -151,6 +153,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     
     Analyzing the successfully received bytes for the low power \ref{fig:rx20_bytes} and high power \ref{fig:rx3_bytes} setup we recognize noticeable differences for 
     each channel-assigning.
+    
       \begin{itemize}
 	\item The base scenarios where only one channel was utilized performe the worst within a range of 0.5 to 1.5Mbit/s on average per accesspoint.
 	  Using three channels gives roughly three times the throughput (2.5 - 5Mbit/s for 2.4Ghz and 2.5 - 5Mbit/s for 5Ghz) compared to the baseline.
@@ -223,30 +226,39 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     compared to AutoWDS basic, but in how far our solution comes in range to a theoretical optimal solution for a given scenario is still an open question.
     
 \section{Reflection on the Requirements}
-  How far does the solution meet the requirements?\newline
+  In this section we analyze by how far we were able to meet the imposed requirements and restrictions.
+  
   \subsection{Increased Throughput}
     Our measurement results indicate that throughput could significantly be increased. How much is determined by the input parameters of the algorithms like
     channels that can be utilized and hardware environments like the number of radio modules available at the accesspoints. 
-  \subsection{Reduced Connectivity Failures}
+    
+  \subsection{Reduced end-to-end Link Failures}
     The survival path property takes care of this requirement. That is for the given error-scenario of one failing connection at a time, there is always
     a backup connection over a different link available as far as the underlying topology permits. As we were not able to test this feature 
     with the given implementation we are nevertheless confident that also this requirement has been met.
     If multi-flow / routing support will be implemented for our hardware in the future a decrease in node separation for failing links should be recognizable.
     Therefore we also met the successfully met the requirement of a two-edge-connected network topology.
+    
   \subsection{Multiple Radios Utilized}
     Our algorithm utilizes the radio-modules as far as they are relevant for creating links between accesspoints with a high estimated throughput.
     Depending on the given infrastructure not all radio modules are necessarily used, since not all of them are needed in order to create a connected network topology.
     Moreover using all available links would not be beneficial as the hop distance would decrease but the effective throughput would also decrease by a factor 
-    more than the number of participants in that channel.       
+    more than the number of participants in that channel.
+    
     \begin{figure}[h!]
       \centerline{
-	\includegraphics[width=0.56\textwidth]{figures/lessismore}%
-	\caption{Due to the channel separation and exclusive access to one channel the left scenario is more favourable than the right, since throughput empirically
-	exponentially decreases and is far below the 33 percent which those links would have to yield in order to at least provide the same throughput}}
+	\includegraphics[width=0.56\textwidth]{figures/lessismore}
+	\caption{Due to the channel separation and exclusive access to one channel the left scenario is more favourable than the right, 
+		  since throughput empirically exponentially decreases and is far below the 33 percent which those links would 
+		  have to yield in order to at least provide the same throughput
+	}
+      }
       \label{fig:lessismore}
     \end{figure}
-    In addition having some radio modules to spare gives us the opportunity to use those for client connections and assigning them a channel which does not interfere with the
+    
+    Having some radio modules to spare gives us the opportunity to use those exclusively for client connections and assigning them a channel which does not interfere with the
     wireless backbone.
+    
     \begin{figure}[h!]
       \centerline{
 	\includegraphics[width=0.56\textwidth]{figures/moduletospare}%
@@ -254,24 +266,38 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       }
       \label{fig:moduletospare}
     \end{figure}
-  \subsection{Solution Works Within the Perimeter}
+    
+  \subsection{Capability of Using Variable Channelsets}
+    Our algorithm selects channels from a given input set of channels. Only those channels are then used to determine the channel assignment.
+    It is even possible to specify only one channel, resulting in a topology optimized network graph only.
+    Therefore this solution also fullfills this requirement.
+    
+  \subsection{Centralized Computation and Configuration}
     The requirement dictates that computing a solution should be possible on a centralized entity (Servers/WLC).
     Our algorithm was implemented as a python script and can be run on a single system if given the right input data.
-    Also the second requirement is fullfilled, since our algorithm is specially designed for a static environment where link quality and linkstate stay the same
-    for a foreseeable time. If major changes in network connectivity or link quality occur the chosen network topology and channel assignment
-    may lead to suboptimal results, therefore also a recomputation of the network topology has to be triggered.
+    Creating the configurations for the accesspoint will still be conducted by the central WLC as depicted in \ref{fig:dataflow}.
+    
+  \subsection{Static Environment} 
+    Also the second requirement is taken into consideration, since our algorithm is specially designed for a static environment where link quality 
+    and linkstate stay the same for a foreseeable time.
+    If major changes in network connectivity or link quality occur the chosen network topology and channel assignment
+    may lead to temporal suboptimal results, therefore also a recomputation of the network topology would have to be triggered.
     Currently there are no automatic triggers implemented, but planned in the future.
-  \subsection{Comply with Economic Restrictions}
+    
+  \subsection{Layer two Usage}
+    Accesspoints use bridged point to point connections to span the wireless network backbone, therefore creating no obstacles for layer two frames.
+    The ethernet frames are just forwarded like in a switched environment and not encapsulated in layer three packets.
+    
+  \subsection{Economic Restrictions}
     The Runtime of the algorithms is mainly dependent on the number of connections between the nodes. Calculating the initial spanning tree is done in BFS mode and 
     therefore has quadratic runtime for the worst cast, depending on how sparse the graph is. The following calculation of the survival paths has also quadratic runtime 
     since we iterate over all connections and for each connection in the worst case over all other connections to find the backup path. The channel assignment is then again
     In a common deployment scenario the underlying network graph will be very sparsly connected since the number of accesspoints used and placement are carefully selected.
     Mostly they are placed in a way that they span a network over an area as far as possible.
-    Current deployments and deployments in near future won't exceed 100 accesspoints. Even if fully meshed with a total of \(\sum \limits_{i=1}^{100} i = \frac{100(100+1)}{2}=5050\)
+    Current deployments and deployments in near future won't exceed 100 accesspoints. 
+    Even if fully meshed with a total of \(\sum \limits_{i=1}^{100} i = \frac{100(100+1)}{2}=5050\)
     edges it won't pose a problem to the capabilities of a WLC or an administrators machine.
-  \subsection{Utilize Variable Number of Radios}
-    As requested our algorithm selects channels from a given input set of channels. Only those channels are then used to determine the channel assignment.
-    It is even possible to specify only one channel, resulting in a topology optimized network graph only.
+    
 \section{Reflection on Related Work}
   Comparing our solution to those of others would need some common ground. For example hardware requirements, number of modules and in general heterogenity/homgenity of
   the network are factor that could play in favor of some algorithms and therefore won't lead to fair results. Additionally different solutions were designed to 
@@ -279,6 +305,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
   networks with respect to throughput, but this would require a full-scale simulation as hardware-resources are limited and too easily prone to real world difficulties.
   Although maybe a key aspect of this work, we did not have enough time to simulate even our own solution and therefore neither those of others. Nevertheless we would appreciate
   if someone further work on this field. In order to at least provide some kind of comparison we take a look at the features of each solution.
+  
   \subsection{Features of Related Work Systems}
     TODO:
   \subsection{Features of Our System}
