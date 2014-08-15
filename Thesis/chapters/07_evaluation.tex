@@ -20,7 +20,8 @@ and compared its capacities.
        \item 1 x Lancom WLC-4100
        \item 2 x Lancom GS-2352P
       \end{itemize}
-      running on Firmware Version 9.0. We deployed them at a typical office environment as depicted in the figure.
+      running on developer firmware version 9.0 with special extensions for our purpose not included in the mainline.
+      We deployed them at a typical office environment as depicted in the figure.
       Only omnidirectional antennas for the accesspoints were used for this setup. As we had to connect each of the accesspoints also
       per cable to the monitoring station and power grid in order to route traffic through them and the network they're spanning,
       we could not set them further apart.
@@ -39,19 +40,22 @@ and compared its capacities.
       \label{fig:2ndfloor}
     \end{figure}
   \subsection{Network Infrastructure}
+    The basic approach for measuring the throughput is to attach traffic generators to the accesspoints and make those send as much broadcast traffic to all
+    other stations which are part of this network and therefore saturate the throughput capabilities of the network. The idea behind this setup is to simulate real 
+    end-device-clients attached to the accesspoints, where each client has its own ip address and therefore mac- address and table. This constraint and also the additional effort
+    to implement a custom traffic generator in LCOS are the reason for this approach.
     \begin{figure}[h!]
       \centerline{
-	\includegraphics[width=0.3\textwidth]{figures/testsetup_logic}
+	\includegraphics[width=0.6\textwidth]{figures/testsetup_logic}
 	\caption{Example for the logical arrangement of accesspoints with systems attached by cable, which generate broadcast traffic that is routed through the 
 	wireless network spanned by the accesspoints.}
       }
       \label{fig:testsetup_logic}
     \end{figure}
-    The basic approach for measuring the throughput is to attach traffic generators to the accesspoints and make those send as much broadcast traffic to all
-    other stations which are part of this network and therefore saturate the throughput capabilities of the network.
+    
     \begin{figure}[h!]
       \centerline{
-	\includegraphics[width=0.6\textwidth]{figures/testsetup_openvz}%
+	\includegraphics[width=0.8\textwidth]{figures/testsetup_openvz}%
 	\caption{Implementation of the test arrangement with available hardware.}
       }
       \label{fig:testsetup_openvz}
@@ -72,6 +76,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \caption{IPerf's parameters to generate the traffic.}
       \label{lst:iperf}
     \end{listing}
+
 \section{Metrics}
   \subsection{Test Duration}
      Each testcase was run for a total of 10 minutes as this should be enough to transgress any temporary effects. To get status snapshots we querried the accesspoints
