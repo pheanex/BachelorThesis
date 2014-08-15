@@ -14,6 +14,7 @@ discussing the relevance of the problem COLORING for our approach.
   Wireless networks are computer networks which use radio-waves instead of cables in order two communicate.
   They are used in scenarios where using wires for connections are not possible or cumbersome like systems where devices are mobile.
   There are different scales where wireless connections are utilized:
+  
     \begin{itemize}
       \item Smallish systems like a \ac{PAN} where a smartphone would use bluetooth to connect to headphones or glasses. Typical range for this field of
 	application is within a few meters.
@@ -21,10 +22,12 @@ discussing the relevance of the problem COLORING for our approach.
 	Typical range is about 50 meters.
       \item Large scale systems like television broadcasting with \ac{DVB-T} through satellites with typical ranges of up to 35400 kilometers.
     \end{itemize}
+    
   \subsection{Wireless Access-Point}
     A Wireless Access-Point is a device which allows other devices with wireless adapters to connect to its network.
     Mostly it serves as an entry point to a network-infrastructure and ultimately the internet like a common network switch, 
     but accesspoints have far more uses than this. In the following we will describe the modes we use accesspoints in:
+    
     \begin{description}
       \item[Infrastructure-mode]
 	Using this mode, the clients connect themselves to the accesspoints in order to get access to the network behind the accesspoints, like fileservers or the internet.
@@ -34,6 +37,11 @@ discussing the relevance of the problem COLORING for our approach.
 	establish a link to the herein before mentioned accesspoints.
 
       \item [Point-to-Point mode]
+	This mode is something in between client-mode and infrastructure-mode. 
+	It allows an accesspoint to create a dedicated link to another accesspoint using the 	same modus and this connection would then be shared only by those two accesspoint
+	as communication in between is encrypted. 
+	This modus is necessary because certain connection-constellations can not be achieved by client-infrastructure-mode combinations solely.
+	Alternatively one could also have used the ad-hoc mode, if it had been implemented yet.
 	
       \item [Client-mode]
 	Here the accesspoint behave the same as ordinary clients like laptops or smartphones would.
@@ -73,6 +81,7 @@ discussing the relevance of the problem COLORING for our approach.
       \subsubsection{\ac{CSMA/CA}}
 	\ac{CSMA/CA} is a network protocol that describes how to access a shared medium, like a shared WLAN channel.
 	It behaves as described by \cite{csma_techo}:
+	
 	\begin{quotation}
 	  CSMA works on the principle that only one device can transmit signals on the network, 
 	  otherwise a collision will occur resulting in the loss of data packets or frames. 
@@ -162,25 +171,29 @@ discussing the relevance of the problem COLORING for our approach.
 	\end{enumerate}
 	
       \subsubsection{Automatic \ac{WDS}}
-      AutoWDS is then an extension to the WLC aided configuration by also allowing such a configuration procedure over wireless links instead of solely wired connections.
+	AutoWDS is then an extension to the WLC aided configuration by also allowing such a configuration procedure over wireless links instead of solely wired connections.
             
-      \begin{figure}[h!]
+	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=0.8\columnwidth]{figures/autowds}
 	  \caption{Autowds configuration setup. Only a few accesspoints are connected to the backbone via wire. 
-	  Other accesspoints use their radios to connect to accesspoints that are connected to backbone via wire (first \ac{AP}) or relay accesspoints(second \ac{AP}).}
+	    Other accesspoints use their radios to connect to accesspoints that are connected to backbone via wire (first \ac{AP}) or relay accesspoints(second \ac{AP}).}
 	  \label{fig:autowds}
-      \end{figure}
-      The procedure is enhanced accordingly:
-      \begin{enumerate}
-       \item The first \ac{AP} finds a WLC and proceeds as usual. Additionally it announces its connection to the WLC over its radios to other accesspoints.
-       \item The second \ac{AP} does not find a \ac{WLC} on its LAN inferface and extends its search on the radios where it receives the announce of the first \ac{AP}.
-	On its other radios it offers its services to clients.
-       \item The second \ac{AP} establishes a secure connection (\ac{DTLS}) to the first \ac{AP} and continues its search for a \ac{WLC} over this link, 
-	where it find the \ac{WLC} and also receives a configuration and proceeds as \ac{AP} one.
-	\item Gradually all the accesspoints connect each other to the backbone and receive a configuration.
-      \end{enumerate}
-
+	\end{figure}
+	
+	The procedure is enhanced accordingly:
+	
+	\begin{enumerate}
+	  \item The first \ac{AP} finds a WLC and proceeds as usual. Additionally it announces its connection to the WLC over its radios to other accesspoints.
+	  
+	  \item The second \ac{AP} does not find a \ac{WLC} on its LAN inferface and extends its search on the radios where it receives the announce of the first \ac{AP}.
+	    On its other radios it offers its services to clients.
+	    
+	  \item The second \ac{AP} establishes a secure connection (\ac{DTLS}) to the first \ac{AP} and continues its search for a \ac{WLC} over this link, 
+	    where it find the \ac{WLC} and also receives a configuration and proceeds as \ac{AP} one.
+	    
+	  \item Gradually all the accesspoints connect each other to the backbone and receive a configuration.
+	\end{enumerate}
 	
 \section{Graph-theoretic Basics}
   A graph in graphtheory is a set of nodes and edges between those nodes. 
@@ -201,23 +214,31 @@ discussing the relevance of the problem COLORING for our approach.
   \end{figure}
 
   We chose to use graphtheory to represent our networks as structures for two reasons:
+  
   \begin{itemize}
+  
    \item We are able to express all and only the necessary data with elements of a graph, like
     accesspoints and modules by nodes, links between accesspoints with edges and signal to noise ratio with weightedness. 
+    
    \item Graph theory is a well reseached field and a lot of problems in graphtheory can be solved efficiently and intuitively 
     as we will show later with the \ac{DJP} algorithm in \ref{fig:djp}.
+    
   \end{itemize}
     
   \subsection{Minimum Spanning Tree}
     A spanning tree is a subgraph for a given graph which contains all nodes of the original graph, but only the necessary subset of edges which are needed to connect each vertice
     to the component. In order to find a minimum spanning tree for a non-negative weighted graph we use the DJP algorithm \cite{prim}\cite{jarnik}.
     It works as described by the following:
+    
     \begin{enumerate}
      \item Initialize the minimum tree with a single, randomly chosen vertex from the given graph.
+     
      \item For all edges originating the set of nodes in the minimum tree to nodes which have not been visited yet, select the edge with the lowest score and add it and its nodes 
       to the minimum tree.
+      
      \item Repeat step two as long as not all vertices of the given graph are visited.
     \end{enumerate}
+    
     \begin{figure}[th!]
       \centering
       \includegraphics[width=0.8\columnwidth]{figures/djp.png}
@@ -228,6 +249,7 @@ discussing the relevance of the problem COLORING for our approach.
   \subsection{k-vertex-connectivity, k-edge-connectivity}
     A graph is said to be \textit{k-vertex-connected} if there exists a set of \textit{k} vertices whose removal disconnects parts of the graph.\newline
     A graph is said to be \textit{k-edge-connected} if the graph is still connected after the removal of \textit{k} edges.
+    
     \begin{figure}[th!]
       \centering
       \includegraphics[width=0.5\columnwidth]{figures/connectivity.png}
@@ -252,6 +274,7 @@ discussing the relevance of the problem COLORING for our approach.
     Furthermore we ignore onesided connections, i.e. one module receives one or a few beacons of the other module but not the other way round.
     Not only are the SNRs of those connections mostly very low/poor, but they are also very rare in our target scenarios with omnidirectional antennas.
     So mostly either the modules receive each others beacons, or both do not.
+    
     \begin{figure}[th!]
       \centering
       \includegraphics[width=0.5\columnwidth]{figures/apgraph.png}
@@ -262,12 +285,14 @@ discussing the relevance of the problem COLORING for our approach.
   \subsection{Relevance of COLORING}
     Other pursuits on this problem including \cite{BFS-CA}, \cite{CTA}, \cite{caa_tricky} and \cite{katzela} mention a kinship to the problem COLORING on graphs.
     On the other hand \cite{caa_tricky} also mentions:
+    
     \begin{quote}
-     At first glance, this problem appears to be a graph-coloring problem. However, standard graph-coloring algorithms cannot really capute the specification and constraints 
-     of the channel assignment problem. A node-multi-coloring formulation fails to capture [...] communicating nodes need[ing] a common color. On the other hand,
-     an edge-coloring formulation fails to capture the [...] constraint where no more than \textit{q} (number of NICs per node) colors can be incident to a node.
-     While a constraint edge-coloring might be able to roughly model the remaining constraints, it is incapable of satisfying the constraint of limited channel capacity.
+      At first glance, this problem appears to be a graph-coloring problem. However, standard graph-coloring algorithms cannot really capute the specification and constraints 
+      of the channel assignment problem. A node-multi-coloring formulation fails to capture [...] communicating nodes need[ing] a common color. On the other hand,
+      an edge-coloring formulation fails to capture the [...] constraint where no more than \textit{q} (number of NICs per node) colors can be incident to a node.
+      While a constraint edge-coloring might be able to roughly model the remaining constraints, it is incapable of satisfying the constraint of limited channel capacity.
     \end{quote}
+    
     In addition to the modeling problems, a potential result of such a COLORING solution still would not make a point on the topology to use,
     as COLORING works on given network graphs and therefore topolgies, but we also have to decide how to create and select the network topology.
     As a consequence this formal problem considered in our work.
