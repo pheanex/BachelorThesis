@@ -47,9 +47,8 @@ discussing the relevance of the problem COLORING for our approach.
 	Here the accesspoint behave the same as ordinary clients like laptops or smartphones would.
 	They search for announced accesspoints in infrastructure mode announcing a \ac{WLAN} and connect themselves to those.
 	Often this setup/mode is used to enable devices which lack 802.11-hardware to access WLANs through a wired link to those accesspoints.
-
     \end{description}
-    \cite{Akyildiz2005445}.
+    
     \begin{figure}[h!]
       \centerline{
 	\includegraphics[width=0.5\textwidth]{figures/L-322agn.jpg}
@@ -143,10 +142,22 @@ discussing the relevance of the problem COLORING for our approach.
 	\end{figure}
 	      
     \subsection{Wireless Distribution System}
+      A \ac{WDS} is defined by \cite{dd_wrt} as a system, that
+      
+      \begin{quote}
+	creates a wireless backbone link between multiple access points that are part of the same wireless network. 
+	This allows a wireless network to be expanded using multiple access points without the need for a wired backbone to link them, as is traditionally required. 
+	The WDS-enabled access points can accept wireless clients (e.g. wireless laptop users) just as traditional APs would.
+      \end{quote}
+
+      It is also pointed out, that WDS is currently not a certified standard of the IEEE and every vendor implements it in a different way.      
       
       \subsubsection{\ac{WLC}}
 	The purpose of a \ac{WLC} is to manage and configure many accesspoints centrally and automatically - effectively ease the job of the administrator responsible for a 
 	wireless infrastructure. They are usually located in central networking-cabinets next to other network core components like switches and servers.
+	Using a WLC to span a WDS is LANCOM special, as one would not need to use such a central entity, as its tasks can be done by the first accesspoint connected to the LAN,
+	like DD-WRT does.
+	
 	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=0.8\columnwidth]{figures/wlc}
