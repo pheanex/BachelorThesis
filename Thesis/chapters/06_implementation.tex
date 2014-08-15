@@ -1,6 +1,7 @@
 \chapter{Implementation}
   The language of choice we used for the implementation is python2.7. Although we also could have implemented the extension in c/c++ since the basic version
   was already written in this language, python does have some key advantages we did not want to miss.
+  
   \begin{description}
     \item [Rapid prototyping]
     Since our algorithms can easily work on a given set of data completely independent and the interfaces to get the data from are clearly defined and accessible,
@@ -20,205 +21,220 @@
     As python has the reputation of being an easy to learn language, this was another benefit and played absolutely in our favor with the goal of
     keeping the code simple, lightweight and reuseable by someone else.
   \end{description}
-  \begin{figure}[t]
+  
+  \begin{figure}[th!]
     \centering
     \includegraphics[width=1\columnwidth]{figures/dataflow}
     \caption{General flow of information for our scenario}
     \label{fig:dataflow}
   \end{figure}
   
-\section{Dependencies}
-  As already mentioned we used NetworkX\cite{hagberg-2008-exploring} to model our graphs and work with its elements.
-  NetworkX's rich features like ``has\_path'' made things especially easy in computing the survival paths.
-  Another library we used is python collections. \cite{python_collections}
-  This library implements specialized container datatypes additionally to those shipped with standard python.
-  It's `Counter` structure is used to create the channel-lists and retrieve the most or least used elements.
-  We extended this library for our convencience since it did only provide the functionality for getting the most common element from its list and not the least common,
-  which we needed. \footnote{It is worth mentioning that the request for including this method was already issued at 01/2013 http://bugs.python.org/issue16994}
-  The only closed source library we used is the herein before mentioned library to query the WLC for the data of the APs. Nevertheless gathering the data can also
-  easily be separated and outsourced to different interfaces.
-\section{Structure of the Code}
-  We split the code into two modules. The one handling connections, sending/receiving and transforming data to and from networkX graphs and the other one 
-  deals with only with graphs and therefore the theoretical problem.
-  \subsection{Interfacing Outer World and Managing Data}
-    The name of the module is \textit{wlc\_com}. This module's responsibilites include the following.
-    \begin{description}
-    \item[Receiving the necessary data]
-      For this purpose we use the closed source python library 'testcore', which creates a SSH/Telnet connection to the WLC and parses its tabledata.
-      The information we receive is of the following form:
-      \begin{table}[p]
-	\begin{tabular}{clll}
-	  Device Mac Address & Module Mac Address & Seen Module Mac Address & \ac{SNR}\\ \hline
-	  ece55574a4d5 & ece555ffd61e & ece555ffd5bf & 56 \\
-	  ece55574a4d5 & ece555ffd6cc & ece555ffd5b9 & 48 \\
-	  ece55574a4a5 & ece555ffd667 & ece555ffd5d6 & 33 \\
-	  ... & ... & ... & ...
-	\end{tabular}
-	\caption{Mesh network topology representation in table format on a LANCOM WLC. Device mac address is the LAN mac address, the module mac address is
-	the address of the module which is equipped on the device and which receives the Beacons with the ESSIDs of other modules, which in turn translates
-	the ESSID to the mac address of the opposing module. The \ac{SNR} describes thereon the quality of the link between those two modules.}
-	\label{tab:wlc}
+  \section{Dependencies}
+    As already mentioned we used NetworkX\cite{hagberg-2008-exploring} to model our graphs and work with its elements.
+    NetworkX's rich features like ``has\_path'' made things especially easy in computing the survival paths.
+    Another library we used is python collections. \cite{python_collections}
+    This library implements specialized container datatypes additionally to those shipped with standard python.
+    It's `Counter` structure is used to create the channel-lists and retrieve the most or least used elements.
+    We extended this library for our convencience since it did only provide the functionality for getting the most common element from its list and not the least common,
+    which we needed. \footnote{It is worth mentioning that the request for including this method was already issued at 01/2013 http://bugs.python.org/issue16994}
+    The only closed source library we used is the herein before mentioned library to query the WLC for the data of the APs. Nevertheless gathering the data can also
+    easily be separated and outsourced to different interfaces.
+  
+  \section{Structure of the Code}
+    We split the code into two modules. The one handling connections, sending/receiving and transforming data to and from networkX graphs and the other one 
+    deals with only with graphs and therefore the theoretical problem.
+    
+    \subsection{Interfacing Outer World and Managing Data}
+      The name of the module is \textit{wlc\_com}. This module's responsibilites include the following.
+      
+      \begin{description}
+	\item[Receiving the necessary data]
+	  For this purpose we use the closed source python library 'testcore', which creates a SSH/Telnet connection to the WLC and parses its tabledata.
+	  The information we receive is of the following form:
+	  \begin{table}[p]
+	    \begin{tabular}{clll}
+	      Device Mac Address & Module Mac Address & Seen Module Mac Address & \ac{SNR}\\ \hline
+	      ece55574a4d5 & ece555ffd61e & ece555ffd5bf & 56 \\
+	      ece55574a4d5 & ece555ffd6cc & ece555ffd5b9 & 48 \\
+	      ece55574a4a5 & ece555ffd667 & ece555ffd5d6 & 33 \\
+	      ... & ... & ... & ...
+	    \end{tabular}
+	    \caption{Mesh network topology representation in table format on a LANCOM WLC. Device mac address is the LAN mac address, the module mac address is
+	    the address of the module which is equipped on the device and which receives the Beacons with the ESSIDs of other modules, which in turn translates
+	    the ESSID to the mac address of the opposing module. The \ac{SNR} describes thereon the quality of the link between those two modules.}
+	    \label{tab:wlc}
+	  \end{table}
+	
+	  \item [Transform the data to a networkX graph]
+	    The tabledata from above can then be molded into a directed, weighted networkX graph. Where we create a node for each mac address and module mac address and attach a boolean
+	    attribute to it to tell them apart. 
+	    In parallel we add two types of edges:
+	
+	    \begin{itemize}
+	      \item Fake edges between module-nodes and device-nodes with an attribute "SNR" which contains the maximum possible value for this attribute.
+	      
+	      \item Real edges for each line in the table above, where the two nodes are the module mac address pairs. 
+		Note that one row in the table represents just a directed edge from one module to the other. We only respect two-sided connections,
+		since one-sided edges are mostly of poor quality and would further complicate finding a solution.
+		As we have two SNR-values for a single undirected edge when merging two directed edges, we are at liberty to chose.
+		Currently we are using the average of both values, but implemented an option to use the larger or the smaller value if favoured.
+		Especially the lower SNR value might better represent a connection for more pessimistic scenarios.
+	    \end{itemize}
+	
+	  \item[Conducting a validity check on the result]
+	    Before generating the configuration and sending the result to the WLC we have the option perform some sanity checks on the outcome.
+	    Among others we test for the following:
+	    
+	    \begin{description}
+	      \item [Connectedness of the graph]
+		Is each device connected to the network, or are there disconnected components?
+	      \item [Channel / Band conformance]
+		Do modules which are supposed to establish a connection use the same channel and Band?
+	      \item [Using allowed channels]
+		Are only channels used which have been specified as input?
+	      \item [Device Module separation]
+		Are all devices only connected to their modules over module-device edges?
+	    \end{description}
+	    
+	\item [Send results back to the WLC]
+	  If we were able to compute a solution and all checks passed we again establish a connection to the WLC and write back a network topology and channel assignment
+	  configuration. This configuration will then be enforced on the accesspoints by the managing WLC.
+	  This is done by configuring each module to use only the assigned channel and set entries in the network topology table. Depending on other parameters the
+	  accesspoints will then after a while receive their specific configurations and act on those.
+      \end{description}
+      
+    \subsection{Solving the Theoretical Problem}
+      The module for this job is named \textit{tcca} and handles finding the solution based on graphs.
+      With a given undirected networkX graph we can compute a solution in three phases.
+      To give you a short example, we create a grid network with random edge weights (Line 5 - 41).
+      
+      \begin{table}
+	\lstset{language=Python}
+	\begin{lstlisting}
+  import networkx as nx
+  import random
+  import tcca
+
+  graph = nx.Graph()
+
+  for i in range(9):
+      i = str(i)
+      graph.add_node(i, isModule=False)
+      for j in range(2):
+	  j = str(j)
+	  module_name = i + "." + j
+	  graph.add_node(module_name, isModule=True)
+	  graph.add_edge(i, module_name)
+	  graph.edge[i][module_name]["snr"] = max_weight = 1000
+
+  seen_links = {0: [0, 1, 3, 4], 
+		1: [0, 1, 2, 3, 4, 5], 
+		2: [1, 2, 4, 5], 
+		3: [0, 1, 3, 4, 6, 7], 
+		4: [0, 1, 2, 3, 4, 5, 6, 7, 8], 
+		5: [1, 2, 4, 5, 7, 8], 
+		6: [3, 4, 6, 7], 
+		7: [3, 4, 5, 6, 7, 8], 
+		8: [4, 5, 7, 8]}
+
+  for node_a in seen_links:
+      for node_b in seen_links[node_a]:
+	  for i in range(2):
+	      i = str(i)
+	      for j in range(2):
+		  j = str(j)
+		  node_a = str(node_a)
+		  node_b = str(node_b)
+		  moda = node_a + "." + i
+		  modb = node_b + "." + j
+
+		  if moda == modb:
+		      continue
+
+		  graph.add_edge(moda, modb, snr=random.randint(30, 96))
+
+  st_graph = tcca.calculate_st(graph)
+
+  survival_graph = tcca.calculate_survival_links(st_graph, graph)
+
+  ca_mst_graph = tcca.calculate_ca(st_graph, graph, [1, 6, 11])
+
+  ca_survival_graph = tcca.calculate_ca(survival_graph, graph, [1, 6, 11])
+	\end{lstlisting}
+	\caption{The python code for generating the example network graph and solutions. Note the tcca import, 
+	which is our library for topology creation and channel assignment.}
       \end{table}
       
-      \item [Transform the data to a networkX graph]
-	The tabledata from above can then be molded into a directed, weighted networkX graph. Where we create a node for each mac address and module mac address and attach a boolean
-	attribute to it to tell them apart. 
-	In parallel we add two types of edges:
+      \subsubsection{Selecting the Network Topology}
+	\begin{description}
+	  \item [Optimal Spanning Tree]
+	    In the first phase we create a spanning tree on the graph over the highest edge scores.
+	    The "calculate\_st"-function requires a networkX graph as single parameter and returns a networkX spanning tree graph (Line 43/left figure in \ref{fig:3x3second}).
+	    
+	  \item[Adding Redundand Paths]
+	    If desired, the creation of the spanning tree is followed by adding redundant edges which act as backup links 
+	    for failing edges (Line 45/right figure in \ref{fig:3x3second}). 
+	    To get a networkX survival-graph, we run the "calculate\_survival\_links"-function,
+	    and supply it the spanning tree graph from step one to make its topology redundant and also 
+	    the initial topology graph to determine interference groups.
+	    
+	\end{description}
+      \subsubsection{Coloring the Edges/Modules}
+	Finally we can assign channels to either only the mst graph or the survival graph, (Lines 47/49 and \ref{fig:3x3third}).
+	As parameters it takes the networkX graph we want to assign channels to, the basic connectivity graph to dertermine 
+	interference groups again and the allowed channel list to select channels from. 
+	
+      \begin{figure}[t]
+	\centering
+	\includegraphics[width=0.39\columnwidth]{figures/3x3ap_range}
+	\includegraphics[width=0.6\columnwidth]{figures/3x3seen}
+	\caption{Grid network layout as example scenario with two radio modules per accesspoint with transmit ranges denoted (left). 
+	  The resulting network connection topology (right). Thicker edges as usual indicate a higher SNR for a link.}
+	\label{fig:3x3initial}
+      \end{figure}
       
-	\begin{itemize}
-	  \item Fake edges between module-nodes and device-nodes with an attribute "SNR" which contains the maximum possible value for this attribute.
-	  
-	  \item Real edges for each line in the table above, where the two nodes are the module mac address pairs. 
-	    Note that one row in the table represents just a directed edge from one module to the other. We only respect two-sided connections,
-	    since one-sided edges are mostly of poor quality and would further complicate finding a solution.
-	    As we have two SNR-values for a single undirected edge when merging two directed edges, we are at liberty to chose.
-	    Currently we are using the average of both values, but implemented an option to use the larger or the smaller value if favoured.
-	    Especially the lower SNR value might better represent a connection for more pessimistic scenarios.
-	\end{itemize}
+      \begin{figure}[t]
+	\centering
+	\includegraphics[width=0.49\columnwidth]{figures/3x3mst}
+	\includegraphics[width=0.49\columnwidth]{figures/3x3robust}
+	\caption{Spanning tree on the graph(left) and spanning tree with survival paths(right)}
+	\label{fig:3x3second}
+      \end{figure}
       
-      \item[Conducting a validity check on the result]
-	Before generating the configuration and sending the result to the WLC we have the option perform some sanity checks on the outcome.
-	Among others we test for the following:
-	  \begin{description}
-	  \item [Connectedness of the graph]
-	    Is each device connected to the network, or are there disconnected components?
-	  \item [Channel / Band conformance]
-	    Do modules which are supposed to establish a connection use the same channel and Band?
-	  \item [Using allowed channels]
-	    Are only channels used which have been specified as input?
-	  \item [Device Module separation]
-	    Are all devices only connected to their modules over module-device edges?
-	  \end{description}
-      \item [Send results back to the WLC]
-	If we were able to compute a solution and all checks passed we again establish a connection to the WLC and write back a network topology and channel assignment
-	configuration. This configuration will then be enforced on the accesspoints by the managing WLC.
-	This is done by configuring each module to use only the assigned channel and set entries in the network topology table. Depending on other parameters the
-	accesspoints will then after a while receive their specific configurations and act on those.
-    \end{description}
+      \begin{figure}[t]
+	\centering
+	\includegraphics[width=0.49\columnwidth]{figures/3x3_ca_mst}
+	\includegraphics[width=0.49\columnwidth]{figures/3x3_ca_robust}
+	\caption{Spanning tree with channels assigned(left) and spanning tree with survival paths with channels assigned(right)}
+	\label{fig:3x3third}
+      \end{figure}
+      
+  \section{Additional Tools}
+    To make things easier for debugging and also to actually see what is going on during the execution of the algorithms,
+    we and most of all my Christoph Wollgarten created a tool called AutoWDS, which is based on \cite{d3js}. 
+    Furthermore attached with a tool to extract data from the WLC, it is able to display current statuses and established links of a deployed network.
     
-  \subsection{Solving the Theoretical Problem}
-    The module for this job is named \textit{tcca} and handles finding the solution based on graphs.
-    With a given undirected networkX graph we can compute a solution in three phases.
-    To give you a short example, we create a grid network with random edge weights (Line 5 - 41).
-    \begin{table}
-      \lstset{language=Python}
-      \begin{lstlisting}
-import networkx as nx
-import random
-import tcca
-
-graph = nx.Graph()
-
-for i in range(9):
-    i = str(i)
-    graph.add_node(i, isModule=False)
-    for j in range(2):
-        j = str(j)
-        module_name = i + "." + j
-        graph.add_node(module_name, isModule=True)
-        graph.add_edge(i, module_name)
-        graph.edge[i][module_name]["snr"] = max_weight = 1000
-
-seen_links = {0: [0, 1, 3, 4], 
-              1: [0, 1, 2, 3, 4, 5], 
-              2: [1, 2, 4, 5], 
-              3: [0, 1, 3, 4, 6, 7], 
-              4: [0, 1, 2, 3, 4, 5, 6, 7, 8], 
-              5: [1, 2, 4, 5, 7, 8], 
-              6: [3, 4, 6, 7], 
-              7: [3, 4, 5, 6, 7, 8], 
-              8: [4, 5, 7, 8]}
-
-for node_a in seen_links:
-    for node_b in seen_links[node_a]:
-        for i in range(2):
-            i = str(i)
-            for j in range(2):
-                j = str(j)
-                node_a = str(node_a)
-                node_b = str(node_b)
-                moda = node_a + "." + i
-                modb = node_b + "." + j
-
-                if moda == modb:
-                    continue
-
-                graph.add_edge(moda, modb, snr=random.randint(30, 96))
-
-st_graph = tcca.calculate_st(graph)
-
-survival_graph = tcca.calculate_survival_links(st_graph, graph)
-
-ca_mst_graph = tcca.calculate_ca(st_graph, graph, [1, 6, 11])
-
-ca_survival_graph = tcca.calculate_ca(survival_graph, graph, [1, 6, 11])
-      \end{lstlisting}
-      \caption{The python code for generating the example network graph and solutions. Note the tcca import, 
-      which is our library for topology creation and channel assignment.}
-    \end{table}
-    
-    \subsubsection{Selecting the Network Topology}
-      \begin{description}
-	\item [Optimal Spanning Tree]
-	  In the first phase we create a spanning tree on the graph over the highest edge scores.
-	  The "calculate\_st"-function requires a networkX graph as single parameter and returns a networkX spanning tree graph (Line 43/left figure in \ref{fig:3x3second}).
-	\item[Adding Redundand Paths]
-	  If desired, the creation of the spanning tree is followed by adding redundant edges which act as backup links 
-	  for failing edges (Line 45/right figure in \ref{fig:3x3second}). 
-	  To get a networkX survival-graph, we run the "calculate\_survival\_links"-function,
-	  and supply it the spanning tree graph from step one to make its topology redundant and also 
-	  the initial topology graph to determine interference groups.
-      \end{description}
-    \subsubsection{Coloring the Edges/Modules}
-      Finally we can assign channels to either only the mst graph or the survival graph, (Lines 47/49 and \ref{fig:3x3third}).
-      As parameters it takes the networkX graph we want to assign channels to, the basic connectivity graph to dertermine 
-      interference groups again and the allowed channel list to select channels from. 
-      
-    \begin{figure}[t]
-      \centering
-      \includegraphics[width=0.39\columnwidth]{figures/3x3ap_range}
-      \includegraphics[width=0.6\columnwidth]{figures/3x3seen}
-      \caption{Grid network layout as example scenario with two radio modules per accesspoint with transmit ranges denoted (left). 
-	The resulting network connection topology (right). Thicker edges as usual indicate a higher SNR for a link.}
-      \label{fig:3x3initial}
-    \end{figure}
+    It works by reading a graph represented as a \ac{JSON}-file and displays it interactively in html with javascript.
+    As it is basically a force directed graph, the nodes position themselves according to their SNR-edge-values. 
+    Additionally you can drag and position single nodes freely anywhere on the map for better singularization of entities.
+    In the tcca module we also included an export function called "write\_json(graph, filename)" which creates a json file to be read by the autowdsstatus tool.
+    This tool has also been used to create most of the images in this thesis.
     
     \begin{figure}[t]
       \centering
-      \includegraphics[width=0.49\columnwidth]{figures/3x3mst}
-      \includegraphics[width=0.49\columnwidth]{figures/3x3robust}
-      \caption{Spanning tree on the graph(left) and spanning tree with survival paths(right)}
-      \label{fig:3x3second}
+      \includegraphics[width=1\columnwidth]{figures/autowdsstatus}
+      \caption{AutoWDS status webinterface showing a network topology}
+      \label{fig:autowdsstatus}
     \end{figure}
     
-    \begin{figure}[t]
-      \centering
-      \includegraphics[width=0.49\columnwidth]{figures/3x3_ca_mst}
-      \includegraphics[width=0.49\columnwidth]{figures/3x3_ca_robust}
-      \caption{Spanning tree with channels assigned(left) and spanning tree with survival paths with channels assigned(right)}
-      \label{fig:3x3third}
-    \end{figure}
-\section{Additional Tools}
-  To make things easier for debugging and also to actually see what is going on during the execution of the algorithms we and most of all my supervisor Christoph
-  Wollgarten created a tool called AutoWDS, which is based on \cite{d3js}. It reads a graph represented as a \ac{JSON}-file and displays it interactively in html with javascript.
-  As it is basically a force directed graph, the nodes position themselves according to their SNR-edge-values. Additionally you can drag and position single nodes freely
-  anywhere on the map.
-  In the tcca module we also included an export function called "write\_json(graph, filename)" which creates a json file to be read by the autowdsstatus tool.
-  This tool has also been used to create most of the images for this thesis.
+  \section{Problems and Aids}
   
-  \begin{figure}[t]
-    \centering
-    \includegraphics[width=1\columnwidth]{figures/autowdsstatus}
-    \caption{AutoWDSstatus webinterface showing a network topology}
-    \label{fig:autowdsstatus}
-  \end{figure}
-  
-\section{Problems and Aids}
-  \subsection{Representation of Tables in LANCOM Devices}
-    While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
-    they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
-    nice tables like \ref{tab:wlc} we can work with. Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
-  \subsection{Python Logging Module}
-    Another great idea turned out to be the utilization of pythons logger module. We excessively made use of its Error/Warning/Info/Debug statements which made debugging
-    a lot easier without being an obstacle if we did not need the output as we could just switch to a different level of logging and enjoy the silence.
+    \subsection{Representation of Tables in LANCOM Devices}
+      While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
+      they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
+      nice tables like \ref{tab:wlc} we can work with. Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
+      
+    \subsection{Python Logging Module}
+      Another great idea turned out to be the utilization of pythons logger module. We excessively made use of its Error/Warning/Info/Debug statements which made debugging
+      a lot easier without being an obstacle if we did not need the output as we could just switch to a different level of logging and enjoy the silence.
   
