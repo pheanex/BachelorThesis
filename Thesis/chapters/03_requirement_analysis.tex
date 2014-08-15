@@ -48,10 +48,14 @@
     
     \subsection{Centralized Computation and Configuration}
       AutoWDS extended must also be able to compute its solution on a central entity in contrast to a distributed fashion.
-      Also not currently planned, a potential algorithm may be included in the WLC in the future.
-      Reconfiguration of accesspoints and collection of data from the accesspoint-network will only be able through a central wireless lan controller.
+      Especially the accesspoints should not be used to compute such a solution as no additional tasks should be assigned to them.
+      Although not currently planned, a potential algorithm may be included in the WLC in the future.
+      
+      Reconfiguration of accesspoints and collection of data from the accesspoint-network will only be able through a central \ac{WLC}.
       That means for example the potential network-topology and channel assignment solution has to be set on the WLC and may not be broadcasted or otherwise
-      distributed by or through the accesspoints initially.
+      distributed by or through the accesspoints initially. The reason for such a focus on centralized taks is to provide the administrator the 
+      opportunity to intervene and set manual wireless connections, which is not as easily feasible in a distributed setup. 
+      Additionally the management of certificates for security purposes is built up hierarchically and executed by the central \ac{WLC}.
       
     \subsection{Static Environment}
       AutoWDS basic and extended is and will be designed for a static environment of accesspoints. That means there will be no highly frequent changes in

@@ -51,6 +51,7 @@
 	\item[Receiving the necessary data]
 	  For this purpose we use the closed source python library 'testcore', which creates a SSH/Telnet connection to the WLC and parses its tabledata.
 	  The information we receive is of the following form:
+	  
 	  \begin{table}[p]
 	    \begin{tabular}{clll}
 	      Device Mac Address & Module Mac Address & Seen Module Mac Address & \ac{SNR}\\ \hline
@@ -60,42 +61,42 @@
 	      ... & ... & ... & ...
 	    \end{tabular}
 	    \caption{Mesh network topology representation in table format on a LANCOM WLC. Device mac address is the LAN mac address, the module mac address is
-	    the address of the module which is equipped on the device and which receives the Beacons with the ESSIDs of other modules, which in turn translates
-	    the ESSID to the mac address of the opposing module. The \ac{SNR} describes thereon the quality of the link between those two modules.}
+	      the address of the module which is equipped on the device and which receives the Beacons with the ESSIDs of other modules, which in turn translates
+	      the ESSID to the mac address of the opposing module. The \ac{SNR} describes thereon the quality of the link between those two modules.}
 	    \label{tab:wlc}
 	  \end{table}
 	
-	  \item [Transform the data to a networkX graph]
-	    The tabledata from above can then be molded into a directed, weighted networkX graph. Where we create a node for each mac address and module mac address and attach a boolean
-	    attribute to it to tell them apart. 
-	    In parallel we add two types of edges:
-	
-	    \begin{itemize}
-	      \item Fake edges between module-nodes and device-nodes with an attribute "SNR" which contains the maximum possible value for this attribute.
-	      
-	      \item Real edges for each line in the table above, where the two nodes are the module mac address pairs. 
-		Note that one row in the table represents just a directed edge from one module to the other. We only respect two-sided connections,
-		since one-sided edges are mostly of poor quality and would further complicate finding a solution.
-		As we have two SNR-values for a single undirected edge when merging two directed edges, we are at liberty to chose.
-		Currently we are using the average of both values, but implemented an option to use the larger or the smaller value if favoured.
-		Especially the lower SNR value might better represent a connection for more pessimistic scenarios.
-	    \end{itemize}
-	
-	  \item[Conducting a validity check on the result]
-	    Before generating the configuration and sending the result to the WLC we have the option perform some sanity checks on the outcome.
-	    Among others we test for the following:
+	\item [Transform the data to a networkX graph]
+	  The tabledata from above can then be molded into a directed, weighted networkX graph. Where we create a node for each mac address and module mac address and attach a boolean
+	  attribute to it to tell them apart. 
+	  In parallel we add two types of edges:
+
+	  \begin{itemize}
+	    \item Fake edges between module-nodes and device-nodes with an attribute "SNR" which contains the maximum possible value for this attribute.
 	    
-	    \begin{description}
-	      \item [Connectedness of the graph]
-		Is each device connected to the network, or are there disconnected components?
-	      \item [Channel / Band conformance]
-		Do modules which are supposed to establish a connection use the same channel and Band?
-	      \item [Using allowed channels]
-		Are only channels used which have been specified as input?
-	      \item [Device Module separation]
-		Are all devices only connected to their modules over module-device edges?
-	    \end{description}
-	    
+	    \item Real edges for each line in the table above, where the two nodes are the module mac address pairs. 
+	      Note that one row in the table represents just a directed edge from one module to the other. We only respect two-sided connections,
+	      since one-sided edges are mostly of poor quality and would further complicate finding a solution.
+	      As we have two SNR-values for a single undirected edge when merging two directed edges, we are at liberty to chose.
+	      Currently we are using the average of both values, but implemented an option to use the larger or the smaller value if favoured.
+	      Especially the lower SNR value might better represent a connection for more pessimistic scenarios.
+	  \end{itemize}
+
+	\item[Conducting a validity check on the result]
+	  Before generating the configuration and sending the result to the WLC we have the option perform some sanity checks on the outcome.
+	  Among others we test for the following:
+	  
+	  \begin{description}
+	    \item [Connectedness of the graph]
+	      Is each device connected to the network, or are there disconnected components?
+	    \item [Channel / Band conformance]
+	      Do modules which are supposed to establish a connection use the same channel and Band?
+	    \item [Using allowed channels]
+	      Are only channels used which have been specified as input?
+	    \item [Device Module separation]
+	      Are all devices only connected to their modules over module-device edges?
+	  \end{description}
+	  
 	\item [Send results back to the WLC]
 	  If we were able to compute a solution and all checks passed we again establish a connection to the WLC and write back a network topology and channel assignment
 	  configuration. This configuration will then be enforced on the accesspoints by the managing WLC.
