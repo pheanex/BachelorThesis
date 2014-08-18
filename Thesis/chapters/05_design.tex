@@ -1,20 +1,44 @@
 \chapter{Algorithmical Design}
-  Calculating a solution for a specific scenario is split into two parts. At first the underlying connection topology is determined.
-  Subsequently a channel assignment is computed for this specific topology. As input we expect a connected, undirected, weigthed graph.
-  Note that this chapter and algorithms only deal with graphs and the computation of solutions on graphs.
+  Even for a simple scenario like in \ref{fig:graphseen} we have a lot of possible links between the modules and its not obvious how to
+  chose a network topology from this graph.
+  A shortsighted solution may be trying to use every possible link, since this would decrease overall traveltimes for each packet and therefore
+  reduncing network workload and possible interferences as a packet is not longer in the network than it needs to be. 
+  The problem in doing so is the small number of channels we can assign to these links, even if we allow using multiple channels.
+  Since we can only assign one channel to a module, trying to start small and assigning one channel to one module would then force us to also 
+  assign the same channel to all connected modules in order to maintain connectivity as two modules can only communicate with each other if they use the same channel
+  (See left picture in \ref{fig:high_con_vs_low_con}). 
   
-  \begin{figure}[htbp]
+  \begin{figure}[h!]
     \centering
-    \includegraphics[width=1\columnwidth]{figures/graphseen.png}
-    \caption{Graph representation of a scenario with 6 APs and 2 modules each. The grey eges indicate possible connectivity between the 
-      modules. Edge weight(SNR) is mapped to edge thickness.}
+    \includegraphics[width=0.8\columnwidth]{figures/graphseen.png}
+    \caption{Network topology graph for a simple scenario with 6 accesspoints / 2 modules each.}
     \label{fig:graphseen}
   \end{figure}
+
+  On the other hand if we only chose a very small subset of links in this graph (like a MST), we might be able to 
+  assign more channels, leading up to no interference at all (See right picture in \ref{fig:high_con_vs_low_con}),
+  this would create many bottlenecks, single points of failures and packets staying longer in the communication network since they can not take the shortest path.
+
+  Especially adding redundant links to a small subset of links in order to fulfill the reduced end-to-end link failure requirement is not straigh-forward as each newly
+  added link increases overall throughput capacity, but at the same time may create co-channel interference or worse, decrease the number of overall assignable channels
+  (See \ref{fig:lessismore}).
+ 
+  \begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\columnwidth]{figures/high_con_vs_low_con.png}
+    \caption{Highly connected topology with few channels (left) versus sparsely connected topology with more channels (right)}
+    \label{fig:high_con_vs_low_con}
+  \end{figure}
   
+  In the following two sections we will present an algorithm creating network topolgies, seeking to find the best compromise, by first creating the topology and then
+  assigning channels on the resulting topology as basis.
+  
+ \newpage 
+ 
   \section{Topology Creation}
-    Creating the topology is split into two parts. 
-    First creating the minimal spanning tree with respect the provided formula.
-    And second adding redundancies in form ofbackup or parallel links to the \ac{MST}.    
+    Creating the topology is also split into two parts.
+    First, creating a minimal spanning tree, respecting a certain provided formula, which scores edges depending on their expected throughput despite interference.
+    Second, adding redundancies in form of backup or parallel links to this \ac{MST}. To make it more vivid we added an example after the algorithmic description.
 
     \subsection{Minimal/Optimal Spanning Tree Topology}
       \subsubsection{Description}
