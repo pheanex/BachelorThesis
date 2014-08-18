@@ -233,75 +233,78 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 \section{Reflection on the Requirements}
   In this section we analyze by how far we were able to meet the imposed requirements and restrictions.
   
-  \subsection{Increased Throughput}
-    Our measurement results indicate that throughput could significantly be increased. How much is determined by the input parameters of the algorithms like
-    channels that can be utilized and hardware environments like the number of radio modules available at the accesspoints. 
-    
-  \subsection{Reduced end-to-end Link Failures}
-    The survival path property takes care of this requirement. That is for the given error-scenario of one failing connection at a time, there is always
-    a backup connection over a different link available as far as the underlying topology permits. As we were not able to test this feature 
-    with the given implementation we are nevertheless confident that also this requirement has been met.
-    If multi-flow / routing support will be implemented for our hardware in the future a decrease in node separation for failing links should be recognizable.
-    Therefore we also met the successfully met the requirement of a two-edge-connected network topology.
-    
-  \subsection{Multiple Radios Utilized}
-    Our algorithm utilizes the radio-modules as far as they are relevant for creating links between accesspoints with a high estimated throughput.
-    Depending on the given infrastructure not all radio modules are necessarily used, since not all of them are needed in order to create a connected network topology.
-    Moreover using all available links would not be beneficial as the hop distance would decrease but the effective throughput would also decrease by a factor 
-    more than the number of participants in that channel.
-    
-    \begin{figure}[h!]
-      \centerline{
-	\includegraphics[width=0.56\textwidth]{figures/lessismore}
-	\caption{Due to the channel separation and exclusive access to one channel the left scenario is more favourable than the right, 
-		  since throughput empirically exponentially decreases and is far below the 33 percent which those links would 
-		  have to yield in order to at least provide the same throughput
+  \begin{description}
+    \item [Increased Throughput:]
+      Our measurement results indicate that throughput could significantly be increased. How much is determined by the input parameters of the algorithms like
+      channels that can be utilized and hardware environments like the number of radio modules available at the accesspoints. 
+      
+    \item[Reduced end-to-end Link Failures:]
+      The survival path property takes care of this requirement. That is for the given error-scenario of one failing connection at a time, there is always
+      a backup connection over a different link available as far as the underlying topology permits. As we were not able to test this feature 
+      with the given implementation we are nevertheless confident that also this requirement has been met.
+      If multi-flow / routing support will be implemented for our hardware in the future a decrease in node separation for failing links should be recognizable.
+      Therefore we also met the successfully met the requirement of a two-edge-connected network topology.
+      
+    \item[Multiple Radios Utilized:]
+      Our algorithm utilizes the radio-modules as far as they are relevant for creating links between accesspoints with a high estimated throughput.
+      Depending on the given infrastructure not all radio modules are necessarily used, since not all of them are needed in order to create a connected network topology.
+      Moreover using all available links would not be beneficial as the hop distance would decrease but the effective throughput would also decrease by a factor 
+      more than the number of participants in that channel.
+      
+      \begin{figure}[h!]
+	\centerline{
+	  \includegraphics[width=0.56\textwidth]{figures/lessismore}
+	  \caption{Due to the channel separation and exclusive access to one channel the left scenario is more favourable than the right, 
+		    since throughput empirically exponentially decreases and is far below the 33 percent which those links would 
+		    have to yield in order to at least provide the same throughput
+	  }
 	}
-      }
-      \label{fig:lessismore}
-    \end{figure}
+	\label{fig:lessismore}
+      \end{figure}
     
-    Having some radio modules to spare gives us the opportunity to use those exclusively for client connections and assigning them a channel which does not interfere with the
-    wireless backbone.
+      Having some radio modules to spare gives us the opportunity to use those exclusively for client connections and assigning them a channel which does not interfere with the
+      wireless backbone.
+      
+      \begin{figure}[h!]
+	\centerline{
+	  \includegraphics[width=0.56\textwidth]{figures/moduletospare}%
+	  \caption{Unused Modules used for separate client connections without interfering wlan backbone}
+	}
+	\label{fig:moduletospare}
+      \end{figure}
     
-    \begin{figure}[h!]
-      \centerline{
-	\includegraphics[width=0.56\textwidth]{figures/moduletospare}%
-	\caption{Unused Modules used for separate client connections without interfering wlan backbone}
-      }
-      \label{fig:moduletospare}
-    \end{figure}
-    
-  \subsection{Capability of Using Variable Channelsets}
-    Our algorithm selects channels from a given input set of channels. Only those channels are then used to determine the channel assignment.
-    It is even possible to specify only one channel, resulting in a topology optimized network graph only.
-    Therefore this solution also fullfills this requirement.
-    
-  \subsection{Centralized Computation and Configuration}
-    The requirement dictates that computing a solution should be possible on a centralized entity (Servers/WLC).
-    Our algorithm was implemented as a python script and can be run on a single system if given the right input data.
-    Creating the configurations for the accesspoint will still be conducted by the central WLC as depicted in \ref{fig:dataflow}.
-    
-  \subsection{Static Environment} 
-    Also the second requirement is taken into consideration, since our algorithm is specially designed for a static environment where link quality 
-    and linkstate stay the same for a foreseeable time.
-    If major changes in network connectivity or link quality occur the chosen network topology and channel assignment
-    may lead to temporal suboptimal results, therefore also a recomputation of the network topology would have to be triggered.
-    Currently there are no automatic triggers implemented, but planned in the future.
-    
-  \subsection{Layer two Usage}
-    Accesspoints use bridged point to point connections to span the wireless network backbone, therefore creating no obstacles for layer two frames.
-    The ethernet frames are just forwarded like in a switched environment and not encapsulated in layer three packets.
-    
-  \subsection{Economic Restrictions}
-    The Runtime of the algorithms is mainly dependent on the number of connections between the nodes. Calculating the initial spanning tree is done in BFS mode and 
-    therefore has quadratic runtime for the worst cast, depending on how sparse the graph is. The following calculation of the survival paths has also quadratic runtime 
-    since we iterate over all connections and for each connection in the worst case over all other connections to find the backup path. The channel assignment is then again
-    In a common deployment scenario the underlying network graph will be very sparsly connected since the number of accesspoints used and placement are carefully selected.
-    Mostly they are placed in a way that they span a network over an area as far as possible.
-    Current deployments and deployments in near future won't exceed 100 accesspoints. 
-    Even if fully meshed with a total of \(\sum \limits_{i=1}^{100} i = \frac{100(100+1)}{2}=5050\)
-    edges it won't pose a problem to the capabilities of a WLC or an administrators machine.
+    \item[Capability of Using Variable Channelsets:]
+      Our algorithm selects channels from a given input set of channels. Only those channels are then used to determine the channel assignment.
+      It is even possible to specify only one channel, resulting in a topology optimized network graph only.
+      Therefore this solution also fullfills this requirement.
+      
+    \item[Centralized Computation and Configuration:]
+      The requirement dictates that computing a solution should be possible on a centralized entity (Servers/WLC).
+      Our algorithm was implemented as a python script and can be run on a single system if given the right input data.
+      Creating the configurations for the accesspoint will still be conducted by the central WLC as depicted in \ref{fig:dataflow}.
+      
+    \item[Static Environment:]
+      Also the second requirement is taken into consideration, since our algorithm is specially designed for a static environment where link quality 
+      and linkstate stay the same for a foreseeable time.
+      If major changes in network connectivity or link quality occur the chosen network topology and channel assignment
+      may lead to temporal suboptimal results, therefore also a recomputation of the network topology would have to be triggered.
+      Currently there are no automatic triggers implemented, but planned in the future.
+      
+    \item[Layer two Usage:]
+      Accesspoints use bridged point to point connections to span the wireless network backbone, therefore creating no obstacles for layer two frames.
+      The ethernet frames are just forwarded like in a switched environment and not encapsulated in layer three packets.
+      
+    \item[Economic Restrictions:]
+      The Runtime of the algorithms is mainly dependent on the number of connections between the nodes. Calculating the initial spanning tree is done in BFS mode and 
+      therefore has quadratic runtime for the worst cast, depending on how sparse the graph is. The following calculation of the survival paths has also quadratic runtime 
+      since we iterate over all connections and for each connection in the worst case over all other connections to find the backup path. The channel assignment is then again
+      In a common deployment scenario the underlying network graph will be very sparsly connected since the number of accesspoints used and placement are carefully selected.
+      Mostly they are placed in a way that they span a network over an area as far as possible.
+      Current deployments and deployments in near future won't exceed 100 accesspoints. 
+      Even if fully meshed with a total of \(\sum \limits_{i=1}^{100} i = \frac{100(100+1)}{2}=5050\)
+      edges it won't pose a problem to the capabilities of a WLC or an administrators machine.
+      
+  \end{description}
     
 \section{Reflection on Related Work}
   Comparing our solution to those of others would need some common ground. For example hardware requirements, number of modules and in general heterogenity/homgenity of
