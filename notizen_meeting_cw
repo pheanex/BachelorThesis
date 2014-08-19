@@ -8,8 +8,16 @@ evaluation
 
 	durchführung
 		vorgehensbeschreibung 
-			(anschliessen, warten bis alle verbuinden waren warten bis wlc das fertige netzwerkbild hat)
-		basisszenario beschreiben (noch keine ergebnisse hier)
-		optimierte szenario beschreiben (noch keine mesungen)
-		nun lassen wir folgende messreihen durchlaufen (tabellarische beschreibung) mit antenna gain/ohne antenna gain, dauern, channel
+			(anschliessen dann warten bis alle verbunden waren und warten bis wlc das fertige netzwerkbild hat)
+		basisszenario (autowds basic) beschreiben (noch keine ergebnisse hier)
+		optimierte szenario beschreiben (autowds extended) (noch keine mesungen)
+		messreihen beschreiben (tabellarische beschreibung) mit antenna gain/ohne antenna gain, Intervall-dauern, channel-nutzung mit beschreibung des durchsatzes (average)
+		festellung der daten
+		interpretation der daten
+			merkwürdigkeiten anmerken
+		ergebnisse zusammenfassen(was ist das gesamtergebnis daraus)
+		auf latenzzeiten (evtl unterpunkt)(beifang: auswirkungen schwierig deutbar zum teil)
+		
+			
+			
 	
