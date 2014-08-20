@@ -17,11 +17,12 @@
   \end{figure}
   
 \section{Motivation}
-  AutoWDS provides such a system, but has problems with scalability and its throughput performance and connectivity failies leave somewhat to be desired.
-  Our goal is therefore to optimize its performance so that it's up to its job of routing a lot of data through its wireless backbone and being resilient to simple link
-  failures. We want to achieve this by utilizing multiple radios, channels and redundant links for establishing connections among the accesspoints.
-  The problem we face doing this and this work will elaborate on, is that a good selection of links and channels is not trivial even for a moderately sized scenario.
-  To tackle this issue we use centrally run greedy algorithms to give us a very good solution to our problem.
+  AutoWDS provides such a system, but has problems with scalability and its throughput performance and connectivity failures leave somewhat to be desired.
+  Our goal is therefore to optimize its performance so that it's up to its job of routing a large amounts of data through its wireless backbone and being resilient to simple link
+  failures. We want to achieve this by utilizing multiple radios, channels and redundant links for establishing connections among the accesspoints, as using only a single
+  channel places artificial limits on the achievable bandwidth one could obtain by exploiting more or the whole available spectrum.
+  The problem we face doing this and our work will elaborate on, is that a good selection of links and channels is not trivial even for a moderately sized scenario.
+  To tackle this issue we use centrally run greedy algorithms to give us a good solution to our problem for a static environment.
   
 \section{Structure of Thesis}
   At first we will recall Terms and concepts used in this work. 
