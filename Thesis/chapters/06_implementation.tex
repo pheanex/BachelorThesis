@@ -276,33 +276,44 @@
   \section{Problems and Aids}
     \begin{description}
     \item [AutoWDS Status Tool:]
-	To make things easier for debugging and also to actually see what is going on during the execution of the algorithms,
-	we and most of all my Christoph Wollgarten created a tool called AutoWDS, which is based on \cite{d3js}. 
-	Furthermore attached with a tool to extract data from the WLC, it is able to display current statuses and established links of a deployed network.
-	
-	It works by reading a graph represented as a \ac{JSON}-file and displays it interactively in html with javascript.
-	As it is basically a force directed graph, the nodes position themselves according to their SNR-edge-values. 
-	Additionally you can drag and position single nodes freely anywhere on the map for better singularization of entities.
-	In the tcca module we also included an export function called "write\_json(graph, filename)" which creates a json file to be read by the autowdsstatus tool.
-	This tool has also been used to create most of the images in this thesis.
+      To make things easier for debugging and also to actually see what is going on during the execution of the algorithms,
+      we and most of all my Christoph Wollgarten created a tool called AutoWDS, which is based on \cite{d3js}. 
+      Furthermore attached with a tool to extract data from the WLC, it is able to display current statuses and established links of a deployed network.
+      
+      It works by reading a graph represented as a \ac{JSON}-file and displays it interactively in html with javascript.
+      As it is basically a force directed graph, the nodes position themselves according to their SNR-edge-values. 
+      Additionally you can drag and position single nodes freely anywhere on the map for better singularization of entities.
+      In the tcca module we also included an export function called "write\_json(graph, filename)" which creates a json file to be read by the autowdsstatus tool.
+      This tool has also been used to create most of the images in this thesis.
 	
     \item [Representation of Tables in LANCOM Devices:]
-	While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
-	they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
-	nice tables like \ref{tab:wlc} we can work with. Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
+      While writing the code which deals with the WLC and receives the data, we initially had some difficulties extracting the data out of the tables represented in the WLC since
+      they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
+      nice tables like \ref{tab:wlc} we can work with. Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
 	
-      \item [Python Logging Module:]
-	Another great helper turned out to be the utilization of pythons logger module. We excessively made use of its Error/Warning/Info/Debug statements which made debugging
-	a lot easier without being an obstacle if we did not need the output as we could just switch to a different level of logging and enjoy the silence.
+    \item [Python Logging Module:]
+      Another great helper turned out to be the utilization of pythons logger module. We excessively made use of its Error/Warning/Info/Debug statements which made debugging
+      a lot easier without being an obstacle if we did not need the output as we could just switch to a different level of logging and enjoy the silence.
+    
+    \item [Bitbucket:]
+      This was another great help in getting things organized. Especially git as a version control system and the issue-tracking system one can find in bitbucket
+      gave us great control and overview on the project without being a hassle. If you have or want to further work on this project we can only recommend
+      getting access to our bitbucket repository, because there you find additional notes on every issue and basically see why things went the way they did.
+      
+    \item [PyCharm:]
+      For our python coding we used the \ac{IDE} PyCharm \cite{pycharm} and were more than pleased with its speed and debugging possibilites.
+      Also its refactoring methods made changing the code very easy and comfortable. Particularly the code analysis tool that comes with it made sticking to the
+      \ac{PEP8} \footnote{See http://legacy.python.org/dev/peps/pep-0008/} style-guideline almost fun and we hope it helps you to better understand our code.
+      
     \end{description}
 
     \begin{figure}[h]
       \centering
-      \includegraphics[width=0.85\columnwidth]{figures/autowdsstatus}
+      \includegraphics[width=\columnwidth]{figures/autowdsstatus}
       \caption{AutoWDS status webinterface showing a network topology}
       \label{fig:autowdsstatus}
     \end{figure}
-  
+    
 \clearpage
 
   
