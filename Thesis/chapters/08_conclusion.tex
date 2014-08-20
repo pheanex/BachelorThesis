@@ -18,14 +18,26 @@
 	Especially simulating our solution with random graph layouts and different underlying topolgies could provide opportunities to even further increase throughput.
 	Also the feature of evading foreign used channels should be evaluated if the implementation of 
 	AutoWDS permitts as this will be one of the factors which strongly affect performance.
+      
       \item[Extensive Comparison to Related Work]
 	As we only compared our work by listing features, a true comparison still has to be done if one would 
 	like to know the strength and weaknesses considering actual throughput-performance.
 	As noted this will probably take quite some time as all the solutions would have to be 
 	implemented in presumably the same language. And then deciding on the environmental settings
 	like interference by other devices and node connectivity will create new challenges.
+      
       \item[Further Optimize Algorithms]
 	Algorithm runtime is not in the focus of concern at the moment but could be in the future. 
 	As a result and in order to more closely integrate the solution into AutoWDS extended,
 	porting the code to a native language like C/C++ could give some additional performance gains.
+      
+      \item[Learning Algorithm]
+	In its current state, the optimization is triggered through the administrator or user during the initial setup or every now and then if
+	the network appears slow. As this always just captures the status quo of the network at that time, the optimization is susceptible to
+	temporary interferences which could lead to suboptimal results in the long run and it would have to be rerun in order to keep up the best topology possible.
+	To deal with the snapshot difficulty we had the idea of also looking at the history of a used channel and then decide if it would be worth it to continue
+	to use it or switch to another channel. This would allow us to better evaluate link-quality and provide us with a more fine grained view on the network as a whole
+	and how the it is affected by other influences during time. 
+	We could then act upon those changes automatically in a more timely manner leading to even better results.
+	
     \end{description}
