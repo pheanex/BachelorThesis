@@ -52,6 +52,10 @@ As a consequence achievable throughput will be lower than it could be with survi
     Due to limitations in cabling for power and network and severe interference in 
     certain parts of our building we could not use the 30 accesspoints as initially planned.
     Therefore we had to consider ourselves satisfied with 12 accesspoints.
+    
+    \subsection{Modifications for the Test}
+      Although we did not have to modify the code for the network, we had to change some small details in the LCOS firmware to better fit the data we needed as input for
+      the algorithms to our requirements. Therefore we took the latest stable firmware version 9.0 and added some special extension.
    
 \newpage
    
@@ -113,10 +117,6 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 	\caption{IPerf mode of operation for generating the traffic.}
 	\label{lst:iperf}
       \end{listing}
-
-    \subsection{Modifications for the Test}
-      Although we did not have to modify the code for the network, we had to change some small details in the LCOS firmware to better fit the data we needed as input for
-      the algorithms to our requirements. Therefore we took the latest stable firmware version 9.0 and added some special extension.
     
   \section{Specification}
     Each test run describes a 10 minutes performance stress test for the network with throughput saturation. 
@@ -184,7 +184,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \label{fig:topo_chan_1}
     \end{figure}
     
-    \footnotetext{Different colors would indicate different channels. Also edge thickness indicates the quality of a link, where thicker means better.}
+    \footnotetext{Different edge-colors indicate different channels. Also edge thickness denotes the quality of a link, where thicker means higher quality.}
 
     \begin{figure}[h!]
       \centerline{
@@ -374,22 +374,22 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       achieve different goals like throughput, latency or weighted throughput networks. Certainly there we could agree on this common deployment and compare each solution for random
       networks with respect to throughput, but this would require a full-scale simulation as hardware-resources are limited and too easily prone to real world difficulties.
       Although maybe a key aspect of this work, we did not have enough time to simulate even our own solution and therefore neither those of others. Nevertheless we would appreciate
-      if someone further work on this field. In order to at least provide some kind of comparison we take a look at the features most of the related work did not show to provide.
-
-      \subsection{System Features}
-	\begin{description}
-	  \item [Variables Nr. of Radios:] Our algorithms support a variable number of radios on each device instead of a fixed numer like in \cite{INSTC}. 
-	    This allows to optimize the wireless network even for heterogeneous environments where devices have a variable number of radios or just one.
-	  \item [Vendor Neutral:] Although we used only LANCOM devices in our case, the solution is basically vendor neutral. As long as the devices provide the required data,
-	    any network with devices that can be configured (also manually) to use a specific link for a certain radio can profit from out optimization.
-	  \item [No MAC changes:] Our solution does not require any \ac{MAC}-layer changes and can be run on any commodity \ac{WLAN} hardware.
-	  \item [No Forced Backup Links:] Thanks to out modular approach adding redundant links to the initial \ac{MST} is completely optional. 
-	    You are free to only optimize and use MST if you are also limited by the STP like we were in our evaluation.
-	  \item [Considers Foreign Interference:] Admittedly we are not the first to do so (\cite{BFS-CA}), but our solution also considers foreign interfering WLANs which can have a great impact in performance
-	    if those are neglected.
-	  \item [Customizable Survival Pats:] In order to create the redundant links (survival paths) we iterated over each link in the MST and simulate it failing.
-	    You could just as well iterate over the nodes in the MST to get a \textit{k}-node-connected survival graph or whatever order you chose.
-	    This means you can add redundant links in decreasing order of optimality up to a fully meshed graph.
-	  \item [Customizable Ranking-Formula:] Without great effort you can also adapt the ranking-formula and create a spanning tree which is optimal to some other metrics you need.
-	  \item [No Gateway/Special Node necessary:] At last you do not need a special gateway node like in \cite{BFS-CA} to start our algorithm with.
-	\end{description}
+      if someone further work on this field. In order to at least provide some kind of comparison we will take a look at the features of our work, which 
+      most of the related work did not show or provide.
+      
+      \begin{description}
+	\item [Variables Nr. of Radios:] Our algorithms support a variable number of radios on each device instead of a fixed numer like in \cite{INSTC}. 
+	  This allows to optimize the wireless network even for heterogeneous environments where devices have a variable number of radios or just one.
+	\item [Vendor Neutral:] Although we used only LANCOM devices in our case, the solution is basically vendor neutral. As long as the devices provide the required data,
+	  any network with devices that can be configured (also manually) to use a specific link for a certain radio can profit from out optimization.
+	\item [No MAC changes:] Our solution does not require any \ac{MAC}-layer changes and can be run on any commodity \ac{WLAN} hardware.
+	\item [No Forced Backup Links:] Thanks to out modular approach adding redundant links to the initial \ac{MST} is completely optional. 
+	  You are free to only optimize and use MST if you are also limited by the STP like we were in our evaluation.
+	\item [Considers Foreign Interference:] Admittedly we are not the first to do so (\cite{BFS-CA}), but our solution also considers foreign interfering WLANs which can have a great impact in performance
+	  if those are neglected.
+	\item [Customizable Survival Pats:] In order to create the redundant links (survival paths) we iterated over each link in the MST and simulate it failing.
+	  You could just as well iterate over the nodes in the MST to get a \textit{k}-node-connected survival graph or whatever order you chose.
+	  This means you can add redundant links in decreasing order of optimality up to a fully meshed graph.
+	\item [Customizable Ranking-Formula:] Without great effort you can also adapt the ranking-formula and create a spanning tree which is optimal to some other metrics you need.
+	\item [No Gateway/Special Node necessary:] At last you do not need a special gateway node like in \cite{BFS-CA} to start our algorithm with.
+      \end{description}
