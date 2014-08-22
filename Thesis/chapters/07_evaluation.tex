@@ -155,7 +155,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 \newpage
     
   \section{Execution}
-    The tests were executed mainly in the evening and on weekends in order to catch timeframes where the radio bands are not as crowded as on an ordinary workday.
+    The tests were executed mainly in the evening and on weekends in order to catch those short timeframes where the radio bands are not as crowded as on an ordinary workday.
     The general procedure for a testrun was implemented as follows:
     \begin{enumerate}
       \item Power on the System (WLC + APs).
@@ -314,14 +314,6 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 	  Moreover using all available links may not necessarily be beneficial, since if not enough radios are available, adding new links can force
 	  other radios to the same channel, which effectively leads to sharing a single channel between more radios instead of exclusive access (See \ref{fig:lessismore}).
 	  
-	  \begin{figure}[h!]
-	    \centerline{
-	      \includegraphics[width=0.56\textwidth]{figures/lessismore}
-	      \caption{Adding additional links does not necessarily increase throughput performance.}
-	    }
-	    \label{fig:lessismore}
-	  \end{figure}
-	
 	  Having some radio modules to spare gives us the opportunity to use those exclusively for client 
 	  connections and assigning them a channel which does not interfere with the wireless backbone.
 	  

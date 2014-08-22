@@ -19,15 +19,22 @@
   assign more channels, leading up to no interference at all (See right picture in \ref{fig:high_con_vs_low_con}),
   this would create many bottlenecks, single points of failures and packets staying longer in the communication network since they can not take the shortest path.
 
-  Especially adding redundant links to a small subset of links in order to fulfill the reduced end-to-end link failure requirement is not straigh-forward as each newly
-  added link increases overall throughput capacity, but at the same time may create co-channel interference or worse, decrease the number of overall assignable channels
-  (See \ref{fig:lessismore}).
- 
   \begin{figure}[h!]
     \centering
     \includegraphics[width=1\columnwidth]{figures/high_con_vs_low_con.png}
     \caption{Highly connected topology with few channels (left) versus sparsely connected topology with more channels (right)}
     \label{fig:high_con_vs_low_con}
+  \end{figure}
+  
+  Especially adding redundant links to a small subset of links in order to fulfill the reduced end-to-end link failure requirement is not straigh-forward as each newly
+  added link increases overall throughput capacity, but at the same time may create co-channel interference or worse, decrease the number of overall assignable channels.
+  
+  \begin{figure}[h!]
+    \centerline{
+      \includegraphics[width=\textwidth]{figures/lessismore}
+      \caption{Additional links do not necessarily increase throughput performance.}
+    }
+    \label{fig:lessismore}
   \end{figure}
   
   In the following two sections we will present an algorithm creating network topolgies, seeking to find the best compromise, by first creating the topology and then

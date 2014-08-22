@@ -62,8 +62,9 @@
     easily be separated and outsourced to different interfaces.
   
   \section{Structure of the Code}
-    We split the code into two modules. The one handling connections, sending/receiving and transforming data to and from networkX graphs and the other one 
-    deals with only with graphs and therefore the theoretical problem.
+    We split the code into two modules. One is handling the gathering of input data, followed by parsing it and finally dealing with output data.
+    This includes sending/receiving to and from the \ac{WLC}, transforming data to and from networkX graphs, checking configurations for validity and other facility work.
+    The other one exculsively works on and with graphs and therefore is the main and interesting one to solve the theoretical problem.
     
     \subsection{Interfacing Outer World and Managing Data}      
      \begin{table}[h!]
@@ -79,6 +80,8 @@
 	  the ESSID to the mac address of the opposing module. The \ac{SNR} describes thereon the quality of the link between those two modules.}
 	\label{tab:wlc}
       \end{table}
+      
+\newpage
       
       The name of the module is \textit{wlc\_com}. This module's responsibilites include the following:
       \begin{description}
