@@ -1,15 +1,15 @@
 \chapter{Related Work}
   The following four approaches are all solutions that are graph-based and target a centralized and static channel assignment.
-  Those are not the only ones on this matter, but the most known and relevant contestants to our problem.
-  Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not covere here.
+  Those are not the only ones on this matter, but the most known and relevant contestants to solve our problem.
+  Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not cover here (Why? - See chapter \ref{reqana}).
   Except the BFS-CA, the prevalent solutions make excessive use of the conflict graph, which according to \cite{overview_caa} has difficulties to model 
-  the varying number of radios equipped on accesspoints. Also most of the works solely focus on assigning channels to an existing topology and do not touch 
-  the network topology at all, what seems like a handicap as topology control is an essential part in dealing with wireless interference.
+  the varying number of radios equipped on APs. Also most of the works solely focus on assigning channels to an existing topology and do not touch 
+  the network topology at all, what seems like a handicap as topology control is an essential part in dealing with wireless interference as we will see later.
   
   \begin{figure}[h!]
     \centering
     \includegraphics[width=1\columnwidth]{figures/unit-disk-graph}
-    \caption{Creation of an unit disk graph from the receive range map of accesspoints}
+    \caption{Creation of an unit disk graph from the receive range map of APs}
     \label{fig:unit-disk-graph}
   \end{figure}
   
@@ -59,23 +59,23 @@
   \section{\ac{INSTC}}
     As pointed out by \cite{overview_caa}, INSTC \cite{INSTC} is similar to \ac{CLICA} with a few alterations, 
     which is why we will not go into further detail and rather focus on its differences. 
-    They introduce \ac{LCI} which for a link represents the number of links which interfere with this link \cite{overview_caa} and serves as a measure of 
+    They introduce \ac{LCI}, which for a link represents the number of links which interfere with this link \cite{overview_caa} and serves as a measure of 
     interference. Additionally they accept \(k\) as input parameter which results in a \(k\)-connected Graph as outcome to make the topology resilient to node failures.
     Although this feature would come in handy for our survival path requirement, it does not match our failing scenario of a single link at a time instead of a whole node outage.
     Using a \textit{k}-(node)-connected graph instead of an \textit{k}-edge-connected graph increases the the number of edges that have to be utilized 
     (since one failing node involves several failing edges). Consequently the resulting network topology has a higher grade of connectivity than it needs to 
     have and therefore conversely affects overall throughput since a higher node connectivity leads to fewer useable different channels. 
-    Additional to the weaknesses of \ac{CLICA}, they also require the number of radio modules per accesspoint to be identical, 
-    which is not desireable for us as requirement analysis dictates the operability also for heterogenous networks where this
-    restriction is not met. The LCI measure introduced in the work by \cite{INSTC} served as a basis for our edgescore calcuation in ~\ref{eq:edgescore}.
+    Additional to the weaknesses of \ac{CLICA}, they also require the number of radio modules to be identical on each AP, 
+    which is a deal-breaker for us as we have to be able to fulfill requirement \ref{utilvarnumradio} (Utilize Variable Number of Radios).
+    The LCI measure introduced here served as a basis for our edgescore calcuation in \ref{eq:edgescore}.
     
   \section{\ac{BFS-CA}}
     \ac{BFS-CA} \cite{BFS-CA} extends the common conflict graph with modules, resulting in a \ac{MCG} graph, which more closely reassembles the
-    real world setup. This made it easier for them to deal with the different numbers of radios available on each accesspoints. 
-    What they do is to let the accesspoints (or mesh routers in their case) sniff the network on regular intervalls and determine a ranking for the channels.
+    real world setup. This made it easier for them to deal with the different numbers of radios available on each device. 
+    What they do is to let the APs (or mesh routers in their case) sniff the network on regular intervalls and determine a ranking for the channels.
     Those rankings are then sent to their central entity, the \ac{CAS}. This \ac{CAS} in turn derives the \ac{MCG} and assigns each node in this graph 
-    a channel in \ac{BFS}-manner by considering the received rankings of the accesspoints. In order not to partition the network by introducing a \ac{CA}, which 
-    would disconnect some links by setting certain radios to different channels, they also use one radio on each accesspoint on an overall-common channel.
+    a channel in \ac{BFS}-manner by considering the received rankings of the APs. In order not to partition the network by introducing a \ac{CA}, which 
+    would disconnect some links by setting certain radios to different channels, they also use one radio on each AP on an overall-common channel.
     This common channel is then used for initial setup, management frames and as a backup if other links break in order to keep the graph connectivity attribute.
     
     Although \ac{BFS-CA}, as others, is still anxious about topology alterations, since on a first glance it might introduce too severe problems like, 
@@ -86,11 +86,13 @@
     \begin{itemize}
      \item Idea of a ranking system for each possible channel
      
-     \item Central computation on a \ac{CAS}, which reassembles our \ac{WLC}
+     \item Central computation on a \ac{CAS}, which reassembles our \ac{WLC}.
      
-     \item Taking foreign sources of interference also into consideration, instead of just internal.
+     \item Taking foreign sources of interference also into consideration.
      
     \end{itemize}
+    
+\newpage
     
     Yet, we decided against its implementation for our purposes for the following reasons:
     
@@ -99,34 +101,35 @@
 	A selection process on this underlying topology is essential to our minds as selecting a few but high quality links
 	leading to a planned and controlled topology will create a lot less interference than a network topology where all possible 
 	links are used for communications. This is especially the case if not many channels are available for assignment, since 
-	these can be more effectively designed (See \ref{fig:high_con_vs_low_con}).
+	these can be more effectively designed (See chapter \ref{fig:high_con_vs_low_con}).
+	\label{topologypreservingdealbreaker}
 	
-      \item Using one radio on each accesspoint for a common overall-channel seemed to us as a waste of radio moduels.
-	Radio modules on accesspoints are scarce and should be utilized efficiently. 
-	Furthermore one overall-channel which is utilized by each accesspoint 
-	does not scale very well and is basically already AutoWDS basic.
+      \item Using one radio on each AP for a common overall-channel seemed to us as a waste of radio modules.
+	Radio modules on APs are scarce and should be utilized efficiently. 
+	Furthermore one overall-channel which is utilized by each AP does not scale very well and is basically already done in AutoWDS basic.
 	
-      \item The ranking process suggested to run on the accesspoints creates load on the accesspoints.
-	We want to use the accesspoints merely as sensors and not as decision-makers, since this creates additional load on the APs.
+      \item The ranking process suggested to run on the APs creates load on the APs.
+	We want to use the APs merely as sensors and not as decision-makers, since this puts additional load on the APs.
 	
       \item The ranking algorithm itself could be improved. 
-	For our taste it averages values too early in the process and uses a random pick not as a last resort.
+	For our taste it averages values too early in the process and uses a random pick not as a last resort - providing supoptimal results.
 	
-      \item Its \ac{BFS} order of assigning channels puts one node (normally the gateway-node) above all others during channel assignment.
-	In some of our usescases there is no gateway node available and we need a fair distribution of channels, which is not feasible with this solution \cite{overview_caa}.
+      \item Its \ac{BFS} order of assigning channels puts one node (gateway-node) above all others during channel assignment.
+	In some of our usescases there is no gateway node available (See \ref{reqincreasethroughput}) and we need a fair distribution of channels, 
+	which is not feasible with this solution \cite{overview_caa}.
     \end{itemize}
 
   \section{\ac{CTA}}
-    Subramanian et al.\cite{CTA} use a modified TABU algorithm \cite{tabu} in two steps to find a \ac{CA} for the conflict graph.
+    Subramanian et al.\cite{CTA} use a modified Tabu-algorithm \cite{tabu} in two steps to find a \ac{CA} for the conflict graph.
     It works by starting with a random \ac{CA} and, like an evolutionary algorithm, 
-    iteratively changing small details and select the best temporal solution to continue for the next iteration.
+    iteratively changing small details and selecting the best temporal solution to continue for the next iteration.
     An iteration is here further subdivided into generating a number of random neighboring assignments, where only the color/channel of one vertex is changed.
     From this set they then select the assignment with the lowest interference.
     The tabu-list, which describes the forbidden options which are not allowed to be chosen for improvement, contains a list of vertex-colorings that already have been used.
     This procedure is then executed as long as there have been improvements in the last \textit{$i_{max}$} rounds.
     If for \textit{$i_{max}$} rounds no improvement can be found, the algorithm proceeds with step two.
     As the first step may give channel assignings which are not valid (more channels assigned than a node has radios), the second step merges channel assignments 
-    until the solution is valid. Merging channels leads then to increasing interference again.
+    until the solution is valid again. Merging channels obviously increases the interference.
     
-    This solution is also topology preserving and a deal-breaker for our implementation (Why? See BFS-CA).
+    This solution is also topology preserving and a deal-breaker for our implementation (Why? See \ref{topologypreservingdealbreaker}).
     Additionally the evonlutionary attribute does not provide controlled, but more heuristic results and we need an algorithm with more control over its internals.
