@@ -1,8 +1,8 @@
 \chapter{Related Work}
   The following four approaches are all solutions that are graph-based and target a centralized and static channel assignment.
   Those are not the only ones on this matter, but the most known and relevant contestants to solve our problem.
-  Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not cover here (Why? - See chapter \ref{reqana}).
-  Except the BFS-CA, the prevalent solutions make excessive use of the conflict graph, which according to \cite{overview_caa} has difficulties to model 
+  Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not cover here (see chapter \ref{reqana}).
+  Except the \ac{BFS-CA}, the prevalent solutions make excessive use of the conflict graph, which according to \cite{overview_caa} has difficulties to model 
   the varying number of radios equipped on APs. Also most of the works solely focus on assigning channels to an existing topology and do not touch 
   the network topology at all, what seems like a handicap as topology control is an essential part in dealing with wireless interference as we will see later.
   
@@ -34,7 +34,7 @@
       \item While traversing the nodes in the decreasing order of their
 	priorities obtained above, assign channels to the incident links
 	of these nodes. The operation of assigning a channel to a link
-	includes assigning this channel to both a radio at this node and
+	includes assigning this channel to both, a radio at this node and
 	a radio at the neighbor node. Then, the priorities of unvisited
 	nodes are adjusted according to their degree of flexibility, which
 	is the number of channels that a node can choose from without
@@ -42,12 +42,12 @@
 	with a lower degree of flexibility will have their priorities
 	increased so that they are visited earlier in the later steps.
 	
-      \item When picking a channel in the above step, a node v1 picks
-	a channel for its incident link (\(v_1\) , \(v_2\) ) in a greedy manner: a
+      \item When picking a channel in the above step, a node \(v_1\) picks
+	a channel for its incident link (\(v_1\), \(v_2\)) in a greedy manner: a
 	locally optimal choice is made by selecting the channel that
-	minimizes the maximum link conflict weight among all links
-	that can interfere with link (\(v_1\) , \(v_2\) ). After a channel is assigned
-	to a link, the conflict graph is updated to reflect the new link conflict weights.
+	minimizes the maximum link-conflict-weight among all links
+	that can interfere with link (\(v_1\), \(v_2\)). After a channel is assigned
+	to a link the conflict graph is updated to reflect the new link conflict weights.
     \end{itemize}
   
     The reason why we decided not to use this algorithm is that \ac{CLICA} only tries to minimize interference by assigning channels the best way possible for a given
@@ -57,21 +57,21 @@
     further decrease interference as much as possible for such a topology.
     
   \section{\ac{INSTC}}
-    As pointed out by \cite{overview_caa}, INSTC \cite{INSTC} is similar to \ac{CLICA} with a few alterations, 
+    As pointed out by Weisheng Si et al. \cite{overview_caa}, \ac{INSTC} \cite{INSTC} is similar to \ac{CLICA} with a few alterations, 
     which is why we will not go into further detail and rather focus on its differences. 
     They introduce \ac{LCI}, which for a link represents the number of links which interfere with this link \cite{overview_caa} and serves as a measure of 
-    interference. Additionally they accept \(k\) as input parameter which results in a \(k\)-connected Graph as outcome to make the topology resilient to node failures.
+    interference. Additionally, they accept \(k\) as an input parameter which results in a \(k\)-connected graph as outcome to make the topology resilient to node failures.
     Although this feature would come in handy for our survival path requirement, it does not match our failing scenario of a single link at a time instead of a whole node outage.
-    Using a \textit{k}-(node)-connected graph instead of an \textit{k}-edge-connected graph increases the the number of edges that have to be utilized 
+    Using a \textit{k}-(node)-connected graph instead of an \textit{k}-edge-connected graph increases the number of edges that have to be utilized 
     (since one failing node involves several failing edges). Consequently the resulting network topology has a higher grade of connectivity than it needs to 
     have and therefore conversely affects overall throughput since a higher node connectivity leads to fewer useable different channels. 
-    Additional to the weaknesses of \ac{CLICA}, they also require the number of radio modules to be identical on each AP, 
+    Additional to the weaknesses of \ac{CLICA}, they also require the number of radio modules to be identical on each \ac{AP}, 
     which is a deal-breaker for us as we have to be able to fulfill requirement \ref{utilvarnumradio} (Utilize Variable Number of Radios).
-    The LCI measure introduced here served as a basis for our edgescore calcuation in \ref{eq:edgescore}.
+    The \ac{LCI} measure introduced here served as a basis for our edgescore calcuation in \ref{eq:edgescore}.
     
   \section{\ac{BFS-CA}}
-    \ac{BFS-CA} \cite{BFS-CA} extends the common conflict graph with modules, resulting in a \ac{MCG} graph, which more closely reassembles the
-    real world setup. This made it easier for them to deal with the different numbers of radios available on each device. 
+    \ac{BFS-CA} \cite{BFS-CA} extends the common conflict graph with modules, resulting in a \ac{MCG}, which more closely reassembles the
+    real world setup. This makes it easier for them to deal with the different numbers of radios available on each device. 
     What they do is to let the APs (or mesh routers in their case) sniff the network on regular intervalls and determine a ranking for the channels.
     Those rankings are then sent to their central entity, the \ac{CAS}. This \ac{CAS} in turn derives the \ac{MCG} and assigns each node in this graph 
     a channel in \ac{BFS}-manner by considering the received rankings of the APs. In order not to partition the network by introducing a \ac{CA}, which 
@@ -104,12 +104,14 @@
 	these can be more effectively designed (See chapter \ref{fig:high_con_vs_low_con}).
 	\label{topologypreservingdealbreaker}
 	
-      \item Using one radio on each AP for a common overall-channel seemed to us as a waste of radio modules.
+      \item Using one radio on each \ac{AP} for a common overall-channel seemed to us as a waste of radio modules.
 	Radio modules on APs are scarce and should be utilized efficiently. 
-	Furthermore one overall-channel which is utilized by each AP does not scale very well and is basically already done in AutoWDS basic.
+	Furthermore one overall-channel which is utilized by each \ac{AP} does not scale very well and is basically already done in AutoWDS basic.
 	
       \item The ranking process suggested to run on the APs creates load on the APs.
-	We want to use the APs merely as sensors and not as decision-makers, since this puts additional load on the APs.
+	We want to use the APs merely as sensors and not as decision-makers, 
+	since this puts additional load on the APs and brings problems/complexity with synchronisation and
+	acquiring the overall view on the network.
 	
       \item The ranking algorithm itself could be improved. 
 	For our taste it averages values too early in the process and uses a random pick not as a last resort - providing supoptimal results.
@@ -131,5 +133,5 @@
     As the first step may give channel assignings which are not valid (more channels assigned than a node has radios), the second step merges channel assignments 
     until the solution is valid again. Merging channels obviously increases the interference.
     
-    This solution is also topology preserving and a deal-breaker for our implementation (Why? See \ref{topologypreservingdealbreaker}).
+    This solution is also topology preserving and a deal-breaker for our implementation (See \ref{topologypreservingdealbreaker}).
     Additionally the evonlutionary attribute does not provide controlled, but more heuristic results and we need an algorithm with more control over its internals.
