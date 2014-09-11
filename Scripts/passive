@@ -1,5 +1,6 @@
 #!/bin/bash
- 
+# Checks for passive words in the given files
+
 irregulars="awoken|\
 been|born|beat|\
 become|begun|bent|\
@@ -52,19 +53,17 @@ upset|woken|worn|woven|\
 wed|wept|wound|won|\
 withheld|withstood|wrung|\
 written"
- 
-if [ "$1" = "" ]; then
- echo "usage: `basename $0` <file> ..."
- exit
-fi
- 
-egrep -n -i --color \
- "\\b(am|are|were|being|is|been|was|be)\
-\\b[ ]*(\w+ed|($irregulars))\\b" $*
 
-if [ "$?" = "1"  ]; then
-  echo "none"
+if ! [ "$1" ]
+then
+	echo "Usage: ${0##*/} <file> ..." >&2
+	exit 1
 fi
- 
-exit $?
 
+egrep -H -n -i --color "\\b(am|are|were|being|is|been|was|be)\\b[ ]*(\w+ed|($irregulars))\\b" "$@"
+
+last="$?"
+
+[ "$last" = "1" ] && echo "None found" >&2
+
+exit "$last"
