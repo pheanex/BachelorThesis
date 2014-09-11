@@ -1,11 +1,11 @@
 \chapter{Implementation}
-  Our optimization is implemented as an addition to AutoWDS basic, after it successfully created a stable network tree topology (see chapter \ref{autowdsbasic}).
+  We implemented our optimization as an addition to AutoWDS basic, after it successfully created a stable network tree topology (see chapter \ref{autowdsbasic}).
   The additional steps in the discovery process of nearby radios are:
   
   \begin{enumerate}
-   \item The APs enable the background scan. This means the APs cycle through all possible channels for a short period of time
-    and look for other broadcasted wireless networks and store the recognized mac addresses and signal strength in a corresponding table.
-    This scan is run on a regular interval for a few milliseconds.
+   \item The APs enable the background scan. This means the APs cycle through all possible channels for a few milliseconds 
+    and listen for other broadcasted wireless networks and store the recognized mac addresses and signal strength in a corresponding table.
+    Note the APs regularly switch to the background-scan-mode to discover other APs.
    \item APs send scan results continuously to the central \ac{WLC}.
    \item When all the scan results are in, we read the scan-results table from the \ac{WLC} to our client station and parse the data to a networkX graph.
    \item On the client station we compute an optimized network topology for a given set of input parameters set by the administrator. 
@@ -26,13 +26,13 @@
 
   \section{Language of Choice}
     The language we used for the implementation is Python 2.7. Although we also could have implemented the extension in c/c++ since the basic version
-    was already written in this language, python does have a few key advantages, we did not want to miss and want to list here.
+    was already written in this language, python does have a certain key advantages, we did not want to miss and want to list here.
     
     \begin{description}
       \item [Rapid prototyping:]
-	Since our algorithms can easily work on a given set of data completely independent and the interfaces to get the data from are clearly defined and accessible,
-	using a lightweight language like python had the benefit of not having to embed our new code into the existing environment. Although it still can be implemented 
-	in the native language C/C++ for our scenario, this will take more time and effort, which was not the focus of this work.
+	Since our algorithms can easily work on a given set of data independently and the interfaces to get the data from are well defined and accessible,
+	using a lightweight language like python had the benefit of not having to embed our new code into the existing environment. 
+	Although it still can be implemented in the native language C/C++ for our scenario, this will take more time and effort, which was not the focus of this work.
       \item[Existing libraries:]
 	The NetworkX library in python made it particulary easy for us to map real world scenarios to graph abstractions as we did not have to create those structures ourselves.
 	Although there are some libraries that provide graph abstractions in C/C++ we could not have as easily employed them due to their copyright restrictions and 
@@ -40,7 +40,7 @@
       \item[Faster Debugging:]
 	Especially the initial phase of the project was errorprone and needed a lot of debugging. Secluding our algorithm from \ac{LCOS}
 	brought the advantage of not having to undergo the lenghty process of compiling a whole new LCOS firmware, everytime we made a fix in our code.
-	Additionally not having to to flash the firmware then into the \ac{WLC} was a great time saver as keeping the \ac{WLC} running and 
+	Additionally not having to flash the firmware then into the \ac{WLC} was a great time saver as keeping the \ac{WLC} running and 
 	consequently the APs connected, allowed us to independently modify our algorithms without having to wait until the network was back up again. 
 	Not to mention the live debugging capabilities of python, which was really helpful and made debugging easy.
       \item[Existing APIs:]
@@ -103,8 +103,8 @@
 	    \item Fake edges between module-nodes and device-nodes with an attribute "SNR" which contains the maximum possible value for this attribute.
 	    
 	    \item Real edges for each line in the table above, where the two nodes are the module mac address pairs. 
-	      Note that one row in the table represents just a directed edge from one module to the other. We only respect two-sided connections,
-	      since one-sided edges are mostly of poor quality and would further complicate finding a solution.
+	      Note that one row in the table represents just a directed edge from one module to the other. 
+	      We only respect two-sided connections, since one-sided edges are due to their poor quality not worth considering and would further complicate finding a solution.
 	      As we have two \ac{SNR}-values for a single undirected edge when merging two directed edges, we are at liberty to chose.
 	      Currently we are using the average of both values, but implemented an option to use the larger or the smaller value if favoured.
 	      Especially the lower \ac{SNR} value might better represent a connection for more pessimistic scenarios.
@@ -194,7 +194,7 @@
     To give you an impression on how to work with the code, we illustrate the process of finding a solution by taking a look at a simplified example.
     See the code snippet in \ref{tab:python-example}.
     Therefore we create a grid network with random edge weights (line 5 - 41).
-    Note that such a deployment is without doubt suboptimal as the APs are clearly placed too close to each other.
+    Note that such a deployment is without doubt suboptimal as the APs are placed too close to each other.
 
     To get the initial \ac{MST} from this graph we call the "calculate\_st" function on it (line 43 / left figure in \ref{fig:3x3second}).
     
@@ -324,7 +324,7 @@
       
     \item [PyCharm:]
       For our python coding we used the \ac{IDE} PyCharm \cite{pycharm} and were more than pleased with its speed and debugging possibilites.
-      Its refactoring methods made changing the code very easy and comfortable. Particularly the code analysis tool that comes with it made sticking to the
+      Its refactoring methods made changing the code easy and comfortable. Particularly the code analysis tool that comes with it made sticking to the
       \ac{PEP8} \footnote{See http://legacy.python.org/dev/peps/pep-0008/} style-guideline almost fun and we hope it helps you to better understand our code.
       
 \newpage

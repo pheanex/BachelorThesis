@@ -57,13 +57,13 @@
     further decrease interference as much as possible for such a topology.
     
   \section{\ac{INSTC}}
-    As pointed out by Weisheng Si et al. \cite{overview_caa}, \ac{INSTC} \cite{INSTC} is similar to \ac{CLICA} with a few alterations, 
+    As pointed out by Si et al. \cite{overview_caa}, \ac{INSTC} \cite{INSTC} is similar to \ac{CLICA} with a some alterations, 
     which is why we will not go into further detail and rather focus on its differences. 
     They introduce \ac{LCI}, which for a link represents the number of links which interfere with this link \cite{overview_caa} and serves as a measure of 
     interference. Additionally, they accept \(k\) as an input parameter which results in a \(k\)-connected graph as outcome to make the topology resilient to node failures.
     Although this feature would come in handy for our survival path requirement, it does not match our failing scenario of a single link at a time instead of a whole node outage.
     Using a \textit{k}-(node)-connected graph instead of an \textit{k}-edge-connected graph increases the number of edges that have to be utilized 
-    (since one failing node involves several failing edges). Consequently the resulting network topology has a higher grade of connectivity than it needs to 
+    (since one failing node involves multiple failing edges). Consequently the resulting network topology has a higher grade of connectivity than it needs to 
     have and therefore conversely affects overall throughput since a higher node connectivity leads to fewer useable different channels. 
     Additional to the weaknesses of \ac{CLICA}, they also require the number of radio modules to be identical on each \ac{AP}, 
     which is a deal-breaker for us as we have to be able to fulfill requirement \ref{utilvarnumradio} (Utilize Variable Number of Radios).
@@ -100,13 +100,13 @@
       \item Using all possible channels in the network topology creates to much interference for networks with more traffic.
 	A selection process on this underlying topology is essential to our minds as selecting a few but high quality links
 	leading to a planned and controlled topology will create a lot less interference than a network topology where all possible 
-	links are used for communications. This is especially the case if not many channels are available for assignment, since 
+	links are used for communications. This is especially the case if not enough channels are available for assignment, since 
 	these can be more effectively designed (See chapter \ref{fig:high_con_vs_low_con}).
 	\label{topologypreservingdealbreaker}
 	
       \item Using one radio on each \ac{AP} for a common overall-channel seemed to us as a waste of radio modules.
 	Radio modules on APs are scarce and should be utilized efficiently. 
-	Furthermore one overall-channel which is utilized by each \ac{AP} does not scale very well and is basically already done in AutoWDS basic.
+	Furthermore one overall-channel which is utilized by each \ac{AP} does not scale well and is basically already done in AutoWDS basic.
 	
       \item The ranking process suggested to run on the APs creates load on the APs.
 	We want to use the APs merely as sensors and not as decision-makers, 

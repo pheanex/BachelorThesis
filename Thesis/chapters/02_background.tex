@@ -9,11 +9,11 @@ to compute a solution and conclude this part by discussing the relevance of the 
 
 \section{Wireless Networks}
   Wireless networks are computer networks which use radio-waves for communication.
-  They are used in scenarios where using wires is not possible or cumbersome like systems where devices are mostly mobile.
+  They are used in scenarios where using wires is not possible or cumbersome like systems where devices are mobile or subject to drastic link-qualtiy changes.
   There are different scales where wireless networks are utilized:
   \begin{itemize}
-    \item Smallish systems like a \ac{PAN} where a smartphone uses bluetooth to connect to headphones. Typical range lies within a few meters.
-    \item Medium sized systems like a \ac{WLAN} with laptops or smartphones connecting to an infrastructure through a wireless accesspoint.
+    \item Smallish systems like a \ac{PAN} where a smartphone uses bluetooth to connect to headphones. Typical range lies within a couple of meters.
+    \item Medium sized systems like a \ac{WLAN} with laptops or smartphones connecting to an infrastructure through a wireless \ac{AP}.
       Typical range is up to 100 meters.
     \item Large scale systems like television broadcasting with \ac{DVB-T} through satellites with ranges of up to 35,400 kilometers.
   \end{itemize}
@@ -39,7 +39,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	client-infrastructure-mode combinations solely. Alternatively one could also use the ad-hoc mode, which was not available since not implemented yet in LANCOM devices.
 	
       \item [Client-mode:]
-	Here the accesspoint behave the same as ordinary clients like laptops or smartphones.
+	Here the \ac{AP} behave the same as ordinary clients like laptops or smartphones.
 	They search for wireless networks announced by APs in infrastructure mode and connect themselves to these.
 	Often this mode is used to enable devices which lack 802.11-hardware to access a \ac{WLAN} through a wired link to those APs.
     \end{description}
@@ -61,7 +61,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
     Doing this allows transmitting data from a sender station to a receiver station and creates a network-link between them.
     \ac{WLAN} uses two license-free frequency bands at 2.4 GHz and additionally certain bands around 5 GHz.
     As we can see in figure \ref{fig:wlan_channels}, certain channels have overlapping regions, which can lead to conflicts.
-    Two independent pairs of radios in the same area can communicate almost completely free of interference, if they use different, non-overlapping channels.
+    Two independent pairs of radios in the same area can communicate almost free of interference, if they use different, non-overlapping channels.
     Some APs use channels with 40 MHz bandwidth in order to further increase throughput with the drawback of creating more overlapping frequency-regions
     and therefore possibly creating sources of interference for other channels closeby.
     The overlapping regions are a problem especially in the 2.4 GHz band, but if wider versions of channels in the 5 GHz band are used, also those are affected,
@@ -100,7 +100,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	
 	Another interesting, but undesired problem in accessing the medium despite following the CSMA algorithm is the hidden-station-problem.
 	It describes a scenario where an \ac{AP} B is in range of A and C, but A and C do not see each other (see \ref{fig:csmaca}).
-	If then the situation occurs that the two outer accesspoints simultaneously want to send data to the \ac{AP} in the middle, as they can not notice the 
+	If then the situation occurs that the two outer APs simultaneously want to send data to the \ac{AP} in the middle, as they can not notice the 
 	other AP sending data, their packets collide at B and therefore effectively transmit less or nothing at all, since B is not able to correctly decode the packets.
 	The effect is similar to two people talking to a third person at the same time.
 	To alleviate the problem the RTS/CTS extension was introduced, which introduces small \ac{RTS}-requests and \ac{CTS}-announcements. 
@@ -169,7 +169,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
       existing infrastructures (existing power- or network-cabling) can be utilized for this purpose, without the burden of creating such a costly infrastructure.
       
       \subsubsection{\ac{WLC}}
-	The purpose of a \ac{WLC} is to centrally manage and configure many accesspoints automatically - effectively ease the job of the administrator responsible for a 
+	The purpose of a \ac{WLC} is to centrally manage and configure multiple APs automatically - effectively ease the job of the administrator responsible for a 
 	wireless infrastructure. They are usually located in central networking-cabinets next to other network core components like switches and servers.
 	Managing such a \ac{WDS} can also be done through another central entity somewhere else in the network, for example by
 	electing an \ac{AP} for this job, which is directly connected to the wired \ac{LAN}, as it is done by DD-WRT \cite{dd_wrt}. 
@@ -208,7 +208,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=0.8\columnwidth]{figures/autowds}
-	  \caption{AutoWDS configuration setup. Only a few APs are connected to the backbone via wire. 
+	  \caption{AutoWDS configuration setup. Only one AP is connected to the backbone via wire. 
 	    Other APs use their radios to connect to APs that are connected to the backbone via wire (first \ac{AP}) or relay-APs (2nd \ac{AP}).}
 	  \label{fig:autowds}
 	\end{figure}
@@ -303,7 +303,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
     
   \subsection{Mapping Network to Graph}
     For our purposes we will use the following mapping from devices and modules to a undirected, weighted graph.
-    Each accesspoint and each module of our accesspoints is represented by a node.
+    Each \ac{AP} and each module of our APs is represented by a node.
     
     For each \ac{AP} we add edges with a special attribute "artificial" 
     to each module of its corresponding \ac{AP} and describe those edges as artificial or device-module-edges.
@@ -315,13 +315,13 @@ to compute a solution and conclude this part by discussing the relevance of the 
     Since the average of the two \ac{SNR} values might not describe all scenarios well enough (in a scenario where \ac{SNR} values differ broadly),
     we easily can adjust the edge-weight to the minimum or maximum of both values.
     
-    Furthermore we ignore onesided discoveries, i.e. one module receives one or a few beacons of the other module, but not the other way round.
-    The SNRs of those connections are not only mostly very low/poor, but they are also very rare in our target scenarios with omnidirectional antennas.
-    So mostly either the modules receive each others beacons, or both do not.
+    Furthermore we ignore onesided discoveries, i.e. one module receives one or a handfull of beacons of the other module, but not the other way round.
+    The SNRs of those connections are not only generally low / poor, but also rare in our target scenarios with omnidirectional antennas.
+    So normally either the modules receive each others beacons, or both do not.
     
     \begin{figure}[th!]
       \centering
       \includegraphics[width=0.7\columnwidth]{figures/apgraph.png}
-      \caption{Graph representation of one (upper) and two connected accesspoints (lower).}
+      \caption{Graph representation of one (upper) and two connected APs (lower).}
       \label{fig:apgraph}
     \end{figure}

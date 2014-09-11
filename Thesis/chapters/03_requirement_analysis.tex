@@ -25,13 +25,13 @@
   This greed for throughput is amplified by an increasing number of devices that take part in radio communication, 
   thus it is also the key metric for quality in AutoWDS. 
   Furthermore not a single stream of data should be granted exclusive access to the radio, but
-  many streams in parallel (gateway to clients) and also across the network (clients to clients), 
+  multiple streams in parallel (gateway to clients) and also across the network (clients to clients), 
   as the common mesh / gateway / internet scenario does exist, but not exclusively (gateway to one client),
   since some usecases do only require local communication within the network.
   
   \section{Reduce End-to-end Link Failures}
   \label{regendtoend}
-  AutoWDS basic is due to its tree-like structure very susceptible to network partition.
+  AutoWDS basic is due to its tree-like structure rather susceptible to network partition.
   As this may be just an inconvenience to users of devices like cellphones or laptops who are running non ciritical programs, 
   keeping up a connection to certain parts of the network in an industrial environment gains importance where for example heavy machines depend on its uplink connection in order 
   to continue proper operation. Hence AutoWDS extended has to provide the possibility to create and optionally use
@@ -76,7 +76,7 @@
       
     \subsection{Static Environment}
       AutoWDS basic and extended is and will be designed for a static environment of APs. That means there will be no highly frequent changes in
-      network topology or in link-quality. Although this does not completely render APs immobile, changes if any are expected to be very slow and gradually.
+      network topology or in link-quality. Although this does not render APs immobile, changes if any are expected to be slow and gradually.
       
     \subsection{Data Link Layer (layer 2) Usage}
       The solution has to enable communication on layer 2, as some use cases do not use layer 3 (\ac{IP}) for their communication.
