@@ -24,13 +24,13 @@ then
 	done
 fi
 
-if [ "$1" = "" ]
+if ! [ "$1" ]
 then
 	echo "Usage: ${0##*/} <file> ..." >&2
 	exit 1
 fi
 
-egrep -H -i -n --color "\\b($weasels)\\b" "$@"
+egrep -w -H -i -n --color "$weasels" "$@"
 
 last="$?"
 
