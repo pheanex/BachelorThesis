@@ -4,10 +4,10 @@ six phases planning, preparation, test-specification, execution and result analy
 it was not feasible to implement all the systems of the related solutions on this field on a common environment
 to get a fair assessment for each work and to really estimate how each solution performes against the others. 
 On the other hand such a comparison would have to be treated with caution since, each solution is designed with another metric/goal kept in mind.
-Si et al. \cite{overview_caa} provide an overview on the current most famous solutions on \ac{CA} and may serve for a further review and comparison.
+Si et al. \cite{overview_caa} provide an overview on the current well-known solutions on \ac{CA} and may serve for a further review and comparison.
 Therefore the following tests will focus on the comparison between AutoWDS basic and its extended, optimized version.
 Furthermore our tests were restricted to the evaluation of spanning tree topolgies, because AutoWDS currently 
-still uses a bridged network for its APs instead of a fully grown routing system, with the drawback of \ac{STP} being active.
+still uses a bridged network for its APs instead of a proper routing system, with the drawback of \ac{STP} being active.
 \footnote{\ac{STP} is a temporary measure since it does not scale well. 
 Our survival paths are supposed to lay the ground for redundancy-systems in layer 2 (like FabricPath \cite{fabricpath}).} 
 This means even if we would try to run a network topology with survival paths in it on AutoWDS, \ac{STP} would disable some links in order to 
@@ -292,7 +292,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     Whereas two unimpeded APs were able to achieve a throughput of about 2Mbit in each direction, adding a third one would dramatically 
     decrease overall throughput down to about 100kbit or less, growing worse with each newly added \ac{AP} in receive-range. 
     Even spreading the APs further apart would not promise better results since the inherent problem of reusing the same channel for the forwarding and receiving 
-    link restricts the forwarding capabilities rigorously.
+    link restricts the forwarding capabilities drastically.
      
     As the figures show, the outcome is dependent on the number of channels used as a setup with only three distinct channels allowed yields still better
     results than a mono-channel-setup but is inferior to a setup where we can use even more channels as this gives us the possibility to use more collision domains
@@ -398,7 +398,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \begin{description}
 	\item [Variable Nr. of Radios:] Our algorithms support a variable number of radios on each device instead of a fixed numer like in \ac{INSTC} \cite{INSTC}. 
 	  This allows to optimize the wireless network even for heterogeneous environments where devices have a variable number of radios or just simply one.
-	\item [Vendor Neutral:] Although we used only LANCOM devices in our case, the solution is basically vendor neutral. As long as the devices provide the required data,
+	\item [Vendor Neutral:] Although we used only LANCOM devices in our case, the solution is vendor neutral. As long as the devices provide the required data,
 	  any network with devices that can be configured (also manually) to use a specific link for a certain radio can profit from our optimization.
 	\item [No MAC changes:] Our solution does not require any \ac{MAC}-layer changes and can be run on any commodity \ac{WLAN} hardware.
 	\item [No Forced Backup Links:] Thanks to our modular approach, adding redundant links to the initial \ac{MST} is optional. 

@@ -56,13 +56,13 @@
   \section{Dependencies}
     As already mentioned we used NetworkX\cite{hagberg-2008-exploring} to model our graphs and work with its elements.
     NetworkX's rich features like ``has\_path'' made things especially easy in computing the survival paths.
-    Another library we used is python collections. \cite{python_collections}
+    Another library we used is python collections \cite{python_collections}.
     This library implements specialized container datatypes additionally to those shipped with standard python.
     It's `Counter` structure is used to create the channel-lists and retrieve the most or least used elements.
     We extended this library for our convencience since it did only provide the functionality for getting the most common elements from its lists and not the least common,
-    which we needed. \footnote{The request for including this method was already issued at 01/2013 http://bugs.python.org/issue16994}
+    which we needed\footnote{The request for including this method was already issued at 01/2013 http://bugs.python.org/issue16994}.
     The only closed source library we used is the herein before mentioned library to query the WLC for the data of the APs. 
-    Nevertheless due to its separation into modules, gathering the input-data can easily be undertaken by other libraries or custom scripts.
+    Nevertheless due to its separation into modules, gathering the input-data can be carried out by other libraries or custom scripts.
   
   \section{Structure of the Code}
     We split the code into two modules. One is handling the gathering of input data, followed by parsing it and finally dealing with its output data.

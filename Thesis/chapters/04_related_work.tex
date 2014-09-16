@@ -1,9 +1,9 @@
 \chapter{Related Work}
   The following four approaches are all solutions that are graph-based and target a centralized and static channel assignment.
-  Those are not the only ones on this matter, but the most known and relevant contestants to solve our problem.
+  Those are not the only ones on this matter, but the approaches currently in use and most relevant contestants to solve our problem.
   Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not cover here (see chapter \ref{reqana}).
   Except the \ac{BFS-CA}, the prevalent solutions make excessive use of the conflict graph, which according to \cite{overview_caa} has difficulties to model 
-  the varying number of radios equipped on APs. Also most of the works solely focus on assigning channels to an existing topology and do not touch 
+  the varying number of radios equipped on APs. Also, most of the works solely focus on assigning channels to an existing topology and do not touch 
   the network topology at all, what seems like a handicap as topology control is an essential part in dealing with wireless interference as we will see later.
   
   \begin{figure}[h!]
@@ -72,13 +72,13 @@
   \section{\ac{BFS-CA}}
     \ac{BFS-CA} \cite{BFS-CA} extends the common conflict graph with modules, resulting in a \ac{MCG}, which more closely reassembles the
     real world setup. This makes it easier for them to deal with the different numbers of radios available on each device. 
-    What they do is to let the APs (or mesh routers in their case) sniff the network on regular intervalls and determine a ranking for the channels.
+    They let the APs (or mesh routers in their case) sniff the network on regular intervalls and determine a ranking for the channels.
     Those rankings are then sent to their central entity, the \ac{CAS}. This \ac{CAS} in turn derives the \ac{MCG} and assigns each node in this graph 
     a channel in \ac{BFS}-manner by considering the received rankings of the APs. In order not to partition the network by introducing a \ac{CA}, which 
     would disconnect some links by setting certain radios to different channels, they also use one radio on each AP on an overall-common channel.
     This common channel is then used for initial setup, management frames and as a backup if other links break in order to keep the graph connectivity attribute.
     
-    Although \ac{BFS-CA}, as others, is still anxious about topology alterations, since on a first glance it might introduce too severe problems like, 
+    Although \ac{BFS-CA}, as others, is still anxious about topology alterations, since at a first glance it might introduce too severe problems like, 
     additional hops for packets, increased interference footprint and higher susceptibility to errors due to longer travel times of packets.
     Nevertheless it is the algorithm which we were inspired by the most and therefore have some ideas in common.
     The interesting features we reused and refined are:
@@ -88,7 +88,7 @@
      
      \item Central computation on a \ac{CAS}, which reassembles our \ac{WLC}.
      
-     \item Taking foreign sources of interference also into consideration.
+     \item Taking foreign sources of interference into consideration as well.
      
     \end{itemize}
     
@@ -104,7 +104,7 @@
 	these can be more effectively designed (See chapter \ref{fig:high_con_vs_low_con}).
 	\label{topologypreservingdealbreaker}
 	
-      \item Using one radio on each \ac{AP} for a common overall-channel seemed to us as a waste of radio modules.
+      \item Using one radio on each \ac{AP} for a common overall-channel seemed to us as a misspending of radio modules.
 	Radio modules on APs are scarce and should be utilized efficiently. 
 	Furthermore one overall-channel which is utilized by each \ac{AP} does not scale well and is basically already done in AutoWDS basic.
 	
@@ -114,15 +114,15 @@
 	acquiring the overall view on the network.
 	
       \item The ranking algorithm itself could be improved. 
-	For our taste it averages values too early in the process and uses a random pick not as a last resort - providing supoptimal results.
+	The solution averages values too early in the process and uses a random pick not as a last resort - providing supoptimal results.
 	
-      \item Its \ac{BFS} order of assigning channels puts one node (gateway-node) above all others during channel assignment.
-	In some of our usescases there is no gateway node available (See \ref{reqincreasethroughput}) and we need a fair distribution of channels, 
+      \item \ac{BFS}'s order of assigning channels puts one node (gateway-node) above all others during channel assignment.
+	In some of our usescases there is no gateway node available (See Section \ref{reqincreasethroughput}) and we need a fair distribution of channels, 
 	which is not feasible with this solution \cite{overview_caa}.
     \end{itemize}
 
   \section{\ac{CTA}}
-    Subramanian et al.\cite{CTA} use a modified Tabu-algorithm \cite{tabu} in two steps to find a \ac{CA} for the conflict graph.
+    Subramanian et al. \cite{CTA} use a modified Tabu-algorithm \cite{tabu} in two steps to find a \ac{CA} for the conflict graph.
     It works by starting with a random \ac{CA} and, like an evolutionary algorithm, 
     iteratively changing small details and selecting the best temporal solution to continue for the next iteration.
     An iteration is here further subdivided into generating a number of random neighboring assignments, where only the color/channel of one vertex is changed.

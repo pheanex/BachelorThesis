@@ -76,13 +76,13 @@
       
     \subsection{Static Environment}
       AutoWDS basic and extended is and will be designed for a static environment of APs. That means there will be no highly frequent changes in
-      network topology or in link-quality. Although this does not render APs immobile, changes if any are expected to be slow and gradually.
+      network topology or in link-quality. Although this does not render APs immobile, changes if any are expected to be slow and gradual.
       
     \subsection{Data Link Layer (layer 2) Usage}
-      The solution has to enable communication on layer 2, as some use cases do not use layer 3 (\ac{IP}) for their communication.
+      The solution has to enable communication on layer 2, as some use cases do not use Layer 3 (\ac{IP}) for their communication.
       Note that also a tunnel-mechanism (like ingress / egress in \ac{MPLS} \cite{mpls}), 
       where ethernet frames are encapsulated in a layer 3 packet for transportation and then later unpacket when delivering to the destination,
-      is not preferred as this mechanism is currently not implemented in \ac{LCOS}.
+      is not preferred as this mechanism is currently not implemented in our target platform \ac{LCOS}.
     
     \subsection{Economic Constraints}
       Neither the central entity nor the APs are limited regarding power consumption. 

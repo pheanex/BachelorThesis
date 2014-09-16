@@ -1,10 +1,10 @@
 \chapter{Background}
 This chapter provides background information on Wireless Networks and recalls some graph-theoretic basics we used in our work.
 At first we will take a look at the relevant points of APs followed by illustrating the bigger picture on how to use those
-within a network. Then we examine the way APs communicate with each other through channels, how those communications are affected by interference, and
-how to access the shared medium. Finally we will outline the implementation of the \ac{WDS} we are optimizing.
-In the second part we shortly explain spanning trees on graphs and depict graph attributes like edge- and vertex-connectivity.
-Subsequently we will give a detailed description of how we map a real world \ac{AP}-infrastructe-setup to network graphs in order 
+within a network. Then, we examine the way APs communicate with each other through channels, how those communications are affected by interference, and
+how to access the shared medium. Finally, we will outline the implementation of the \ac{WDS} we are optimizing.
+In the second part, we explain spanning trees on graphs and depict graph attributes like edge- and vertex-connectivity.
+Subsequently, we will give a detailed description of how we map a real world \ac{AP}-infrastructure-setup to network graphs in order 
 to compute a solution and conclude this part by discussing the relevance of the problem COLORING for our approach.
 
 \section{Wireless Networks}
@@ -12,9 +12,9 @@ to compute a solution and conclude this part by discussing the relevance of the 
   They are used in scenarios where using wires is not possible or cumbersome like systems where devices are mobile or subject to drastic link-qualtiy changes.
   There are different scales where wireless networks are utilized:
   \begin{itemize}
-    \item Smallish systems like a \ac{PAN} where a smartphone uses bluetooth to connect to headphones. Typical range lies within a couple of meters.
+    \item Smaller systems like a \ac{PAN} where a smartphone uses bluetooth to connect to headphones. The typical range lies within a couple of meters.
     \item Medium sized systems like a \ac{WLAN} with laptops or smartphones connecting to an infrastructure through a wireless \ac{AP}.
-      Typical range is up to 100 meters.
+      The typical range is up to 100 meters.
     \item Large scale systems like television broadcasting with \ac{DVB-T} through satellites with ranges of up to 35,400 kilometers.
   \end{itemize}
   
@@ -34,9 +34,9 @@ to compute a solution and conclude this part by discussing the relevance of the 
 
       \item [Point-to-Point mode:]
 	This mode is defined by a static link between exactly two interfaces in contrast to infrastructe- and ad-hoc- mode, where this affiliation is not determined.
-	It allows an \ac{AP} to create a dedicated link to another \ac{AP} using the same mode and this link would consequently be shared only by those two APs
-	as communication in between is encrypted. This mode is useful in scenarios where certain connection-constellations can not be achieved by 
-	client-infrastructure-mode combinations solely. Alternatively one could also use the ad-hoc mode, which was not available since not implemented yet in LANCOM devices.
+	It allows an \ac{AP} to create a dedicated link to another \ac{AP} using the same mode. This link would consequently be shared only by these two APs,
+	aditionally the transmitted data is encrypted. This mode is useful in scenarios where complex connection-constellations can not be achieved by 
+	client-infrastructure-mode combinations solely. Alternatively, one could also use the ad-hoc mode, which was not available, as it was not implemented yet in LANCOM devices.
 	
       \item [Client-mode:]
 	Here the \ac{AP} behave the same as ordinary clients like laptops or smartphones.
@@ -59,10 +59,10 @@ to compute a solution and conclude this part by discussing the relevance of the 
     A \ac{WLAN} channel as specified by the IEEE 802.11 family uses a specific frequency-range in the \ac{UHF} or \ac{SHF} radio-scope in order 
     to modulate data digitally on carrier waves.
     Doing this allows transmitting data from a sender station to a receiver station and creates a network-link between them.
-    \ac{WLAN} uses two license-free frequency bands at 2.4 GHz and additionally certain bands around 5 GHz.
-    As we can see in figure \ref{fig:wlan_channels}, certain channels have overlapping regions, which can lead to conflicts.
+    \ac{WLAN} uses two license-free frequency bands at 2.4 GHz and additionally bands around 5 GHz.
+    As we can see in figure \ref{fig:wlan_channels}, channels have overlapping regions, which can lead to conflicts.
     Two independent pairs of radios in the same area can communicate almost free of interference, if they use different, non-overlapping channels.
-    Some APs use channels with 40 MHz bandwidth in order to further increase throughput with the drawback of creating more overlapping frequency-regions
+    Newer APs may use channels with 40 MHz bandwidth in order to further increase throughput with the drawback of creating more overlapping frequency-regions
     and therefore possibly creating sources of interference for other channels closeby.
     The overlapping regions are a problem especially in the 2.4 GHz band, but if wider versions of channels in the 5 GHz band are used, also those are affected,
     although not as bad as in the 2.4 GHz, where the channels overlap per even at 20 MHz width.
@@ -98,9 +98,9 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	For a sizeable \ac{AP}-deployment the accumulated backoff-waiting times increase as more data is transmitted and backoff-timers are triggered more often.
 	This effect also quickly degrades network performance, especially in a mono-channel setup.
 	
-	Another interesting, but undesired problem in accessing the medium despite following the CSMA algorithm is the hidden-station-problem.
+	Another interesting, but undesired effect in accessing the medium despite following the CSMA algorithm is the hidden-station-problem.
 	It describes a scenario where an \ac{AP} B is in range of A and C, but A and C do not see each other (see \ref{fig:csmaca}).
-	If then the situation occurs that the two outer APs simultaneously want to send data to the \ac{AP} in the middle, as they can not notice the 
+	Then, if the situation occurs that the two outer APs simultaneously want to send data to the \ac{AP} in the middle, as they can not notice the 
 	other AP sending data, their packets collide at B and therefore effectively transmit less or nothing at all, since B is not able to correctly decode the packets.
 	The effect is similar to two people talking to a third person at the same time.
 	To alleviate the problem the RTS/CTS extension was introduced, which introduces small \ac{RTS}-requests and \ac{CTS}-announcements. 
@@ -115,8 +115,8 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	    If B then wants to also transmit data to B, it checks if the medium is free, which it falsely assumes
 	    and then starts to transmit its data. This leads to collisions at B in step 2 and the data received will be corrupt.
 	    With RTS/CTS: First A asks B if it may send data to it, which B allows by sending the OK to every station listening (A and C). 
-	    Then A sends its data to B while C tries to get B's attention by requesting a CTS from it, which collidies with A's data and is ignored there.
-	    Eventually C succeedes in getting its CTS from A and is able to also transmit its data to B without collisions.}
+	    Then A sends its data to B while C has to wait until B's time slice expires (a CTS defines the amount of time how long a station will listen to another, so there is no
+	    need for constant polling). Eventually C succeedes in getting its CTS from A and is able to also transmit its data to B without collisions.}
 	  \label{fig:csmaca}
 	\end{figure}
 
@@ -132,7 +132,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	This kind of interference is called cooperative and occurs if two radios claim the same channel/medium (co-channel/adjacent-channel interference) if CSMA fails,
 	like in the hidden-station or exposed-station problem.
 	Whereas there is also uncooperative interference from devices like microwaves or cordless phones which do not access the medium purposefully, but rather
-	emit noise by accident on the same frequency, nevertheless the effect is the same.
+	emit noise by accident on the same frequency. Nevertheless, the effect is the same.
 	
 	For our purposes we generally define interference for wireless connections as any kind of disruption in communication, 
 	that includes both cooperative and non-coopertive interference.
@@ -140,7 +140,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	Despite solutions like RTS/CTS and others that mitigate the hidden station problem (and alleviate the cooperative interference),
 	there are still some situations where collisions and therefore interference occurs.
 	Additionally at a certain signal-strength level a station, while doing its carrier sensing, may not be able to differentiate noise from another stations transmission.
-	As \cite{padhye2005estimation} mentions, interference is the key cause of performance degradiation in wireless networks. Hence our idea is to increase throughput 
+	As \cite{padhye2005estimation} mentions, interference is the key cause of performance degradiation in wireless networks. Hence, our idea is to increase throughput 
 	performance by reducing interference as much as possible.
 	
 	\begin{figure}[h!]
@@ -161,9 +161,9 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	The WDS-enabled \ac{AP} can accept wireless clients (e.g. wireless laptop users) just as traditional APs would.
       \end{quote}
 
-      It is also pointed out that WDS is currently not a certified standard of the \ac{IEEE} and every vendor implements it in a different way.
+      They also point out, that WDS is currently not a certified standard of the \ac{IEEE} and every vendor implements it in a different way.
       For an example see figure \ref{fig:camping}. The idea behind this system is to make increasing the range of an already pre-configured \ac{WDS}
-      especially easy by just adding another \ac{AP} somewhere in range of the other APs and powering it on.
+      easy by just adding another \ac{AP} somewhere in range of the other APs and powering it on.
       Setting up the rest of the infrastructure and configuration from then on is supposed to happen automatically. 
       This system allows us for example to quickly bring a network infrastructure to areas where no 
       existing infrastructures (existing power- or network-cabling) can be utilized for this purpose, without the burden of creating such a costly infrastructure.
@@ -174,12 +174,12 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	Managing such a \ac{WDS} can also be done through another central entity somewhere else in the network, for example by
 	electing an \ac{AP} for this job, which is directly connected to the wired \ac{LAN}, as it is done by DD-WRT \cite{dd_wrt}. 
 	Taking it one step further and eliminating the central logic at all would then result in a distributed logic on each of the APs, which is however more complex. 
-	We will only deal with the central, managed scenario and ignore distributed approaches, especially as software support on the side of LANCOM APs is missing.
+	We will only deal with the centrally, managed scenario and ignore distributed approaches.
 	
 	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=0.7\columnwidth]{figures/wlc}
-	  \caption{A LANCOM \ac{WLC} \cite{lancom}}
+	  \caption{A LANCOM WLAN Controller \cite{lancom}}
 	  \label{fig:wlc}
 	\end{figure}
 	
@@ -197,7 +197,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	The procedure of establishing such a network can be described as follows:
 	\begin{enumerate}
 	 \item APs search for a \ac{WLC} on the wired network by \ac{IP}-broadcast.
-	 \item After authentication of the \ac{AP} the \ac{AP} establishes a secure (\ac{DTLS}) channel to the \ac{WLC} through a \ac{CAPWAP}-Layer.
+	 \item After the authentication of the \ac{AP} the \ac{AP} establishes a secure (\ac{DTLS}) channel to the \ac{WLC} through a \ac{CAPWAP}-Layer.
 	 \item \ac{AP} receives a configuration from the \ac{WLC} through the secure channel and reconfigures itself accordingly.
 	\end{enumerate}
 	
@@ -216,7 +216,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	The procedure is enhanced accordingly:
 	
 	\begin{enumerate}
-	  \item The first \ac{AP} finds a \ac{WLC} and proceeds as usual. Additionally it announces its connection to the \ac{WLC} over its radios to other APs.
+	  \item The first \ac{AP} finds a \ac{WLC} and proceeds as before. Additionally it announces its connection to the \ac{WLC} over its radios to other APs.
 	  
 	  \item The second \ac{AP} does not find a \ac{WLC} on its \ac{LAN}-inferface and extends its search on the radios. 
 	    There it receives the announcement of the first \ac{AP}.
@@ -225,20 +225,20 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	  \item The second \ac{AP} establishes a secure connection (\ac{WPA2}) to the first \ac{AP} and continues its search for a \ac{WLC} over this link, 
 	    where it finds the \ac{WLC} and also receives a configuration (\ac{CAPWAP} / \ac{DTLS}) and proceeds as \ac{AP} one.
 	    
-	  \item Gradually all the APs connect each other to the backbone, receive a configuration and also spread the \ac{WLAN}.
+	  \item Gradually all the APs connect each other to the backbone, receive a configuration and spread the \ac{WLAN} network.
 	\end{enumerate}
 	
 \section{Graph-theoretic Basics}
-  A graph in graphtheory is a set of nodes and edges between those nodes. 
-  
-  A directed graph/digraph has directions on its edges defined.
-  
-  A weighted graph has weights attached to its edges.
-  
-  A graph is called connected if every pair of nodes is connected. 
-  Two nodes A,B are connected if there exists a path from A to B.
-  A path is a sequence of edges where each edge has to fit to the next, like the game of domino.
-  
+  In the following we will recall the definitions of graphs, directed / weighted edges and paths in a graph.
+  \begin{itemize}
+    \item A graph in graphtheory is a set of nodes and edges between these nodes.
+    \item A directed graph/digraph has directions on its edges defined.
+    \item A weighted graph has weights attached to its edges.
+    \item A graph is called connected if every pair of nodes is connected. 
+      Two nodes A,B are connected if there exists a path from A to B.
+      A path is a sequence of edges where each edge has to fit to the next, like the game of domino.
+  \end{itemize}
+
   \begin{figure}[th!]
     \centering
     \includegraphics[width=0.8\columnwidth]{figures/graphen.png}
@@ -248,22 +248,24 @@ to compute a solution and conclude this part by discussing the relevance of the 
 
   We choose to use graphtheory to represent our networks structures for two reasons:
   \begin{itemize}
-   \item We are able to express easily all the relevant parts of a network directly in a graph without any modifications in graphtheory,  
+   \item We are able to easily express all the relevant parts of a network directly in a graph without any modifications to graphtheory,  
    like APs and modules by nodes, links between APs with edges and signal to noise ratios with weightedness of edges. 
     
-   \item Graph theory is a well reseached field and a lot of problems in graphtheory can be solved efficiently and intuitively 
-    as we will show later with the \ac{DJP} algorithm in \ref{fig:djp}.
+   \item Graph theory is a well reseached field and a lot of problems in it can be solved efficiently and intuitively 
+    as we will see later with the \ac{DJP} algorithm.
   \end{itemize}
     
-  \subsection{k-vertex-connectivity, k-edge-connectivity}
-    A graph is said to be \textit{k-vertex-connected} if there exists a set of \textit{k} vertices whose removal disconnects parts of the graph.\newline
-    A graph is said to be \textit{k-edge-connected} if the graph is still connected after the removal of \textit{k} edges.
+  \subsection{\emph{k}-Vertex-connectivity, \emph{k}-Edge-connectivity}
+    A graph is called \textit{k-vertex-connected} if there exists a set of \textit{k} vertices whose removal disconnects parts of the graph.
+    A graph is called \textit{k-edge-connected} if the graph is still connected after the removal of \textit{k} edges.
     \begin{figure}[th!]
       \centering
       \includegraphics[width=0.5\columnwidth]{figures/connectivity.png}
       \caption{Graph-connectivity attributes from left to right: 2-vertex and 2-edge, 0-vertex and 1-edge, 0-vertex and 0-edge}
       \label{fig:connectivity}
     \end{figure}
+    
+\newpage
     
   \subsection{Minimum Spanning Tree}
     A spanning tree is a subgraph for a given graph which contains all nodes of the original graph, but only the necessary and edge-weight minimal 
@@ -288,7 +290,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
     
   \subsection{Significance of COLORING}
     Other pursuits of this problem including \cite{BFS-CA}, \cite{CTA}, \cite{caa_tricky} and \cite{katzela} mention a kinship to the problem COLORING on graphs.
-    On the other hand \cite{caa_tricky} also mentions:
+    On the other hand, \cite{caa_tricky} also mentions:
     
     \begin{quote}
       At first glance, this problem appears to be a graph-coloring problem. However, standard graph-coloring algorithms cannot really capture the specification and constraints 
@@ -299,7 +301,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
     
     In addition to the modeling problems a potential result of such a COLORING solution still would not make a point on the topology to use,
     as COLORING works on given network graphs and therefore topolgies, but we also have to decide how to create and select the network topology.
-    As a consequence this formal problem or solutions to it are not considered in our work.
+    As a consequence, this formal problem or solutions to it are not considered in our work.
     
   \subsection{Mapping Network to Graph}
     For our purposes we will use the following mapping from devices and modules to a undirected, weighted graph.
@@ -315,10 +317,8 @@ to compute a solution and conclude this part by discussing the relevance of the 
     Since the average of the two \ac{SNR} values might not describe all scenarios well enough (in a scenario where \ac{SNR} values differ broadly),
     we easily can adjust the edge-weight to the minimum or maximum of both values.
     
-    Furthermore we ignore onesided discoveries, i.e. one module receives one or a handfull of beacons of the other module, but not the other way round.
-    The SNRs of those connections are not only generally low / poor, but also rare in our target scenarios with omnidirectional antennas.
-    So normally either the modules receive each others beacons, or both do not.
-    
+    Furthermore we ignore one-sided discoveries, i.e. one module receives some beacons of the other module, but not the other way round.
+        
     \begin{figure}[th!]
       \centering
       \includegraphics[width=0.7\columnwidth]{figures/apgraph.png}

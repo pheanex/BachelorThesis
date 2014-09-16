@@ -2,11 +2,11 @@
   Even for a simple scenario like in figure \ref{fig:graphseen}, where we have a lot of possible links between the modules it is not obvious how to
   chose a low-interference network topology from this graph.
   A shortsighted solution may be trying to use every possible link, since this would decrease overall traveltimes for each packet and therefore
-  reduncing network workload and possible interferences as a packet is not longer in the network than it needs to be. 
+  reducing network workload and possible interferences as a packet is not longer in the network than it needs to be. 
   The problem in doing so is the small number of channels we can assign to these links, even if we allow using multiple channels.
   Since we can only assign one channel to a module, trying to start small and assigning one channel to one module would then force us to also 
   assign the same channel to all connected modules in order to maintain connectivity as two modules can only communicate with each other if they use the same channel
-  (See upper figure in \ref{fig:high_con_vs_low_con}). 
+  (See upper half in Figure \ref{fig:high_con_vs_low_con}). 
   
   \begin{figure}[h!]
     \centering
@@ -122,11 +122,9 @@
 	Another factor of influence would be the number of erroneous bytes that have been transmitted over this link. 
 	This is hower not used for determining the expectet bandwidth as we do not know what those values are going to 
 	look like before actually using this link to transmit data.
-	
-\newpage
 
       \subsubsection{Connected Count}
-	Number of nodes we can reach from module A and module B by just using module-module edges (For example nodes A, B, C in figure \ref{fig:channel-list}). 
+	The number of nodes we can reach from module A and module B by just using module-module edges (For example nodes A, B, C in figure \ref{fig:channel-list}). 
 	A higher connected count diminishes the importance of this edge, since this value controls how many channels we can use later for the overall graph.
 	If this value would not be taken into consideration for calculating the score, the algorithm would rather create long chains of connected modules. 
 	Those links in this chain would admittedly have the best \ac{SNR} values, but since they have to share the same channel, 
@@ -215,7 +213,7 @@
       \end{figure}
 
       After the expansion of the fake edges for \ac{AP} F, we proceed by refreshing all the edgescores, 
-      portraying edge (G, K) as the best edge (figure \ref{mst_calc_3}).
+      portraying edge (G, K) as the best edge (Figure \ref{fig:mst_calc_3}).
       Note how the score for edge (C, P) was decreased, since node C is already used for another edge.
       
       \begin{figure}[h!]
@@ -279,7 +277,7 @@
      \newpage
       
     \subsection{Survival Paths}
-      A spanning tree is particularly susceptible to graph partition by just removing or failing one link so we have to add redundancies in form of supplementary connections.
+      A spanning tree is particularly susceptible to graph partition by just removing one link so we have to add redundancies in form of supplementary connections.
       However those redundant connections have to be carefully chosen in order not to negatively impact the successive channel assignment and therefore to push interference.
       Note that this is an optional feature, since for some usecases a spanning tree topology is enough or a topology with redundand links is not easily implemented
       with the existing code or hardware.  
@@ -290,7 +288,7 @@
       we start looking for a backup route in the following fashion:
       First we separate the graph into two groups: Group A with all nodes and links reachable from node A and group B with the same for node B.
       We create a list with unused edges which connect the two groups and calculate the scores on them and pick again the edge with the highest score.
-      This edge is the best edge to reconnect the two parts (according to the formula) and is called the survival edge for this failing scenario.
+      This edge is the best edge to reconnect the two parts (according to Formula \ref{eq:edgescore}) and is called the survival edge for this failing scenario.
       Nevertheless we have to be aware that it might not be feasible to reconnect those parts if the underlying structure does not permit it.
       For example the link between nodes \(E\) and \(F\) in \ref{fig:survival_algo} might be the only connection possible and failing it would cause network disruption.
       But if this link fails there is nothing we can do. The result is a robust network topology, 
@@ -301,7 +299,7 @@
 	For each edge (a, b) of the calculated spanning tree graph G', find a path from a to b without traversing (a, b), 
 	in a way that the sum of the Edgescores of the path is maximal.
       \end{quote}
-      Description:
+      Formally defined as:
       $$\textit{G}=(\textit{V},\textit{E}) \quad
 	\forall \textit{edge}_\textit{a,b} \exists \textit{path}_\textit{a,b} | \textit{edge}_\textit{a,b} \notin \textit{path}_\textit{a,b} \quad
 	\textit{a,b} \in \textit{V}, \textit{edge}_\textit{a,b} \in \textit{E}$$
