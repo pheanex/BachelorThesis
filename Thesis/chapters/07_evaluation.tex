@@ -5,21 +5,21 @@ it was not feasible to implement all the systems of the related solutions on thi
 to get a fair assessment for each work and to really estimate how each solution performs against the others. 
 On the other hand such a comparison would have to be treated with caution since, each solution is designed with another metric/goal kept in mind.
 Si et al. \cite{overview_caa} provide an overview on the current well-known solutions on \ac{CA} and may serve for a further review and comparison.
-Therefore the following tests will focus on the comparison between AutoWDS basic and its extended, optimized version.
-Furthermore our tests were restricted to the evaluation of spanning tree topologies, because AutoWDS currently 
+Therefore the following tests will focus on the comparison between \textit{AutoWDS basic} and its extended, optimized version.
+Furthermore our tests were restricted to the evaluation of spanning tree topologies, because \textit{AutoWDS} currently 
 still uses a bridged network for its APs instead of a proper routing system, with the drawback of \ac{STP} being active.
 \footnote{\ac{STP} is a temporary measure since it does not scale well. 
-Our survival paths are supposed to lay the ground for redundancy-systems in layer 2 (like FabricPath \cite{fabricpath}).} 
-This means even if we would try to run a network topology with survival paths in it on AutoWDS, \ac{STP} would disable some links in order to 
+Our survival paths are supposed to lay the ground for redundancy-systems in Layer 2 (like FabricPath \cite{fabricpath}).} 
+This means even if we would try to run a network topology with survival paths in it on \textit{AutoWDS}, \ac{STP} would disable some links in order to 
 eliminate circles in the topology \footnote{Circles in a network topology are undesirable since they can lead to broadcast-storms see \ac{IEEE} 802.1D}.
 As a consequence achievable throughput will be lower than it could be with survival paths.
 
 \newpage
 
   \section{Planning}
-    The goal of this test is to confirm the claim of an increase in overall throughput of AutoWDS extended compared to AutoWDS basic.
-    Therefore we will evaluate the whole process by deploying an actual \ac{WDS} with AutoWDS instead of just performing a code analysis or review.
-    To discern performance gains we run AutoWDS basic and extended on the same networking setup and measure its achieving overall throughput.
+    The goal of this test is to confirm the claim of an increase in overall throughput of \textit{AutoWDS extended} compared to \textit{AutoWDS basic}.
+    Therefore we will evaluate the whole process by deploying an actual \ac{WDS} with \textit{AutoWDS} instead of just performing a code analysis or review.
+    To discern performance gains we run \textit{AutoWDS basic} and extended on the same networking setup and measure its achieving overall throughput.
     In order to create enough throughput we attach traffic generators to the APs to simulate real clients.
     These generators will then send data to all the other nodes in the network.
     To get the values of how much data was actually carried over the wireless network, we will query the APs for this information in a way that it 
@@ -102,8 +102,8 @@ As a consequence achievable throughput will be lower than it could be with survi
       We were able to simulate this problem with a reduced transmit-power to some degree,
       but even on the lowest setting most of the APs were still able to receive each others beacons well enough. 
       This is another factor that will lower general throughput for all setups, which we will notice in the test results.
-      Therefore the throughput-differences between the two systems in a real deployment will probably be higher, since AutoWDS basic will suffer worse from this effect 
-      compared to AutoWDS extended.
+      Therefore the throughput-differences between the two systems in a real deployment will probably be higher, since \textit{AutoWDS basic} will suffer worse from this effect 
+      compared to \textit{AutoWDS extended}.
     
     \subsection{Logical Structure}
       We simulated the traffic generating systems with OpenVZ \cite{openvz} on one server with a \ac{VLAN} for each system to separate the traffic for each client.
@@ -140,11 +140,11 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     Each test run describes a 10 minutes performance stress test for the network with throughput saturation. 
     This should be enough time to notice any temporal effects and to get a picture of the lasting performance.
     
-    To keep environmental conditions for each of the AutoWDS systems as similar as possible we conducted the runs alternatively with respect to channel usage.
+    To keep environmental conditions for each of the \textit{AutoWDS} systems as similar as possible we conducted the runs alternatively with respect to channel usage.
     So that a possible temporal interference in a certain band would affect both runs and not just favor a single system.
   
     Actually to get more statistic significance we should have run this test-array more than once, but as for each new setup there had to 
-    be invested a considerable amount of time in the pre-setup of AutoWDS (getting it up and running, despite bugs), 
+    be invested a considerable amount of time in the pre-setup of \textit{AutoWDS} (getting it up and running, despite bugs), 
     this was not feasible within the time frame that was scheduled to execute the whole evaluation.
     
     Additionally we ran the test cases with two different antenna power-settings to simulate the hidden station problem. 
@@ -154,7 +154,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     \begin{table}[h!]
       \centering
       \begin{tabular}{clll}
-	Test run nr. & AutoWDS version & Channels used & Antenna power\\ \hline
+	Test run nr. & \textit{AutoWDS} version & Channels used & Antenna power\\ \hline
 	1 & basic & 1 & low \\
 	2 & extended & 1,6,11 & low \\
 	3 & basic & 36 & low \\
@@ -177,8 +177,8 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     The general procedure for a testrun was implemented as follows:
     \begin{enumerate}
       \item Power on the System (\ac{WLC} + APs).
-      \item Wait until all APs are connected to the wireless backbone (See description of AutoWDS in Chapter \ref{autowdsbasic}).
-      \item For AutoWDS basic we continue with the next step, for the extended version also the following additional steps have to be conducted.
+      \item Wait until all APs are connected to the wireless backbone (See description of \textit{AutoWDS} in Chapter \ref{autowdsbasic}).
+      \item For \textit{AutoWDS basic} we continue with the next step, for the extended version also the following additional steps have to be conducted.
 	\begin{enumerate}
 	 \item Wait until all the wireless measurements arrived at the \ac{WLC}.
 	 \item Run our algorithm, which reads data from the \ac{WLC}, computes a solution and writes back the topology-to-do to the \ac{WLC}.
@@ -199,7 +199,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     \begin{figure}[h!]
       \centering
 	\includegraphics[width=\textwidth]{figures/topo_chan_1}
-	\caption{Topology of the test network with only one channel in use (AutoWDS basic).\protect\footnotemark }
+	\caption{Topology of the test network with only one channel in use (\textit{AutoWDS basic}).\protect\footnotemark }
       \label{fig:topo_chan_1}
     \end{figure}
     
@@ -208,7 +208,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     \begin{figure}[h!]
       \centerline{
 	\includegraphics[width=\textwidth]{figures/topo_chan_1_6_11_36_40_44}
-	\caption{Topology of the test network with six channels in use (AutoWDS extended).}
+	\caption{Topology of the test network with six channels in use (\textit{AutoWDS extended}).}
       }
       \label{fig:topo_chan_1_6_11_36_40_44}
     \end{figure}
@@ -284,7 +284,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 
   \section{Analysis}
     The results match our expectations, despite all the limitations of our testbed.
-    Using only a single channel in AutoWDS basic does not scale well, no matter how much transmit power is used and independent of the band.
+    Using only a single channel in \textit{AutoWDS basic} does not scale well, no matter how much transmit power is used and independent of the band.
     Not only is the baseline scenario incapable of transmitting much data, most of it is also corrupt.
     The results also affirm our estimate that the basic version transfers only a little more than control data.
     

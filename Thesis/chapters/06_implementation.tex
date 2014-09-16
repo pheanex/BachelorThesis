@@ -1,5 +1,5 @@
 \chapter{Implementation}
-  We implemented our optimization as an addition to AutoWDS basic, after it successfully created a stable network tree topology (See Chapter \ref{autowdsbasic}).
+  We implemented our optimization as an addition to \textit{AutoWDS basic}, after it successfully created a stable network tree topology (See Chapter \ref{autowdsbasic}).
   The additional steps in the discovery process of nearby radios are:
   
   \begin{enumerate}
@@ -20,7 +20,7 @@
   \begin{figure}[h!]
     \centering
     \includegraphics[width=1\columnwidth]{figures/dataflow}
-    \caption{General flow of information in AutoWDS extended}
+    \caption{General flow of information in \textit{AutoWDS extended}}
     \label{fig:dataflow}
   \end{figure}
 
@@ -292,15 +292,15 @@
   
   \section{Problems and Aids}
     \begin{description}
-    \item [AutoWDS Status Tool:]
+    \item [\textit{AutoWDS} Status Tool:]
       To make things easier for debugging and also to actually see what is going on during the execution of the algorithms,
-      we created a tool called AutoWDS status, which is based on D3.js, a JavaScript library for visualizing data \cite{d3js}.
+      we created a tool called \textit{AutoWDS} status, which is based on D3.js, a JavaScript library for visualizing data \cite{d3js}.
       Furthermore attached with a tool to extract data from the \ac{WLC}, it is able to display current statuses and established links of a real world, deployed network.
       
       It works by reading a graph represented as a \ac{JSON}-file and displays it interactively in html with JavaScript.
       As it is basically a force directed graph, the nodes position themselves according to their \ac{SNR}-edge-values. 
       Additionally you can drag and position single nodes freely anywhere on the map for better singularization of entities.
-      In the tcca module we also included an export function called "write\_json(graph, filename)" which creates a json file to be read by the autowdsstatus tool.
+      In the tcca module we also included an export function called "write\_json(graph, filename)" which creates a json file to be read by the autowds status tool.
       This tool has also been used to create most of the images in this thesis.
 
     \item [Representation of Tables in LANCOM Devices:]
@@ -338,7 +338,7 @@
     \begin{figure}[h]
       \centering
       \includegraphics[width=\columnwidth]{figures/autowdsstatus}
-      \caption{AutoWDS status web interface showing a network topology}
+      \caption{\textit{AutoWDS} status web interface showing a network topology}
       \label{fig:autowdsstatus}
     \end{figure}
     
