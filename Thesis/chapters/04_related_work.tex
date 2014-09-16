@@ -2,7 +2,7 @@
   The following four approaches are all solutions that are graph-based and target a centralized and static channel assignment.
   Those are not the only ones on this matter, but the approaches currently in use and most relevant contestants to solve our problem.
   Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not cover here (See Chapter \ref{reqana}).
-  Except the \ac{BFS-CA}, the prevalent solutions make excessive use of the conflict graph, which according to \cite{overview_caa} has difficulties to model 
+  Except the \ac{BFS-CA}, the prevalent solutions make excessive use of the conflict graph, which according to Si et al. \cite{overview_caa} has difficulties to model 
   the varying number of radios equipped on APs. Also, most of the works solely focus on assigning channels to an existing topology and do not touch 
   the network topology at all, what seems like a handicap as topology control is an essential part in dealing with wireless interference as we will see later.
   
@@ -26,7 +26,7 @@
       \item Interference conflicts in form of a conflict graph
     \end{itemize}
     
-    CLICA's mode of operation is described by \cite{overview_caa} as follows:
+    CLICA's mode of operation is described by Si et al. \cite{overview_caa} as follows:
     \begin{itemize}
       \item Randomly assign a node \(v\) the highest priority, then assign other
 	nodes priorities decreasing in the order obtained by depth.
@@ -59,7 +59,7 @@
   \section{\ac{INSTC}}
     As pointed out by Si et al. \cite{overview_caa}, \ac{INSTC} \cite{INSTC} is similar to \ac{CLICA} \cite{CLICA} with a some alterations, 
     which is why we will not go into further detail and rather focus on its differences. 
-    They introduce \ac{LCI}, which for a link represents the number of links which interfere with this link \cite{overview_caa} and serves as a measure of 
+    They introduce \ac{LCI}, which for a link represents the number of links which interfere with this link and serves as a measure of 
     interference. Additionally, they accept \(k\) as an input parameter which results in a \(k\)-connected graph as outcome to make the topology resilient to node failures.
     Although this feature would come in handy for our survival path requirement, it does not match our failing scenario of a single link at a time instead of a whole node outage.
     Using a \textit{k}-(node)-connected graph instead of an \textit{k}-edge-connected graph increases the number of edges that have to be utilized 
