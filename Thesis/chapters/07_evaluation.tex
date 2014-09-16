@@ -2,11 +2,11 @@
 We followed Pol, Koomen and Spillner's way of testing \cite{pol2000management} by using their model and dividing the process of testing into the 
 six phases planning, preparation, test-specification, execution and result analysis. Due to extent this work is aimed at, 
 it was not feasible to implement all the systems of the related solutions on this field on a common environment
-to get a fair assessment for each work and to really estimate how each solution performes against the others. 
+to get a fair assessment for each work and to really estimate how each solution performs against the others. 
 On the other hand such a comparison would have to be treated with caution since, each solution is designed with another metric/goal kept in mind.
 Si et al. \cite{overview_caa} provide an overview on the current well-known solutions on \ac{CA} and may serve for a further review and comparison.
 Therefore the following tests will focus on the comparison between AutoWDS basic and its extended, optimized version.
-Furthermore our tests were restricted to the evaluation of spanning tree topolgies, because AutoWDS currently 
+Furthermore our tests were restricted to the evaluation of spanning tree topologies, because AutoWDS currently 
 still uses a bridged network for its APs instead of a proper routing system, with the drawback of \ac{STP} being active.
 \footnote{\ac{STP} is a temporary measure since it does not scale well. 
 Our survival paths are supposed to lay the ground for redundancy-systems in layer 2 (like FabricPath \cite{fabricpath}).} 
@@ -67,8 +67,8 @@ As a consequence achievable throughput will be lower than it could be with survi
 	  the throughput performance test. The default rate with one beacon per 100ms was especially for the mono-channel setup too much as those beacons were received
 	  by all 12 other APs. The beacon rate for the test-setup was therefore increased to one beacon per 800ms.
 	\item[Default Point-to-Point-Scanning Mode Deactivated:]
-	  Per default the APs on a regular basis switch into a scanning mode, where they iterate over all available channels in miliseconds and listen for
-	  other radios. During this timeframe the AP can not receive or transmit any data, which would have a drastic dramatic impact on the throughput-tests.
+	  Per default the APs on a regular basis switch into a scanning mode, where they iterate over all available channels in milliseconds and listen for
+	  other radios. During this time frame the AP can not receive or transmit any data, which would have a drastic dramatic impact on the throughput-tests.
 	  This is why we deactivated the scanning mode for the duration of the throughput-test, after the network topology has reached a stable state.
       \end{description}
    
@@ -81,7 +81,7 @@ As a consequence achievable throughput will be lower than it could be with survi
       \begin{figure}[h!]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/Lancom-flur-withaps}
-	\caption{Physical arrangement of APs in a typical office complex spread over an area of rougly 15m x 40m}
+	\caption{Physical arrangement of APs in a typical office complex spread over an area of roughly 15m x 40m}
 	\label{fig:2ndfloor}
       \end{figure}
       
@@ -96,12 +96,12 @@ As a consequence achievable throughput will be lower than it could be with survi
 	\item 2 x LANCOM GS-2352P
       \end{itemize}
       
-      Note that the distance between the APs should have been increased even further to more closely resemble a real usecase-deployment.
+      Note that the distance between the APs should have been increased even further to more closely resemble a real use case-deployment.
       Thus the actual interference would have gone up, since with a lower \ac{SNR} the APs would not have been able to recognize each others 
       transmissions as those and categorize it as interference instead of applying CSMA/CD, leading to more corrupt packets.
       We were able to simulate this problem with a reduced transmit-power to some degree,
       but even on the lowest setting most of the APs were still able to receive each others beacons well enough. 
-      This is another factor that will lower general throughput for all setups, which we will notice in the testresults.
+      This is another factor that will lower general throughput for all setups, which we will notice in the test results.
       Therefore the throughput-differences between the two systems in a real deployment will probably be higher, since AutoWDS basic will suffer worse from this effect 
       compared to AutoWDS extended.
     
@@ -119,8 +119,8 @@ As a consequence achievable throughput will be lower than it could be with survi
 	\label{fig:testsetup_openvz}
       \end{figure}
       
-      To generate the traffic we used IPerf \cite{iperf} on the attached systems in \ac{UDP} mode with a datarate of 1Mbit per second for a total of 10 minutes.
-      Since we could not directly send \ac{UDP} frames to broadcast addresses with iperf, we ran multiple instances of iperf with different target ip addresses.
+      To generate the traffic we used Iperf \cite{iperf} on the attached systems in \ac{UDP} mode with a data rate of 1Mbit per second for a total of 10 minutes.
+      Since we could not directly send \ac{UDP} frames to broadcast addresses with Iperf, we ran multiple instances of Iperf with different target ip addresses.
       Although 1Mbit for each stream may not seem much, but after multiplying it with the number of targets and the up- and downstreams the effective rate results in
       1Mbit * 12 * 2 = 24Mbit/s for each \ac{AP}. As we will see later on, this will turn out to be enough to entirely saturate the wireless network but is still within
       the capabilities of the used Gigabit Ethernet to get the data to and from the APs, 
@@ -130,7 +130,7 @@ As a consequence achievable throughput will be lower than it could be with survi
 	\begin{lstlisting}
 iperf -u -c 172.16.40.2* -t 600 -b 1M
 	\end{lstlisting}
-	\caption{IPerf mode of operation for generating the traffic.}
+	\caption{Iperf mode of operation for generating the traffic.}
 	\label{lst:iperf}
       \end{listing}
     
@@ -145,16 +145,16 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
   
     Actually to get more statistic significance we should have run this test-array more than once, but as for each new setup there had to 
     be invested a considerable amount of time in the pre-setup of AutoWDS (getting it up and running, despite bugs), 
-    this was not feasible within the timeframe that was scheduled to execute the whole evaluation.
+    this was not feasible within the time frame that was scheduled to execute the whole evaluation.
     
-    Additionally we ran the testcases with two different antenna power-settings to simulate the hidden station problem. 
+    Additionally we ran the test cases with two different antenna power-settings to simulate the hidden station problem. 
     Therefore we first set the radios to full power resulting in a high connectivity between the nodes and on a second 
-    run decreased the transmit power as much as possbile to get a network with a smaller degree of interconnectivity.
+    run decreased the transmit power as much as possible to get a network with a smaller degree of interconnectivity.
   
     \begin{table}[h!]
       \centering
       \begin{tabular}{clll}
-	Testrun nr. & AutoWDS version & Channels used & Antenna power\\ \hline
+	Test run nr. & AutoWDS version & Channels used & Antenna power\\ \hline
 	1 & basic & 1 & low \\
 	2 & extended & 1,6,11 & low \\
 	3 & basic & 36 & low \\
@@ -166,14 +166,14 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 	9 & extended & 1,6,11,36,40,44 & low \\
 	10 & extended & 1,6,11,36,40,44 & high \\
       \end{tabular}
-      \caption{Testruns executed with different channelusage and varying antenna power.}
+      \caption{Test runs executed with different channelusage and varying antenna power.}
       \label{tab:testruns}
     \end{table}
     
 \newpage
     
   \section{Execution}
-    The tests were executed mainly in the evening and on weekends in order to catch those short timeframes where the radio bands are not as crowded as on ordinary workdays.
+    The tests were executed mainly in the evening and on weekends in order to catch those short time frames where the radio bands are not as crowded as on ordinary workdays.
     The general procedure for a testrun was implemented as follows:
     \begin{enumerate}
       \item Power on the System (\ac{WLC} + APs).
@@ -187,19 +187,19 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 	\end{enumerate}
       \item Start the scripts that iteratively query the APs for their status tables every 7 seconds \footnote{Seven seconds is roughly as long as it took the testcore
       framework to query the APs for all their table-data. Querying them more often would have had an impact on their performance.}
-      \item Start the receiving iperf processes on the VZ machines.
-      \item Start the sending iperf processes on the VZ machines.
+      \item Start the receiving Iperf processes on the VZ machines.
+      \item Start the sending Iperf processes on the VZ machines.
       \item Wait the predefined 10 minutes until the tests finish.
       \item Archive the collected data.
     \end{enumerate}
     
 \newpage
 
-    During the testruns we made snapshots of the network topolgies, where you can actually see the improvements.    
+    During the testruns we made snapshots of the network topologies, where you can actually see the improvements.    
     \begin{figure}[h!]
       \centering
 	\includegraphics[width=\textwidth]{figures/topo_chan_1}
-	\caption{Topology of the testnetwork with only one channel in use (AutoWDS basic).\protect\footnotemark }
+	\caption{Topology of the test network with only one channel in use (AutoWDS basic).\protect\footnotemark }
       \label{fig:topo_chan_1}
     \end{figure}
     
@@ -208,7 +208,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     \begin{figure}[h!]
       \centerline{
 	\includegraphics[width=\textwidth]{figures/topo_chan_1_6_11_36_40_44}
-	\caption{Topology of the testnetwork with six channels in use (AutoWDS extended).}
+	\caption{Topology of the test network with six channels in use (AutoWDS extended).}
       }
       \label{fig:topo_chan_1_6_11_36_40_44}
     \end{figure}
@@ -243,7 +243,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 	  Using three channels gives roughly three times the throughput (2.5 - 5Mbit/s for 2.4 GHz and 2.5 - 5Mbit/s for 5 GHz) compared to the baseline.
 	  Utilizing up to 6 Channels shows the best results with an effective throughput of 5.5 - 9Mbit/s. Note that the gain for the 6 channel setup 
 	  is still linear as it provides roughly 6 times the throughput of the baseline.
-	\item We further discern that the high transmit power setup outperformes the low power setup by a factor of two with an even more noticeable difference.
+	\item We further discern that the high transmit power setup outperforms the low power setup by a factor of two with an even more noticeable difference.
 	\item With slight variations for the high-power 3/2.4 GHz setup the rates are also rather constant.
 	\item Besides the high-power 1/5Ghz setup we realize 5 GHz's superiority over the 2.4 GHz band.
       \end{itemize}

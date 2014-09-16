@@ -52,8 +52,8 @@
   
     The reason why we decided not to use this algorithm is that \ac{CLICA} only tries to minimize interference by assigning channels the best way possible for a given
     unit disk graph, which is basically each possible connection. For a highly connected network topology like \ref{fig:graphseen} this would lead to suboptimal results
-    as it does not restrict itself to necessary connections and therfore possesses a lot of potential for interference.
-    The restriction to use only the best and absolutely neccessary links is a vital part in order to 
+    as it does not restrict itself to necessary connections and therefore possesses a lot of potential for interference.
+    The restriction to use only the best and absolutely necessary links is a vital part in order to 
     further decrease interference as much as possible for such a topology.
     
   \section{\ac{INSTC}}
@@ -64,15 +64,15 @@
     Although this feature would come in handy for our survival path requirement, it does not match our failing scenario of a single link at a time instead of a whole node outage.
     Using a \textit{k}-(node)-connected graph instead of an \textit{k}-edge-connected graph increases the number of edges that have to be utilized 
     (since one failing node involves multiple failing edges). Consequently the resulting network topology has a higher grade of connectivity than it needs to 
-    have and therefore conversely affects overall throughput since a higher node connectivity leads to fewer useable different channels. 
+    have and therefore conversely affects overall throughput since a higher node connectivity leads to fewer usable different channels. 
     Additional to the weaknesses of \ac{CLICA}, they also require the number of radio modules to be identical on each \ac{AP}, 
     which is a deal-breaker for us as we have to be able to fulfill requirement \ref{utilvarnumradio} (Utilize Variable Number of Radios).
-    The \ac{LCI} measure introduced here served as a basis for our edgescore calcuation in \ref{eq:edgescore}.
+    The \ac{LCI} measure introduced here served as a basis for our edgescore calculation in \ref{eq:edgescore}.
     
   \section{\ac{BFS-CA}}
     \ac{BFS-CA} \cite{BFS-CA} extends the common conflict graph with modules, resulting in a \ac{MCG}, which more closely reassembles the
     real world setup. This makes it easier for them to deal with the different numbers of radios available on each device. 
-    They let the APs (or mesh routers in their case) sniff the network on regular intervalls and determine a ranking for the channels.
+    They let the APs (or mesh routers in their case) sniff the network on regular intervals and determine a ranking for the channels.
     Those rankings are then sent to their central entity, the \ac{CAS}. This \ac{CAS} in turn derives the \ac{MCG} and assigns each node in this graph 
     a channel in \ac{BFS}-manner by considering the received rankings of the APs. In order not to partition the network by introducing a \ac{CA}, which 
     would disconnect some links by setting certain radios to different channels, they also use one radio on each AP on an overall-common channel.
@@ -134,4 +134,4 @@
     until the solution is valid again. Merging channels obviously increases the interference.
     
     This solution is also topology preserving and a deal-breaker for our implementation (See \ref{topologypreservingdealbreaker}).
-    Additionally the evonlutionary attribute does not provide controlled, but more heuristic results and we need an algorithm with more control over its internals.
+    Additionally the evolutionary attribute does not provide controlled, but more heuristic results and we need an algorithm with more control over its internals.

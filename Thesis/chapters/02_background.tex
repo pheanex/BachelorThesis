@@ -9,10 +9,10 @@ to compute a solution and conclude this part by discussing the relevance of the 
 
 \section{Wireless Networks}
   Wireless networks are computer networks which use radio-waves for communication.
-  They are used in scenarios where using wires is not possible or cumbersome like systems where devices are mobile or subject to drastic link-qualtiy changes.
+  They are used in scenarios where using wires is not possible or cumbersome like systems where devices are mobile or subject to drastic link-quality changes.
   There are different scales where wireless networks are utilized:
   \begin{itemize}
-    \item Smaller systems like a \ac{PAN} where a smartphone uses bluetooth to connect to headphones. The typical range lies within a couple of meters.
+    \item Smaller systems like a \ac{PAN} where a smartphone uses Bluetooth to connect to headphones. The typical range lies within a couple of meters.
     \item Medium sized systems like a \ac{WLAN} with laptops or smartphones connecting to an infrastructure through a wireless \ac{AP}.
       The typical range is up to 100 meters.
     \item Large scale systems like television broadcasting with \ac{DVB-T} through satellites with ranges of up to 35,400 kilometers.
@@ -33,9 +33,9 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	SSIDs, if received, are then used by the clients to establish a link to the APs.
 
       \item [Point-to-Point mode:]
-	This mode is defined by a static link between exactly two interfaces in contrast to infrastructe- and ad-hoc- mode, where this affiliation is not determined.
+	This mode is defined by a static link between exactly two interfaces in contrast to infrastructure- and ad-hoc- mode, where this affiliation is not determined.
 	It allows an \ac{AP} to create a dedicated link to another \ac{AP} using the same mode. This link would consequently be shared only by these two APs,
-	aditionally the transmitted data is encrypted. This mode is useful in scenarios where complex connection-constellations can not be achieved by 
+	additionally the transmitted data is encrypted. This mode is useful in scenarios where complex connection-constellations can not be achieved by 
 	client-infrastructure-mode combinations solely. Alternatively, one could also use the ad-hoc mode, which was not available, as it was not implemented yet in LANCOM devices.
 	
       \item [Client-mode:]
@@ -63,7 +63,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
     As we can see in figure \ref{fig:wlan_channels}, channels have overlapping regions, which can lead to conflicts.
     Two independent pairs of radios in the same area can communicate almost free of interference, if they use different, non-overlapping channels.
     Newer APs may use channels with 40 MHz bandwidth in order to further increase throughput with the drawback of creating more overlapping frequency-regions
-    and therefore possibly creating sources of interference for other channels closeby.
+    and therefore possibly creating sources of interference for other channels close-by.
     The overlapping regions are a problem especially in the 2.4 GHz band, but if wider versions of channels in the 5 GHz band are used, also those are affected,
     although not as bad as in the 2.4 GHz, where the channels overlap per even at 20 MHz width.
     
@@ -116,15 +116,15 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	    and then starts to transmit its data. This leads to collisions at B in step 2 and the data received will be corrupt.
 	    With RTS/CTS: First A asks B if it may send data to it, which B allows by sending the OK to every station listening (A and C). 
 	    Then A sends its data to B while C has to wait until B's time slice expires (a CTS defines the amount of time how long a station will listen to another, so there is no
-	    need for constant polling). Eventually C succeedes in getting its CTS from A and is able to also transmit its data to B without collisions.}
+	    need for constant polling). Eventually C succeeds in getting its CTS from A and is able to also transmit its data to B without collisions.}
 	  \label{fig:csmaca}
 	\end{figure}
 
       \subsubsection{Interference}
 	Wireless interference occurs if two senders at the same time transmit data on the same carrier frequency. If so the waves may interfere and be wrongly detected
 	by the receiving stations. This leads to changed bits in the derived data and may result in turn to corrupt messages if more bits are flipped than the
-	forward error correction algorithms can detect. Such a malformed packet may not even be recognized as such, if the praemble, which is a certain signal to indicate an
-	incoming datastream, is already corrupt, rendering the rest of the packet as unusable noise. If a certain threshold of flipped bits occur after the preamble,
+	forward error correction algorithms can detect. Such a malformed packet may not even be recognized as such, if the preamble, which is a certain signal to indicate an
+	incoming data stream, is already corrupt, rendering the rest of the packet as unusable noise. If a certain threshold of flipped bits occur after the preamble,
 	calculating the checksum on those packets will then show that there have been errors while transmitting the data, which will make the receiving station 
 	throw away this packet (destructive interference).
 	As the receiving station will not acknowledge the receipt of the packet, the sender will assume the packet was not transmitted correctly and therefore try 
@@ -135,18 +135,18 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	emit noise by accident on the same frequency. Nevertheless, the effect is the same.
 	
 	For our purposes we generally define interference for wireless connections as any kind of disruption in communication, 
-	that includes both cooperative and non-coopertive interference.
+	that includes both cooperative and non-cooperative interference.
 	
 	Despite solutions like RTS/CTS and others that mitigate the hidden station problem (and alleviate the cooperative interference),
 	there are still some situations where collisions and therefore interference occurs.
 	Additionally at a certain signal-strength level a station, while doing its carrier sensing, may not be able to differentiate noise from another stations transmission.
-	As \cite{padhye2005estimation} mentions, interference is the key cause of performance degradiation in wireless networks. Hence, our idea is to increase throughput 
+	As \cite{padhye2005estimation} mentions, interference is the key cause of performance degradation in wireless networks. Hence, our idea is to increase throughput 
 	performance by reducing interference as much as possible.
 	
 	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=0.8\columnwidth]{figures/interferenz}
-	  \caption{Using the same or closeby carrier frequencies, waves may interfere and result in falsely detected bits and render transmitted data corrupt.}
+	  \caption{Using the same or close-by carrier frequencies, waves may interfere and result in falsely detected bits and render transmitted data corrupt.}
 	  \label{fig:interferenz}
 	\end{figure}
 	
@@ -186,7 +186,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	\newpage
       
       \subsubsection{WLC Aided Configuration}
-	For a common \ac{WLAN} infrastructe deployment all APs are connected to the wired backbone and use their radios solely in infrastructe mode to 
+	For a common \ac{WLAN} infrastructure deployment all APs are connected to the wired backbone and use their radios solely in infrastructure mode to 
 	offer clients an entry point into the network.
 	\begin{figure}[h!]
 	  \centering
@@ -218,7 +218,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	\begin{enumerate}
 	  \item The first \ac{AP} finds a \ac{WLC} and proceeds as before. Additionally it announces its connection to the \ac{WLC} over its radios to other APs.
 	  
-	  \item The second \ac{AP} does not find a \ac{WLC} on its \ac{LAN}-inferface and extends its search on the radios. 
+	  \item The second \ac{AP} does not find a \ac{WLC} on its \ac{LAN}-interface and extends its search on the radios. 
 	    There it receives the announcement of the first \ac{AP}.
 	    Consequently it connects itself to the first AP by client-infrastructure-mode and offers the same network on its other radios.
 	    
@@ -231,8 +231,8 @@ to compute a solution and conclude this part by discussing the relevance of the 
 \section{Graph-theoretic Basics}
   In the following we will recall the definitions of graphs, directed / weighted edges and paths in a graph.
   \begin{itemize}
-    \item A graph in graphtheory is a set of nodes and edges between these nodes.
-    \item A directed graph/digraph has directions on its edges defined.
+    \item A graph in graph theory is a set of nodes and edges between these nodes.
+    \item A directed graph / digraph has directions on its edges defined.
     \item A weighted graph has weights attached to its edges.
     \item A graph is called connected if every pair of nodes is connected. 
       Two nodes A,B are connected if there exists a path from A to B.
@@ -246,12 +246,12 @@ to compute a solution and conclude this part by discussing the relevance of the 
     \label{fig:graphen}
   \end{figure}
 
-  We choose to use graphtheory to represent our networks structures for two reasons:
+  We choose to use graph theory to represent our networks structures for two reasons:
   \begin{itemize}
-   \item We are able to easily express all the relevant parts of a network directly in a graph without any modifications to graphtheory,  
+   \item We are able to easily express all the relevant parts of a network directly in a graph without any modifications to graph theory,  
    like APs and modules by nodes, links between APs with edges and signal to noise ratios with weightedness of edges. 
     
-   \item Graph theory is a well reseached field and a lot of problems in it can be solved efficiently and intuitively 
+   \item Graph theory is a well researched field and a lot of problems in it can be solved efficiently and intuitively 
     as we will see later with the \ac{DJP} algorithm.
   \end{itemize}
     
@@ -269,7 +269,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
     
   \subsection{Minimum Spanning Tree}
     A spanning tree is a subgraph for a given graph which contains all nodes of the original graph, but only the necessary and edge-weight minimal 
-    subset of edges which are needed to connect each vertice to the component. In order to find a minimum spanning tree for a non-negative weighted 
+    subset of edges which are needed to connect each node to the component. In order to find a minimum spanning tree for a non-negative weighted 
     graph we use the \ac{DJP} algorithm \cite{prim} \cite{jarnik}. It works as described by the following:
     
     \begin{enumerate}
@@ -300,7 +300,7 @@ to compute a solution and conclude this part by discussing the relevance of the 
     \end{quote}
     
     In addition to the modeling problems a potential result of such a COLORING solution still would not make a point on the topology to use,
-    as COLORING works on given network graphs and therefore topolgies, but we also have to decide how to create and select the network topology.
+    as COLORING works on given network graphs and therefore topologies, but we also have to decide how to create and select the network topology.
     As a consequence, this formal problem or solutions to it are not considered in our work.
     
   \subsection{Mapping Network to Graph}

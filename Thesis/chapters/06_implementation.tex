@@ -34,12 +34,12 @@
 	using a lightweight language like python had the benefit of not having to embed our new code into the existing environment. 
 	Although it still can be implemented in the native language C/C++ for our scenario, this will take more time and effort, which was not the focus of this work.
       \item[Existing libraries:]
-	The NetworkX library in python made it particulary easy for us to map real world scenarios to graph abstractions as we did not have to create those structures ourselves.
+	The NetworkX library in python made it particularly easy for us to map real world scenarios to graph abstractions as we did not have to create those structures ourselves.
 	Although there are some libraries that provide graph abstractions in C/C++ we could not have as easily employed them due to their copyright restrictions and 
 	the closed source virtue of our target system.
       \item[Faster Debugging:]
-	Especially the initial phase of the project was errorprone and needed a lot of debugging. Secluding our algorithm from \ac{LCOS}
-	brought the advantage of not having to undergo the lenghty process of compiling a whole new LCOS firmware, everytime we made a fix in our code.
+	Especially the initial phase of the project was error-prone and needed a lot of debugging. Secluding our algorithm from \ac{LCOS}
+	brought the advantage of not having to undergo the lengthy process of compiling a whole new LCOS firmware, every time we made a fix in our code.
 	Additionally not having to flash the firmware then into the \ac{WLC} was a great time saver as keeping the \ac{WLC} running and 
 	consequently the APs connected, allowed us to independently modify our algorithms without having to wait until the network was back up again. 
 	Not to mention the live debugging capabilities of python, which was really helpful and made debugging easy.
@@ -48,7 +48,7 @@
 	integrate it into ours and had no problem gathering the 'seen'-data.
       \item[Maintainability:]
 	As python has the reputation of being an easy to learn language, this was another benefit and played absolutely in our favor with the goal of
-	keeping the code simple, lightweight and reuseable for someone else.
+	keeping the code simple, lightweight and reusable for someone else.
     \end{description}
     
     \newpage
@@ -57,9 +57,9 @@
     As already mentioned we used NetworkX\cite{hagberg-2008-exploring} to model our graphs and work with its elements.
     NetworkX's rich features like ``has\_path'' made things especially easy in computing the survival paths.
     Another library we used is python collections \cite{python_collections}.
-    This library implements specialized container datatypes additionally to those shipped with standard python.
+    This library implements specialized container data types additionally to those shipped with standard python.
     It's `Counter` structure is used to create the channel-lists and retrieve the most or least used elements.
-    We extended this library for our convencience since it did only provide the functionality for getting the most common elements from its lists and not the least common,
+    We extended this library for our convenience since it did only provide the functionality for getting the most common elements from its lists and not the least common,
     which we needed\footnote{The request for including this method was already issued at 01/2013 http://bugs.python.org/issue16994}.
     The only closed source library we used is the herein before mentioned library to query the WLC for the data of the APs. 
     Nevertheless due to its separation into modules, gathering the input-data can be carried out by other libraries or custom scripts.
@@ -67,15 +67,15 @@
   \section{Structure of the Code}
     We split the code into two modules. One is handling the gathering of input data, followed by parsing it and finally dealing with its output data.
     This includes sending/receiving to and from the \ac{WLC}, transforming data to and from networkX graphs, checking configurations for validity and other facility work,
-    like exporting datastructures for debugging or visualization to a \ac{JSON} file.
-    The other module exculsively works on and with graphs and therefore is the main and interesting one to solve the theoretical problem.
+    like exporting data structures for debugging or visualization to a \ac{JSON} file.
+    The other module exclusively works on and with graphs and therefore is the main and interesting one to solve the theoretical problem.
     
     \subsection{Interfacing Outer World and Managing Data}
-      The name of the python module for this job is \textit{wlc\_com}. Its responsibilites include the following:
+      The name of the python module for this job is \textit{wlc\_com}. Its responsibilities include the following:
       \begin{description}
 	\item[Receiving the necessary data:]
 	  For this purpose we use the LANCOM internal source code-python library 'testcore', which creates a \ac{SSH} / Telnet connection to the 
-	  \ac{WLC} and parses its tabledata to local data structures.
+	  \ac{WLC} and parses its table data to local data structures.
 	  The format we find on the \ac{WLC} is depicted in figure \ref{tab:wlc}. This table is filled on a regular interval by the APs.
 	  Here each line represents an \ac{AP} (identified by its device mac address) and its radio-module (identified by its module mac address) receiving the beacon
 	  of another radio module (seen module mac address) and a signal strength indicator in form of \ac{SNR}. Basically this shows us which radio module 
@@ -95,7 +95,7 @@
 \newpage
 	
 	\item [Transform the data to a networkX graph:]
-	  The tabledata from above can then be molded into a directed, weighted networkX graph. 
+	  The table data from above can then be molded into a directed, weighted networkX graph. 
 	  Where we create a node for each mac address and module mac address and attach a boolean attribute to it to tell them apart. 
 	  In parallel we add two types of edges:
 
@@ -124,8 +124,8 @@
 	  If we were able to compute a solution and all checks passed, we again establish a connection to the \ac{WLC} and write back a network topology and channel assignment
 	  configuration. This configuration will then be enforced on the APs by the managing \ac{WLC}.
 	  This is done by configuring each module to use only the assigned channel and set entries in the network topology table. 
-	  Depending on other parameters, the APs will then after a predefined timeframe receive their specific configurations and act on those.
-	  APs do not immediatly switch to the new configuration as this could cut branches of the network too early - possibly leaving APs 
+	  Depending on other parameters, the APs will then after a predefined time frame receive their specific configurations and act on those.
+	  APs do not immediately switch to the new configuration as this could cut branches of the network too early - possibly leaving APs 
 	  unconfigured and unable to rejoin the network (see figure \ref{fig:autowds_basic_graph}).
 	  
       \end{description}
@@ -150,7 +150,7 @@
 	The most of the time the loop spends with the following:
 	
 	\begin{itemize}
-	 \item Selecting the edge with the higest score from the edge-list.
+	 \item Selecting the edge with the highest score from the edge-list.
 	 
 	 \item Expanding the edge. This includes adding it to the \ac{MST}, adding the appropriate nodes to the visited-set and 
 	  adding all productive edges with their edge-scores to the edge-list.
@@ -164,7 +164,7 @@
 	After successful execution of the loop, a minimal spanning tree in form of a NetworkX graph is returned to the caller.
 	
       \subsubsection{Calculating the Survival paths}
-	With the \ac{MST} graph as basis we are now able to add redundand paths. 
+	With the \ac{MST} graph as basis we are now able to add redundant paths. 
 	As you might have already guessed the function's name for this job is "calculate\_survival\_links".
 	To simulate each edge failing, this function iterates over all the edges in the \ac{MST} and removes these edges from the \ac{MST}.
 	This sub-MST is then used to check if it already contains an alternative path from and to the nodes of the failing edge.
@@ -183,9 +183,9 @@
 	This is done by the function "count\_local\_interference" which returns two counters-lists: internal- and external- interference.
 	Those contain channels with a number of interference clashes as their values, 
 	which means how often the use of a certain channel would interfere with other modules 
-	in the area of the channel-group. Naturally we continue by chosing the channel which has the lowest value in this counter, 
+	in the area of the channel-group. Naturally we continue by choosing the channel which has the lowest value in this counter, 
 	as this channel or channels would interfere the least 	with its environment. 
-	If the outcome is not unique, we enter the tie-breaker section by extending the chosing process to the overall-channel-counter 
+	If the outcome is not unique, we enter the tie-breaker section by extending the choosing process to the overall-channel-counter 
 	and at last resort to picking one channel at random from the final candidates.
 	Finally the designated channel is assigned to all the elements of the channel group.
 	Just as the others, this function returns in the end a NetworkX graph, but now with channels assigned to the edges and modules of the allowed-channel-set.	
@@ -294,10 +294,10 @@
     \begin{description}
     \item [AutoWDS Status Tool:]
       To make things easier for debugging and also to actually see what is going on during the execution of the algorithms,
-      we created a tool called AutoWDS status, which is based on D3.js, a javascript library for visualizing data \cite{d3js}.
+      we created a tool called AutoWDS status, which is based on D3.js, a JavaScript library for visualizing data \cite{d3js}.
       Furthermore attached with a tool to extract data from the \ac{WLC}, it is able to display current statuses and established links of a real world, deployed network.
       
-      It works by reading a graph represented as a \ac{JSON}-file and displays it interactively in html with javascript.
+      It works by reading a graph represented as a \ac{JSON}-file and displays it interactively in html with JavaScript.
       As it is basically a force directed graph, the nodes position themselves according to their \ac{SNR}-edge-values. 
       Additionally you can drag and position single nodes freely anywhere on the map for better singularization of entities.
       In the tcca module we also included an export function called "write\_json(graph, filename)" which creates a json file to be read by the autowdsstatus tool.
@@ -323,14 +323,14 @@
       getting access to our Bitbucket repository, because there you find additional notes on every issue and basically see why things went the way they did.
       
     \item [PyCharm:]
-      For our python coding we used the \ac{IDE} PyCharm \cite{pycharm} and were more than pleased with its speed and debugging possibilites.
+      For our python coding we used the \ac{IDE} PyCharm \cite{pycharm} and were more than pleased with its speed and debugging possibilities.
       Its refactoring methods made changing the code easy and comfortable. Particularly the code analysis tool that comes with it made sticking to the
       \ac{PEP8} \footnote{See http://legacy.python.org/dev/peps/pep-0008/} style-guideline almost fun and we hope it helps you to better understand our code.
       
 \newpage
       
     \item [Proof of Concept:]
-      We knew from the beginning that a full and complete integration into the existing environment (\ac{LCOS} / \ac{WLC}) was not feasible in the scheduled timeframe.
+      We knew from the beginning that a full and complete integration into the existing environment (\ac{LCOS} / \ac{WLC}) was not feasible in the scheduled time frame.
       This is why we aimed at a quick and dirty, proof of concept-like solution which could be easily done with python on a separate machine.
       
     \end{description}
@@ -338,7 +338,7 @@
     \begin{figure}[h]
       \centering
       \includegraphics[width=\columnwidth]{figures/autowdsstatus}
-      \caption{AutoWDS status webinterface showing a network topology}
+      \caption{AutoWDS status web interface showing a network topology}
       \label{fig:autowdsstatus}
     \end{figure}
     

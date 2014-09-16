@@ -5,8 +5,8 @@
   We implemented this algorithm in python to make this approach easy to use, customizable and comprehensible by providing examples, 
   explanations for how and why we did things the way we did and documenting our code.
   
-  Our evaluation indicates a major improvement on the existing AutoWDS basic of at least up to 9 times the througput in an admittedly rather small testbed.
-  Yet, the optimization made the system really useable for wireless clients with high throughput demands.
+  Our evaluation indicates a major improvement on the existing AutoWDS basic of at least up to 9 times the throughput in an admittedly rather small testbed.
+  Yet, the optimization made the system really usable for wireless clients with high throughput demands.
   
   Although this work does not break any new ground in scientific research, it solves the imposed problem well by reusing and extending existing ideas and algorithms to
   achieve its goal of considerably increasing throughput for a given \ac{WDS}.
@@ -14,7 +14,7 @@
   \section{Limitations}
     The requirements analysis explicitly dictates the static attribute of APs and consequently their link quality, therefore our solution won't yield good 
     results for more volatile setups where link quality or network topology change frequently as the topology is not continuously optimized. 
-    This would be the case if for example the APs are mobile or the environmental factors impacting linkquality change rapidly and/or often.
+    This would be the case if for example the APs are mobile or the environmental factors impacting link quality change rapidly and/or often.
     
     Since also a key requirement, this solution works only in a centralized managed fashion and thereby can't be used for unmanaged more autonomous APs.
     
@@ -26,10 +26,10 @@
 	Our evaluation is more a proof of concept instead of an elaborate audit. As described we ran our throughput-tests only in our lab environment, 
 	which was also designed with other metrics and scenarios kept in mind. Therefore a more thorough and dedicated approach would include increased hardware diversity, 
 	in general the full scale testing of up to 100 devices and longer test-periods with varying deployment parameters like transmit-power, 
-	configuration timings and different topolgies.
-	Especially simulating our solution with random graph layouts and different underlying topolgies could provide opportunities to even further increase throughput.
+	configuration timings and different topologies.
+	Especially simulating our solution with random graph layouts and different underlying topologies could provide opportunities to even further increase throughput.
 	Also the feature of evading foreign used channels should be evaluated if the implementation of 
-	AutoWDS permitts as this will be one of the factors which strongly affect performance.
+	AutoWDS permits as this will be one of the factors which strongly affect performance.
       
       \item[Extensive Comparison to Related Work:]
 	As we only compared our work by listing features, a true comparison still has to be done if one would 
