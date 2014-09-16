@@ -1,5 +1,5 @@
 \chapter{Algorithmic Design}
-  Even for a simple scenario like in figure \ref{fig:graphseen}, where we have a lot of possible links between the modules it is not obvious how to
+  Even for a simple scenario like in Figure \ref{fig:graphseen}, where we have a lot of possible links between the modules it is not obvious how to
   chose a low-interference network topology from this graph.
   A shortsighted solution may be trying to use every possible link, since this would decrease overall trave ltimes for each packet and therefore
   reducing network workload and possible interferences as a packet is not longer in the network than it needs to be. 
@@ -16,7 +16,7 @@
   \end{figure}
 
   On the other hand if we chose a small subset of links in this graph(like a \ac{MST}), we might be able to 
-  assign more channels, leading up to no interference at all (See figure \ref{fig:high_con_vs_low_con}).
+  assign more channels, leading up to no interference at all (See Figure \ref{fig:high_con_vs_low_con}).
   As a drawback this could create bottlenecks, single points of failures and leading to packets staying longer in the 
   communication network since they can not take the shortest path. This is why we later need to add further links (survival paths).
 
@@ -30,7 +30,7 @@
     \label{fig:high_con_vs_low_con}
   \end{figure}
   
-  A consequence of the mono-channel setup in a dense topology line in figure \ref{fig:high_con_vs_low_con} is radical throughput performance loss as a transmission from
+  A consequence of the mono-channel setup in a dense topology line in Figure \ref{fig:high_con_vs_low_con} is radical throughput performance loss as a transmission from
   A to B would prohibit any other communication due to the utilization of the same channel. Even if links (A,F), (E,B) and (D,C) would have a low link quality and packets
   can not travel directly to their destination a simultaneous transmission allows a higher throughput in the same time. Naturally only the second solution is favorable for a
   bigger scenario, because more APs would have to wait to put their data on the spectrum.
@@ -107,7 +107,7 @@
 	which is used in LANCOM devices is Minstrel \cite{minstrel}.} 
 	The bandwidth was chosen as the numerator, since it is effectively shared by the radio modules within range.
 	
-	As we can take from figure \ref{fig:snr_tp}, a higher \ac{SNR}-value results in more bandwidth available to use and share and works in favor of this edge.
+	As we can take from Figure \ref{fig:snr_tp}, a higher \ac{SNR}-value results in more bandwidth available to use and share and works in favor of this edge.
 	Note that the mapping of \ac{SNR} to achievable throughput may have to be adjusted for different hardware / devices / drivers. 
 	In general the behaviour will stay the same, as a higher \ac{SNR} will necessarily result in a better modulation, which also increases throughput.
 	
@@ -124,7 +124,7 @@
 	look like before actually using this link to transmit data.
 
       \subsubsection{Connected Count}
-	The number of nodes we can reach from module A and module B by just using module-module edges (For example nodes A, B, C in figure \ref{fig:channel-list}). 
+	The number of nodes we can reach from module A and module B by just using module-module edges (For example nodes A, B, C in Figure \ref{fig:channel-list}). 
 	A higher connected count diminishes the importance of this edge, since this value controls how many channels we can use later for the overall graph.
 	If this value would not be taken into consideration for calculating the score, the algorithm would rather create long chains of connected modules. 
 	Those links in this chain would admittedly have the best \ac{SNR} values, but since they have to share the same channel, 
@@ -187,7 +187,7 @@
 	
 	We start off by selecting a random node (B). Actually the first steps here would have been expanding the fake edges (B, A) and (B, C), 
 	but as noted above we skip those. From this set of nodes we then consider all edges to newly, 
-	up to now undiscovered nodes (listed in the right table in figure \ref{fig:mst_calc_2}).
+	up to now undiscovered nodes (listed in the right table in Figure \ref{fig:mst_calc_2}).
 	From this list of edges we calculate the \textit{ES} on each edge, which results in the selection of edge (C, D). 
 	Note, from now on the values on the edges represent the \textit{ES} instead of \textit{b}.
 	
@@ -213,7 +213,7 @@
       \end{figure}
 
       After the expansion of the fake edges for \ac{AP} F, we proceed by refreshing all the edgescores, 
-      portraying edge (G, K) as the best edge (Figure \ref{fig:mst_calc_3}).
+      portraying edge (G, K) as the best edge (See Figure \ref{fig:mst_calc_3}).
       Note how the score for edge (C, P) was decreased, since node C is already used for another edge.
       
       \begin{figure}[h!]
@@ -290,7 +290,7 @@
       We create a list with unused edges which connect the two groups and calculate the scores on them and pick again the edge with the highest score.
       This edge is the best edge to reconnect the two parts (according to Formula \ref{eq:edgescore}) and is called the survival edge for this failing scenario.
       Nevertheless we have to be aware that it might not be feasible to reconnect those parts if the underlying structure does not permit it.
-      For example the link between nodes \(E\) and \(F\) in \ref{fig:survival_algo} might be the only connection possible and failing it would cause network disruption.
+      For example the link between nodes \(E\) and \(F\) in Figure \ref{fig:survival_algo} might be the only connection possible and failing it would cause network disruption.
       But if this link fails there is nothing we can do. The result is a robust network topology, 
       which despite the added interfering links still yields a high overall throughput with redundant paths.
 

@@ -1,7 +1,7 @@
 \chapter{Related Work}
   The following four approaches are all solutions that are graph-based and target a centralized and static channel assignment.
   Those are not the only ones on this matter, but the approaches currently in use and most relevant contestants to solve our problem.
-  Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not cover here (see chapter \ref{reqana}).
+  Note that there are also numerous solutions on distributed and/or dynamic or semi-dynamic environments, which we will not cover here (See Chapter \ref{reqana}).
   Except the \ac{BFS-CA}, the prevalent solutions make excessive use of the conflict graph, which according to \cite{overview_caa} has difficulties to model 
   the varying number of radios equipped on APs. Also, most of the works solely focus on assigning channels to an existing topology and do not touch 
   the network topology at all, what seems like a handicap as topology control is an essential part in dealing with wireless interference as we will see later.
@@ -51,7 +51,7 @@
     \end{itemize}
   
     The reason why we decided not to use this algorithm is that \ac{CLICA} only tries to minimize interference by assigning channels the best way possible for a given
-    unit disk graph, which is basically each possible connection. For a highly connected network topology like \ref{fig:graphseen} this would lead to suboptimal results
+    unit disk graph, which is basically each possible connection. For a highly connected network topology like in Figure \ref{fig:graphseen} this would lead to suboptimal results
     as it does not restrict itself to necessary connections and therefore possesses a lot of potential for interference.
     The restriction to use only the best and absolutely necessary links is a vital part in order to 
     further decrease interference as much as possible for such a topology.
@@ -67,7 +67,7 @@
     have and therefore conversely affects overall throughput since a higher node connectivity leads to fewer usable different channels. 
     Additional to the weaknesses of \ac{CLICA}, they also require the number of radio modules to be identical on each \ac{AP}, 
     which is a deal-breaker for us as we have to be able to fulfill requirement \ref{utilvarnumradio} (Utilize Variable Number of Radios).
-    The \ac{LCI} measure introduced here served as a basis for our edgescore calculation in \ref{eq:edgescore}.
+    The \ac{LCI} measure introduced here served as a basis for our edgescore calculation in Formula \ref{eq:edgescore}.
     
   \section{\ac{BFS-CA}}
     \ac{BFS-CA} \cite{BFS-CA} extends the common conflict graph with modules, resulting in a \ac{MCG}, which more closely reassembles the
@@ -101,7 +101,7 @@
 	A selection process on this underlying topology is essential to our minds as selecting a few but high quality links
 	leading to a planned and controlled topology will create a lot less interference than a network topology where all possible 
 	links are used for communications. This is especially the case if not enough channels are available for assignment, since 
-	these can be more effectively designed (See chapter \ref{fig:high_con_vs_low_con}).
+	these can be more effectively designed (See Chapter \ref{fig:high_con_vs_low_con}).
 	\label{topologypreservingdealbreaker}
 	
       \item Using one radio on each \ac{AP} for a common overall-channel seemed to us as a misspending of radio modules.
@@ -133,5 +133,5 @@
     As the first step may give channel assignings which are not valid (more channels assigned than a node has radios), the second step merges channel assignments 
     until the solution is valid again. Merging channels obviously increases the interference.
     
-    This solution is also topology preserving and a deal-breaker for our implementation (See \ref{topologypreservingdealbreaker}).
+    This solution is also topology preserving and a deal-breaker for our implementation (See Section \ref{topologypreservingdealbreaker}).
     Additionally the evolutionary attribute does not provide controlled, but more heuristic results and we need an algorithm with more control over its internals.

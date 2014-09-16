@@ -61,7 +61,7 @@ As a consequence achievable throughput will be lower than it could be with survi
       \begin{description}
 	\item[Addition of the Seen-Table:]
 	  Although most of the data we needed did already exist in the current \ac{LCOS}-firmware, it was spread over numerous places and retrieving the necessary dates
-	  was tedious and performance-costly. That is why we decided to gather everything necessary in one special table (see figure \ref{tab:wlc}).
+	  was tedious and performance-costly. That is why we decided to gather everything necessary in one special table (See Figure \ref{tab:wlc}).
 	\item[Reduced Beacon Rate:]
 	  Due to the close proximity of the APs in our testbed we had to reduce the amount of beacons which were sent by the APs to decrease their influence in 
 	  the throughput performance test. The default rate with one beacon per 100ms was especially for the mono-channel setup too much as those beacons were received
@@ -75,7 +75,7 @@ As a consequence achievable throughput will be lower than it could be with survi
 \newpage
    
     \subsection{Physical Structure}
-      We deployed the APs at a typical office environment as depicted in figure \ref{fig:2ndfloor} and used only omnidirectional antennas for the APs.
+      We deployed the APs at a typical office environment as depicted in Figure \ref{fig:2ndfloor} and used only omnidirectional antennas for the APs.
       Additionally the APs were also connected by wire to their client systems on a central server in form of virtual machines.
       
       \begin{figure}[h!]
@@ -177,7 +177,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
     The general procedure for a testrun was implemented as follows:
     \begin{enumerate}
       \item Power on the System (\ac{WLC} + APs).
-      \item Wait until all APs are connected to the wireless backbone (see description of AutoWDS in chapter \ref{autowdsbasic}).
+      \item Wait until all APs are connected to the wireless backbone (See description of AutoWDS in Chapter \ref{autowdsbasic}).
       \item For AutoWDS basic we continue with the next step, for the extended version also the following additional steps have to be conducted.
 	\begin{enumerate}
 	 \item Wait until all the wireless measurements arrived at the \ac{WLC}.
@@ -235,7 +235,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
       \label{fig:rx3_bytes}
     \end{figure}
     
-    Analyzing the successfully received bytes for the low power (figure \ref{fig:rx20_bytes}) and high power (figure \ref{fig:rx3_bytes})
+    Analyzing the successfully received bytes for the low power (Figure \ref{fig:rx20_bytes}) and high power (Figure \ref{fig:rx3_bytes})
     setup we recognize noticeable differences for each channel-assignng.
     
       \begin{itemize}
@@ -332,7 +332,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 	  Our algorithm utilizes the radio-modules as far as they are relevant for creating links between APs with a high estimated throughput.
 	  Depending on the given infrastructure not all radio modules are necessarily used, since not all of them are needed in order to create a connected network topology.
 	  Moreover using all available links may not necessarily be beneficial, since if not enough radios are available, adding new links can force
-	  other radios to the same channel, which effectively leads to sharing a single channel between more radios instead of exclusive access (see figure \ref{fig:lessismore}).
+	  other radios to the same channel, which effectively leads to sharing a single channel between more radios instead of exclusive access (See Figure \ref{fig:lessismore}).
 	  
 	  Having some radio modules to spare gives us the opportunity to use those exclusively for client 
 	  connections and assigning them a channel which does not interfere with the wireless backbone.
@@ -354,7 +354,7 @@ iperf -u -c 172.16.40.2* -t 600 -b 1M
 	\item[Centralized Computation and Configuration:]
 	  The requirement dictates that computing a solution should be possible on a centralized entity (servers / \ac{WLC}).
 	  Our algorithm was implemented as a python script and can be run on a single system if given the right input data.
-	  Creating the configurations for the \ac{AP} will still be conducted by the central WLC as depicted in \ref{fig:dataflow}.
+	  Creating the configurations for the \ac{AP} will still be conducted by the central WLC as depicted in Figure \ref{fig:dataflow}.
 	  
 	\item[Static Environment:]
 	  Also the second requirement is taken into consideration, since our algorithm is specially designed for a static environment where link quality 

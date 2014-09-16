@@ -1,5 +1,5 @@
 \chapter{Implementation}
-  We implemented our optimization as an addition to AutoWDS basic, after it successfully created a stable network tree topology (see chapter \ref{autowdsbasic}).
+  We implemented our optimization as an addition to AutoWDS basic, after it successfully created a stable network tree topology (See Chapter \ref{autowdsbasic}).
   The additional steps in the discovery process of nearby radios are:
   
   \begin{enumerate}
@@ -76,7 +76,7 @@
 	\item[Receiving the necessary data:]
 	  For this purpose we use the LANCOM internal source code-python library 'testcore', which creates a \ac{SSH} / Telnet connection to the 
 	  \ac{WLC} and parses its table data to local data structures.
-	  The format we find on the \ac{WLC} is depicted in figure \ref{tab:wlc}. This table is filled on a regular interval by the APs.
+	  The format we find on the \ac{WLC} is depicted in Figure \ref{tab:wlc}. This table is filled on a regular interval by the APs.
 	  Here each line represents an \ac{AP} (identified by its device mac address) and its radio-module (identified by its module mac address) receiving the beacon
 	  of another radio module (seen module mac address) and a signal strength indicator in form of \ac{SNR}. Basically this shows us which radio module 
 	  sees what other radio module and how good.
@@ -126,7 +126,7 @@
 	  This is done by configuring each module to use only the assigned channel and set entries in the network topology table. 
 	  Depending on other parameters, the APs will then after a predefined time frame receive their specific configurations and act on those.
 	  APs do not immediately switch to the new configuration as this could cut branches of the network too early - possibly leaving APs 
-	  unconfigured and unable to rejoin the network (see figure \ref{fig:autowds_basic_graph}).
+	  unconfigured and unable to rejoin the network (See Figure \ref{fig:autowds_basic_graph}).
 	  
       \end{description}
       
@@ -159,7 +159,7 @@
 	\end{itemize}
 	
 	In order to calculate the score of an edge this main function makes use of another function "calculate\_score\_for\_edge".
-	Here basically all the necessary values for the scoring-formula (see formula \ref{eq:edgescore}) are gathered and the edge-score is calculated.
+	Here basically all the necessary values for the scoring-formula (See Formula \ref{eq:edgescore}) are gathered and the edge-score is calculated.
 	
 	After successful execution of the loop, a minimal spanning tree in form of a NetworkX graph is returned to the caller.
 	
@@ -192,15 +192,15 @@
 
   \section{Example}
     To give you an impression on how to work with the code, we illustrate the process of finding a solution by taking a look at a simplified example.
-    See the code snippet in \ref{tab:python-example}.
+    See the code snippet in Table \ref{tab:python-example}.
     Therefore we create a grid network with random edge weights (line 5 - 41).
     Note that such a deployment is without doubt suboptimal as the APs are placed too close to each other.
 
-    To get the initial \ac{MST} from this graph we call the "calculate\_st" function on it (line 43 / left figure in \ref{fig:3x3second}).
+    To get the initial \ac{MST} from this graph we call the "calculate\_st" function on it (line 43 / left side in Figure \ref{fig:3x3second}).
     
-    Adding the redundant paths works just as easily by using the "calculate\_survival\_links" function (line 45/right figure in \ref{fig:3x3second}).
+    Adding the redundant paths works just as easily by using the "calculate\_survival\_links" function (line 45/right side in Figure \ref{fig:3x3second}).
     
-    Finally we want to assign channels / colors to the edges by utilizing "calculate\_ca" on the two graphs (lines 47/49 and \ref{fig:3x3third}).
+    Finally we want to assign channels / colors to the edges by utilizing "calculate\_ca" on the two graphs (lines 47/49 and Figure \ref{fig:3x3third}).
     
     \newpage
     
@@ -307,7 +307,7 @@
       While writing the code which deals with the \ac{WLC} and receives the data, 
       we initially had difficulties extracting the data out of the tables represented in the \ac{WLC} since
       they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
-      nice table like figure \ref{tab:wlc} with which we can work with. 
+      nice table like Figure \ref{tab:wlc} with which we can work with. 
       Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
 
     \item [Python Logging Module:]
