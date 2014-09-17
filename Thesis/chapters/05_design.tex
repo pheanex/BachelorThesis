@@ -1,8 +1,8 @@
 \chapter{Algorithmic Design}
-  Even for a simple scenario like in Figure \ref{fig:graphseen}, where we have a lot of possible links between the modules it is not obvious how to
-  chose a low-interference network topology from this graph.
-  A shortsighted solution may be trying to use every possible link, since this would decrease overall trave ltimes for each packet and therefore
-  reducing network workload and possible interferences as a packet is not longer in the network than it needs to be. 
+  Even for a simple scenario like in Figure \ref{fig:graphseen},
+  where we have a lot of possible links between the modules it is not obvious how to chose a low-interference network topology from this graph.
+  A shortsighted solution may be trying to use every possible link, 
+  since this would decrease overall travel times for each packet and therefore reducing network workload and possible interferences as a packet is not longer in the network than it needs to be. 
   The problem in doing so is the small number of channels we can assign to these links, even if we allow using multiple channels.
   Since we can only assign one channel to a module, trying to start small and assigning one channel to one module would then force us to also 
   assign the same channel to all connected modules in order to maintain connectivity as two modules can only communicate with each other if they use the same channel
@@ -15,38 +15,41 @@
     \label{fig:graphseen}
   \end{figure}
 
-  On the other hand if we chose a small subset of links in this graph(like a \ac{MST}), we might be able to 
-  assign more channels, leading up to no interference at all (See Figure \ref{fig:high_con_vs_low_con}).
-  As a drawback this could create bottlenecks, single points of failures and leading to packets staying longer in the 
-  communication network since they can not take the shortest path. This is why we later need to add further links (survival paths).
-
   \begin{figure}[h!]
     \centering
     \includegraphics[width=1\columnwidth]{figures/high_con_vs_low_con.png}
     \caption{Coloring a highly connected network (upper) may result in fewer channels with high interference being used compared to 
-      a reduced network topology (lower) where multiple interference-free channels can be used. Especially the dependent modules, which also have to receive the same channel
-      in order to maintain connectivity are the reason for single channel usage here: Wanting to only color edge A,B you also have to assign the same channel to nodes C,D,E,F
-      and therefore its edges.}
+      a reduced network topology (lower) where multiple interference-free channels can be used.
+      Especially the dependent modules, which also have to receive the same channel in order to maintain connectivity are the reason for single channel usage here: 
+      Wanting to only color edge A, B you also have to assign the same channel to nodes C, D, E, F and therefore its edges.}
     \label{fig:high_con_vs_low_con}
   \end{figure}
   
-  A consequence of the mono-channel setup in a dense topology line in Figure \ref{fig:high_con_vs_low_con} is radical throughput performance loss as a transmission from
-  A to B would prohibit any other communication due to the utilization of the same channel. Even if links (A,F), (E,B) and (D,C) would have a low link quality and packets
-  can not travel directly to their destination a simultaneous transmission allows a higher throughput in the same time. Naturally only the second solution is favorable for a
-  bigger scenario, because more APs would have to wait to put their data on the spectrum.
-  Especially adding redundant links to a small subset of links in order to fulfill the reduced end-to-end link failure requirement is not straight-forward as each newly
-  added link increases overall throughput capacity, but at the same time may create co-channel interference or worse, decrease the number of overall assignable channels.
+  On the other hand if we chose a small subset of links in this graph(like a \ac{MST}), we might be able to assign more channels, 
+  leading up to no interference at all (See Figure \ref{fig:high_con_vs_low_con}).
+  As a drawback this could create bottlenecks, single points of failures and leading to packets staying longer in the 
+  communication network since they can not take the shortest path.
+  This is why we later need to add further links (survival paths).
+  
+  A consequence of the mono-channel setup in a dense topology is a radical throughput performance loss as a transmission from
+  A to B would prohibit any other communication due to the utilization of the same channel.
+  Even if links (A, F), (E, B) and (D, C) would have a low link quality and packets can not travel directly to their destination
+  a simultaneous transmission allows a higher throughput in the same time.
+  Naturally only the second solution is favorable for a bigger scenario, because more APs would have to wait to put their data on the spectrum.
+  Especially adding redundant links to a small subset of links in order to fulfill the reduced end-to-end link failure requirement is not straight-forward.
+  Each newly added link increases overall throughput capacity, but at the same time may create co-channel interference or worse,
+  decrease the number of overall assignable channels.
   
   \begin{figure}[h!]
     \centering
-      \includegraphics[width=\textwidth]{figures/lessismore}
+      \includegraphics[width=0.8\textwidth]{figures/lessismore}
       \caption{Additional links do not necessarily increase throughput performance rather on the contrary may decrease the number of non-interfering channels used (3 vs 2).
 	Percentage depict link quality and therefore flow capacity.}
     \label{fig:lessismore}
   \end{figure}
   
-  In the following two sections we will present an algorithm creating network topologies, seeking to find the best compromise, by first creating the topology and then
-  assigning channels on the resulting topology as basis.
+  In the following two sections we will present an algorithm creating network topologies, seeking to find the best compromise,
+  by first creating the topology and then assigning channels on the resulting topology as basis.
  
   \section{Topology Creation}
     Creating the topology is also split into two parts.
@@ -74,9 +77,11 @@
       This characteristic results in a lower \textit{ES} for edges where the assumed throughput is lower due to interference by other radios.
       The following three subsections will explain the formula in more detail.
       
-      For each round we determine from this list the edge with the highest score. If two links have the same \textit{ES} and different SNRs, we pick the edge with
-      the higher \ac{SNR} as this edge has to share its channel among fewer participants and therefore results in higher throughput with fewer interference to the network.
-      As a last resort if there is also a tie in \ac{SNR} values, we pick one at random. We then mark the new node as visited and add also the new links to the list.
+      For each round we determine from this list the edge with the highest score.
+      If two links have the same \textit{ES} and different SNRs, we pick the edge with the higher \ac{SNR} as this edge has to share its channel
+      among fewer participants and therefore results in higher throughput with fewer interference to the network.
+      As a last resort if there is also a tie in \ac{SNR} values, we pick one at random.
+      We then mark the new node as visited and add also the new links to the list.
       Finally we have to update the scores for each affected link and continue with the next round until all nodes are marked visited.
       The outcome is a minimal spanning tree for this graph with a custom evaluation function.
       
@@ -84,21 +89,19 @@
       
       \subsubsection{Interfering Modules}
 	Since the channel assignment has not taken place yet, we do not know which modules are actually interfering with this link if we would use it.
-	However we do know to which other modules this module already has connections to and since those have to use the same channel in order to communicate with each
-	other, we can derive an estimate as lower bound for the number of interfering modules for this link (A, B) by counting the following modules:
+	However we do know to which other modules this module already has connections to and since those have to use the same channel in order to communicate with each other,
+	we can derive an estimate as lower bound for the number of interfering modules for this link (A, B) by counting the following modules:
 	Total interfering modules is equal to the number of visited nodes which we can reach by one hop over a module-module connection from node A and B.
 	Those modules definitely interfere with our current connection, since they:
 	
 	\begin{itemize}
 	\item are in range with at least one node of this connection (one hop distance)
-	
 	\item have to use the same channel (communication over module-module link)
-	
 	\item do actually interfere, because we already decided to use this connection (visited node)
 	\end{itemize}
 
-	The value is incremented by one, because if this connection would be used, itself again acts as a source for interference and it nicely solves the division by zero
-	problem. With an increasing count in interfering modules, the value of the link decreases and vice versa. This reflects perfectly the concept of a shared medium.
+	The value is incremented by one, because if this connection would be used, itself again acts as a source for interference and it nicely solves the division by zero problem.
+	With an increasing count in interfering modules, the value of the link decreases and vice versa. This reflects perfectly the concept of a shared medium.
 
       \subsubsection{Expected Bandwidth}
 	describes the expected available bandwidth we assume to get for this link depending on the \ac{SNR}.
@@ -114,45 +117,49 @@
 	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=0.6\columnwidth]{figures/snr_tp}
-	  \caption{Expected throughput \ac{SNR}-values by Otsuki et al. \cite{expected_snr}. We assume to get the best possible throughput for a given \ac{SNR}, since 
-	    modulation is automatically adapted by the APs with increasing \ac{SNR}.}
+	  \caption{Expected throughput \ac{SNR}-values by Otsuki et al. \cite{expected_snr}.
+	    We assume to get the best possible throughput for a given \ac{SNR}, since modulation is automatically adapted by the APs with increasing \ac{SNR}.}
 	  \label{fig:snr_tp}
 	\end{figure}
 	
 	Another factor of influence would be the number of erroneous bytes that have been transmitted over this link. 
-	This is however not used for determining the expectet bandwidth as we do not know what those values are going to 
-	look like before actually using this link to transmit data.
+	This is however not used for determining the expectet bandwidth as we do not know what those values are going to look like before actually using this link to transmit data.
 
       \subsubsection{Connected Count}
 	The number of nodes we can reach from module A and module B by just using module-module edges (For example nodes A, B, C in Figure \ref{fig:channel-list}). 
 	A higher connected count diminishes the importance of this edge, since this value controls how many channels we can use later for the overall graph.
 	If this value would not be taken into consideration for calculating the score, the algorithm would rather create long chains of connected modules. 
-	Those links in this chain would admittedly have the best \ac{SNR} values, but since they have to share the same channel, 
-	it would result in lowering the overall throughput. Granting this value a higher impact in the formula, like for example in 
+	Those links in this chain would admittedly have the best \ac{SNR} values, but since they have to share the same channel,  
+	it would result in lowering the overall throughput.
+	Granting this value a higher impact in the formula, like for example in 
 	
 	\begin{equation}
 	  ES=\frac{b}{(i + 1)* (c + 1)^2}
 	\end{equation}
 	
 	would have the effect of overemphasizing the module connectedness and lead to poor choices in links with respect to \ac{SNR} - 
-	lowering overall throughput again. The simple, linear impact in the formula has shown to achieve the best tradeoff between those two extremes.
+	lowering overall throughput again.
+	The simple, linear impact in the formula has shown to achieve the best tradeoff between those two extremes.
 	
 	\begin{figure}[h!]
 	  \centering
 	  \includegraphics[width=1\columnwidth]{figures/formula_graphic}
 	  \caption{Impact of the connected count on the formula. Resulting topology in case the connected count is underemphasized (left) leading
 	    to long chains of possibly high quality links, but only one usable channel, which has to be shared among all modules.
-	    Topology in case of an overemphasized connected count (right). As the algorithm avoids reutilizing already used modules,
-	    links with low quality are preferred, leading a lot of exclusive channels with lower link quality. Thicker edges illustrate better link quality.}
+	    Topology in case of an overemphasized connected count (right).
+	    As the algorithm avoids reutilizing already used modules, links with low quality are preferred,
+	    leading a lot of exclusive channels with lower link quality.
+	    Thicker edges illustrate better link quality.}
 	  \label{fig:formula_graphic}
 	\end{figure}
 
 \newpage
 	
       \subsubsection{Example MST Creation}
-	Let's take a look at a simplified example, where we assume \textit{b=SNR}. Also note that we immediately expand module-device edges to keep the example short.
-	Normally the algorithm would also expand each of those edges step by step. However due to their maximum weight these have precedence over all other edges, 
-	so that we merely skip the tedious images.
+	Let's take a look at a simplified example, where we assume \textit{b=SNR}.
+	Also note that we immediately expand module-device edges to keep the example short.
+	Normally the algorithm would also expand each of those edges step by step.
+	However due to their maximum weight these have precedence over all other edges, so that we merely skip the tedious images.
 	\begin{figure}[h!]
 	  \centering
 	  \begin{minipage}{0.5\textwidth}
@@ -185,9 +192,9 @@
 	
 \newpage
 	
-	We start off by selecting a random node (B). Actually the first steps here would have been expanding the fake edges (B, A) and (B, C), 
-	but as noted above we skip those. From this set of nodes we then consider all edges to newly, 
-	up to now undiscovered nodes (listed in the right table in Figure \ref{fig:mst_calc_2}).
+	We start off by selecting a random node (B).
+	Actually the first steps here would have been expanding the fake edges (B, A) and (B, C), but as noted above we skip those.
+	From this set of nodes we then consider all edges to newly, up to now undiscovered nodes (listed in the right table in Figure \ref{fig:mst_calc_2}).
 	From this list of edges we calculate the \textit{ES} on each edge, which results in the selection of edge (C, D). 
 	Note, from now on the values on the edges represent the \textit{ES} instead of \textit{b}.
 	
@@ -212,8 +219,7 @@
 	\label{fig:mst_calc_3}
       \end{figure}
 
-      After the expansion of the fake edges for \ac{AP} F, we proceed by refreshing all the edgescores, 
-      portraying edge (G, K) as the best edge (See Figure \ref{fig:mst_calc_3}).
+      After the expansion of the fake edges for \ac{AP} F, we proceed by refreshing all the edgescores, portraying edge (G, K) as the best edge (See Figure \ref{fig:mst_calc_3}).
       Note how the score for edge (C, P) was decreased, since node C is already used for another edge.
       
       \begin{figure}[h!]
@@ -260,7 +266,8 @@
       
       Edgescores of the remaining links rapidly decrease as using these would definitely cause interference.
       This is the first step the connected count \textit{c} has a greater impact in calculating the \textit{ES} as the path N, G, K has length two.
-      Using edge (G, H) would increase this distance to three, which would be unfavourable for the coloring process (all edges connected to G would have to use the same channel).
+      Using edge (G, H) would increase this distance to three,
+      which would be unfavourable for the coloring process (all edges connected to G would have to use the same channel).
       Luckily we can utilize (E, H) which does not necessarily interfere with other links (it may interfere after the coloring process, if not enough colors are available).
       
       \begin{figure}[h!]
@@ -279,8 +286,8 @@
     \subsection{Survival Paths}
       A spanning tree is particularly susceptible to graph partition by just removing one link so we have to add redundancies in form of supplementary connections.
       However those redundant connections have to be carefully chosen in order not to negatively impact the successive channel assignment and therefore to push interference.
-      Note that this is an optional feature, since for some use cases a spanning tree topology is enough or a topology with redundant links is not easily implemented
-      with the existing code or hardware.  
+      Note that this is an optional feature,
+      since for some use cases a spanning tree topology is enough or a topology with redundant links is not easily implemented with the existing code or hardware.  
       
       We accomplish this by iterating over all the edges of the spanning tree and simulate each connection failing. 
       We then check if there still exists a path from node A to node B of this failing connection. 
@@ -291,8 +298,8 @@
       This edge is the best edge to reconnect the two parts (according to Formula \ref{eq:edgescore}) and is called the survival edge for this failing scenario.
       Nevertheless we have to be aware that it might not be feasible to reconnect those parts if the underlying structure does not permit it.
       For example the link between nodes \(E\) and \(F\) in Figure \ref{fig:survival_algo} might be the only connection possible and failing it would cause network disruption.
-      But if this link fails there is nothing we can do. The result is a robust network topology, 
-      which despite the added interfering links still yields a high overall throughput with redundant paths.
+      But if this link fails there is nothing we can do.
+      The result is a robust network topology, which despite the added interfering links still yields a high overall throughput with redundant paths.
 
       The survival path attribute for a graph can also be expressed in the following formal way:
       \begin{quote}
@@ -314,7 +321,9 @@
       \centering
       \includegraphics[width=1\columnwidth]{figures/survival_algo2}
       \caption{Finding survival paths. Simulation of connection between node A and node B failing, creating two groups.
-	Finding a survival path for node A and B. Eventually all connections have a survival path. No redundant link possible for failing connection (E, F).}
+	Finding a survival path for node A and B.
+	Eventually all connections have a survival path.
+	No redundant link possible for failing connection (E, F).}
       \label{fig:survival_algo}
     \end{figure}
     
@@ -338,14 +347,16 @@
 \newpage
     
   \section{Channel Assignment Algorithm}
-    For a given network topology graph and a set of channels to chose from, we can now assign channels to the module-nodes or if you like the links
-    between those. Therefore we iterate over all module-module edges and assign channels to the adjacent module-nodes if they do not already have one assigned.
+    For a given network topology graph and a set of channels to chose from, we can now assign channels to the module-nodes or if you like the links between those.
+    Therefore we iterate over all module-module edges and assign channels to the adjacent module-nodes if they do not already have one assigned.
     The channel for an edge is chosen by the following pattern for each channel-group:
-    Select all the modules which are connected by module-module edges. This set of nodes is called the channel-group.
+    Select all the modules which are connected by module-module edges.
+    This set of nodes is called the channel-group.
     For this channel group we create a list of channels and corresponding interference occurrences.
-    Among these we pick those channels from the set of all possible channels, which have been used the least in this channel-list. If there is a tie in usage
-    we can additionally respect foreign networks by taking the occurrences of foreign radio modules also into account. Since we do not know how much traffic the foreign 
-    channels carry and therefore how much they utilize the channels, we can only weight them equally compared to our own channel-usage instead of a more fine-grained subdivision.
+    Among these we pick those channels from the set of all possible channels, which have been used the least in this channel-list.
+    If there is a tie in usage we can additionally respect foreign networks by taking the occurrences of foreign radio modules also into account.
+    Since we do not know how much traffic the foreign channels carry and therefore how much they utilize the channels,
+    we can only weight them equally compared to our own channel-usage instead of a more fine-grained subdivision.
     As a further tie-breaker we pick those channels which have been used the least in general.
     At last we resort to just selecting one channel at random, but this should rarely occur.
     Especially respecting foreign networks allows use to evade heavily used bands and channels like for example 1 and 11 in the 2.4 GHz band which 
@@ -363,10 +374,9 @@
     Since A, B and C are in the receive range of D, E, F, G, H, I they are possible sources of interference if we use the same channel as those. 
     Therefore we survey how often every channel interferes, where one module can also interfere multiple times.
     For example does module F which already has channel 36 assigned interfere 4 times with the channel-set A,B,C ((A, F), (C, F), (C, D), (A, D)). 
-    If we only could choose from channel 1,11 and 36 we would then decide to use
-    channel 1 or 11 to assign to the channel-set depending on how often we overall used those already.
+    If we only could choose from channel 1,11 and 36 we would then decide to use channel 1 or 11 to assign to the channel-set depending on how often we overall used those already.
     If however we want to take also foreign networks into consideration and lets say modules A and C would both detect two other \ac{WLAN} networks at channel 11 and two
-    at channel 1, then we would add another 4 for channel 11 and channel 1 in the channel-list, leading to Channel 36 as the best choice. 
+    at channel 1, then we would add another four for channel 11 and channel 1 in the channel-list, leading to Channel 36 as the best choice. 
     Note modules G and H are ignored for the counting process since they do not have links or channels assigned.
     
     \begin{figure}[h!]

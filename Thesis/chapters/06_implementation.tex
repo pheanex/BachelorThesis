@@ -25,8 +25,9 @@
   \end{figure}
 
   \section{Language of Choice}
-    The language we used for the implementation is Python 2.7. Although we also could have implemented the extension in c/c++ since the basic version
-    was already written in this language, python does have a certain key advantages, we did not want to miss and want to list here.
+    The language we used for the implementation is Python 2.7.
+    Although we also could have implemented the extension in c/c++ since the basic version was already written in this language,
+    python does have a certain key advantages, we did not want to miss and want to list here.
     
     \begin{description}
       \item [Rapid prototyping:]
@@ -38,14 +39,15 @@
 	Although there are some libraries that provide graph abstractions in C/C++ we could not have as easily employed them due to their copyright restrictions and 
 	the closed source virtue of our target system.
       \item[Faster Debugging:]
-	Especially the initial phase of the project was error-prone and needed a lot of debugging. Secluding our algorithm from \ac{LCOS}
-	brought the advantage of not having to undergo the lengthy process of compiling a whole new LCOS firmware, every time we made a fix in our code.
-	Additionally not having to flash the firmware then into the \ac{WLC} was a great time saver as keeping the \ac{WLC} running and 
-	consequently the APs connected, allowed us to independently modify our algorithms without having to wait until the network was back up again. 
+	Especially the initial phase of the project was error-prone and needed a lot of debugging.
+	Secluding our algorithm from \ac{LCOS} brought the advantage of not having to undergo the lengthy process of compiling a whole new LCOS firmware,
+	every time we made a fix in our code.
+	Additionally not having to flash the firmware then into the \ac{WLC} was a great time saver as keeping the \ac{WLC} running and consequently the APs connected,
+	allowed us to independently modify our algorithms without having to wait until the network was back up again. 
 	Not to mention the live debugging capabilities of python, which was really helpful and made debugging easy.
       \item[Existing APIs:]
-	Fortunately also the code for interaction with the interfaces (\ac{SNMP} / \ac{SSH} / Telnet) of the \ac{WLC} was written in Python, so we could easily 
-	integrate it into ours and had no problem gathering the 'seen'-data.
+	Fortunately also the code for interaction with the interfaces (\ac{SNMP} / \ac{SSH} / Telnet) of the \ac{WLC} was written in Python,
+	so we could easily integrate it into ours and had no problem gathering the 'seen'-data.
       \item[Maintainability:]
 	As python has the reputation of being an easy to learn language, this was another benefit and played absolutely in our favor with the goal of
 	keeping the code simple, lightweight and reusable for someone else.
@@ -78,8 +80,8 @@
 	  \ac{WLC} and parses its table data to local data structures.
 	  The format we find on the \ac{WLC} is depicted in Figure \ref{tab:wlc}. This table is filled on a regular interval by the APs.
 	  Here each line represents an \ac{AP} (identified by its device mac address) and its radio-module (identified by its module mac address) receiving the beacon
-	  of another radio module (seen module mac address) and a signal strength indicator in form of \ac{SNR}. Basically this shows us which radio module 
-	  sees what other radio module and how good.
+	  of another radio module (seen module mac address) and a signal strength indicator in form of \ac{SNR}.
+	  Basically this shows us which radio module sees which other radio module and how good.
 	  \begin{table}[h!]
 	    \begin{tabular}{clll}
 	      Device Mac Address & Module Mac Address & Seen Module Mac Address & \ac{SNR}\\ \hline
@@ -121,8 +123,9 @@
 	  \end{itemize}
 	  
 	\item [Send results back to the \ac{WLC}:]
-	  If we were able to compute a solution and all checks passed, we again establish a connection to the \ac{WLC} and write back a network topology and channel assignment
-	  configuration. This configuration will then be enforced on the APs by the managing \ac{WLC}.
+	  If we were able to compute a solution and all checks passed, we again establish a 
+	  connection to the \ac{WLC} and write back a network topology and channel assignment configuration.
+	  This configuration will then be enforced on the APs by the managing \ac{WLC}.
 	  This is done by configuring each module to use only the assigned channel and set entries in the network topology table. 
 	  Depending on other parameters, the APs will then after a predefined time frame receive their specific configurations and act on those.
 	  APs do not immediately switch to the new configuration as this could cut branches of the network too early - possibly leaving APs 
@@ -171,7 +174,8 @@
 	Luckily NetworkX already provides such a test with "has\_path". 
 	Only if this test fails we continue by creating our two groups A and B for each side of the split graph.
 	The most costly part is then iterating again over all edges in the underlying graph and checking if this edge would reunite the halves of the graph and determining 
-	their scores. Finally we pick the best edge from the counter-list and add it together with its failing edge back to the \ac{MST}.
+	their scores.
+	Finally we pick the best edge from the counter-list and add it together with its failing edge back to the \ac{MST}.
 	
       \subsubsection{Coloring the Edges}
 	For the last phase of assigning channels to the edges/modules we use the "calculate\_ca"-function. 
@@ -182,13 +186,13 @@
 	As required by the design we now need to estimate the local interferences.
 	This is done by the function "count\_local\_interference" which returns two counters-lists: internal- and external- interference.
 	Those contain channels with a number of interference clashes as their values, 
-	which means how often the use of a certain channel would interfere with other modules 
-	in the area of the channel-group. Naturally we continue by choosing the channel which has the lowest value in this counter, 
+	which means how often the use of a certain channel would interfere with other modules in the area of the channel-group.
+	Naturally we continue by choosing the channel which has the lowest value in this counter, 
 	as this channel or channels would interfere the least 	with its environment. 
 	If the outcome is not unique, we enter the tie-breaker section by extending the choosing process to the overall-channel-counter 
 	and at last resort to picking one channel at random from the final candidates.
 	Finally the designated channel is assigned to all the elements of the channel group.
-	Just as the others, this function returns in the end a NetworkX graph, but now with channels assigned to the edges and modules of the allowed-channel-set.	
+	Just as the others, this function returns in the end a NetworkX graph, but now with channels assigned to the edges and modules of the allowed-channel-set.
 
   \section{Example}
     To give you an impression on how to work with the code, we illustrate the process of finding a solution by taking a look at a simplified example.
@@ -198,9 +202,9 @@
 
     To get the initial \ac{MST} from this graph we call the "calculate\_st" function on it (line 43 / left side in Figure \ref{fig:3x3second}).
     
-    Adding the redundant paths works just as easily by using the "calculate\_survival\_links" function (line 45/right side in Figure \ref{fig:3x3second}).
+    Adding the redundant paths works just as easily by using the "calculate\_survival\_links" function (line 45 / right side in Figure \ref{fig:3x3second}).
     
-    Finally we want to assign channels / colors to the edges by utilizing "calculate\_ca" on the two graphs (lines 47/49 and Figure \ref{fig:3x3third}).
+    Finally we want to assign channels / colors to the edges by utilizing "calculate\_ca" on the two graphs (lines 47, 49 and Figure \ref{fig:3x3third}).
     
     \newpage
     
@@ -306,8 +310,8 @@
     \item [Representation of Tables in LANCOM Devices:]
       While writing the code which deals with the \ac{WLC} and receives the data, 
       we initially had difficulties extracting the data out of the tables represented in the \ac{WLC} since
-      they reside there in a somewhat obscure format and are spread over different tables. So that we effectively had to gather the data and join them so that we receive a
-      nice table like Figure \ref{tab:wlc} with which we can work with. 
+      they reside there in a somewhat obscure format and are spread over different tables.
+      So that we effectively had to gather the data and join them so that we receive a nice table like Figure \ref{tab:wlc} with which we can work with. 
       Nevertheless we were able to cope with it, although the code for it is somewhat longer and cumbersome.
 
     \item [Python Logging Module:]
@@ -316,16 +320,17 @@
       a lot easier without being an obstacle if we did not need the output as we could just switch to a different level of logging and enjoy the silence.
     
     \item [Bitbucket:]
-      This was another great help in getting things organized. Especially git \cite{git} 
-      as a version control system and the issue-tracking system one can find in Bitbucket \cite{bitbucket}
+      This was another great help in getting things organized.
+      Especially git \cite{git} as a version control system and the issue-tracking system one can find in Bitbucket \cite{bitbucket}
       gave us great control and overview on the project without being a hassle to administrate. 
       If you have or want to further work on this project we can only recommend
       getting access to our Bitbucket repository, because there you find additional notes on every issue and basically see why things went the way they did.
       
     \item [PyCharm:]
       For our python coding we used the \ac{IDE} PyCharm \cite{pycharm} and were more than pleased with its speed and debugging possibilities.
-      Its refactoring methods made changing the code easy and comfortable. Particularly the code analysis tool that comes with it made sticking to the
-      \ac{PEP8} \footnote{See http://legacy.python.org/dev/peps/pep-0008/} style-guideline almost fun and we hope it helps you to better understand our code.
+      Its refactoring methods made changing the code easy and comfortable.
+      Particularly the code analysis tool that comes with it made sticking to the \ac{PEP8} \footnote{See http://legacy.python.org/dev/peps/pep-0008/}
+      style-guideline almost fun and we hope it helps you to better understand our code.
       
 \newpage
       
@@ -343,5 +348,3 @@
     \end{figure}
     
 \clearpage
-
-  

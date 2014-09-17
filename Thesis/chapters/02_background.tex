@@ -1,8 +1,8 @@
 \chapter{Background}
-This chapter provides background information on Wireless Networks and recalls some graph-theoretic basics we used in our work.
-At first we will take a look at the relevant points of APs followed by illustrating the bigger picture on how to use those
-within a network. Then, we examine the way APs communicate with each other through channels, how those communications are affected by interference, and
-how to access the shared medium. Finally, we will outline the implementation of the \ac{WDS} we are optimizing.
+This chapter provides background information on wireless networks and recalls the graph-theoretic basics we used in this work.
+At first we will take a look at APs followed by illustrating the bigger picture on how they work within a network. 
+Then, we examine the way APs communicate through channels, how those communications are affected by interference and how they access the shared medium. 
+Finally, we will outline the implementation of the \ac{WDS} we are optimizing.
 In the second part, we explain spanning trees on graphs and depict graph attributes like edge- and vertex-connectivity.
 Subsequently, we will give a detailed description of how we map a real world \ac{AP}-infrastructure-setup to network graphs in order 
 to compute a solution and conclude this part by discussing the relevance of the problem COLORING for our approach.
@@ -29,14 +29,17 @@ to compute a solution and conclude this part by discussing the relevance of the 
       \item[Infrastructure-mode:]
 	Using this mode, the clients connect themselves to the APs in order to get access to the network behind the APs, like fileservers or the internet.
 	To do so one or more APs announce their services through small broadcasted packets called beacons, which include a \ac{SSID}, 
-	the name/identifier of the wireless network. Those are used to differentiate multiple wireless networks from each other if used in the same area. 
+	the name/identifier of the wireless network. 
+	Those are used to differentiate multiple wireless networks from each other if used in the same area. 
 	SSIDs, if received, are then used by the clients to establish a link to the APs.
 
       \item [Point-to-Point mode:]
 	This mode is defined by a static link between exactly two interfaces in contrast to infrastructure- and ad-hoc- mode, where this affiliation is not determined.
-	It allows an \ac{AP} to create a dedicated link to another \ac{AP} using the same mode. This link would consequently be shared only by these two APs,
-	additionally the transmitted data is encrypted. This mode is useful in scenarios where complex connection-constellations can not be achieved by 
-	client-infrastructure-mode combinations solely. Alternatively, one could also use the ad-hoc mode, which was not available, as it was not implemented yet in LANCOM devices.
+	It allows an \ac{AP} to create a dedicated link to another \ac{AP} using the same mode. 
+	This link would consequently be shared only by these two APs,
+	additionally the transmitted data is encrypted. 
+	This mode is useful in scenarios where complex connection-constellations can not be achieved by client-infrastructure-mode combinations solely. 
+	Alternatively, one could also use the ad-hoc mode, which was not available, as it was not implemented yet in LANCOM devices.
 	
       \item [Client-mode:]
 	Here the \ac{AP} behave the same as ordinary clients like laptops or smartphones.
@@ -56,16 +59,18 @@ to compute a solution and conclude this part by discussing the relevance of the 
     \newpage
      
   \subsection{Channel}
-    A \ac{WLAN} channel as specified by the IEEE 802.11 family uses a specific frequency-range in the \ac{UHF} or \ac{SHF} radio-scope in order 
-    to modulate data digitally on carrier waves.
+    A \ac{WLAN} channel as specified by the IEEE 802.11 family uses a specific frequency-range in 
+    the \ac{UHF} or \ac{SHF} radio-scope in order to modulate data digitally on carrier waves.
     Doing this allows transmitting data from a sender station to a receiver station and creates a network-link between them.
     \ac{WLAN} uses two license-free frequency bands at 2.4 GHz and additionally bands around 5 GHz.
     As we can see in Figure \ref{fig:wlan_channels}, channels have overlapping regions, which can lead to conflicts.
-    Two independent pairs of radios in the same area can communicate almost free of interference, if they use different, non-overlapping channels.
+    Two independent pairs of radios in the same area can communicate almost free of interference, 
+    if they use different, non-overlapping channels.
     Newer APs may use channels with 40 MHz bandwidth in order to further increase throughput with the drawback of creating more overlapping frequency-regions
     and therefore possibly creating sources of interference for other channels close-by.
-    The overlapping regions are a problem especially in the 2.4 GHz band, but if wider versions of channels in the 5 GHz band are used, also those are affected,
-    although not as bad as in the 2.4 GHz, where the channels overlap per even at 20 MHz width.
+    The overlapping regions are a problem especially in the 2.4 GHz band. 
+    If wider versions of channels in the 5 GHz band are used, also those are affected,
+    although not as bad as in the 2.4 GHz, where the channels overlap even at 20 MHz width.
     
     \begin{figure}[bh!]
       \centering
@@ -90,8 +95,9 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	  otherwise a collision will occur resulting in the loss of data packets or frames. 
 	  CSMA works when a device needs to initiate or transfer data over the network. 
 	  Before transferring, each CSMA must check or listen to the network for any other transmissions that may be in progress. 
-	  If it senses a transmission, the device will wait for it to end. Once the transmission is completed, 
-	  the waiting device can transmit its data/signals. However, if multiple devices access it simultaneously and a collision occurs, 
+	  If it senses a transmission, the device will wait for it to end. 
+	  Once the transmission is completed, the waiting device can transmit its data/signals.
+	  However, if multiple devices access it simultaneously and a collision occurs, 
 	  they both have to wait for a specific time before reinitiating the transmission process. 
 	\end{quotation}
 	
@@ -100,8 +106,9 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	
 	Another interesting, but undesired effect in accessing the medium despite following the CSMA algorithm is the hidden-station-problem.
 	It describes a scenario where an \ac{AP} B is in range of A and C, but A and C do not see each other (see Figure \ref{fig:csmaca}).
-	Then, if the situation occurs that the two outer APs simultaneously want to send data to the \ac{AP} in the middle, as they can not notice the 
-	other AP sending data, their packets collide at B and therefore effectively transmit less or nothing at all, since B is not able to correctly decode the packets.
+	Then, if the situation occurs that the two outer APs simultaneously want to send data to the \ac{AP} in the middle, 
+	as they can not notice the other AP sending data, their packets collide at B.
+	Therefore they effectively transmit less or nothing at all, since B is not able to correctly decode the packets.
 	The effect is similar to two people talking to a third person at the same time.
 	To alleviate the problem the RTS/CTS extension was introduced, which introduces small \ac{RTS}-requests and \ac{CTS}-announcements. 
 	This is basically the station/person that is talked to announcing to whom it is going to listen for the next period of time.
@@ -115,33 +122,33 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	    If B then wants to also transmit data to B, it checks if the medium is free, which it falsely assumes
 	    and then starts to transmit its data. This leads to collisions at B in step 2 and the data received will be corrupt.
 	    With RTS/CTS: First A asks B if it may send data to it, which B allows by sending the OK to every station listening (A and C). 
-	    Then A sends its data to B while C has to wait until B's time slice expires (a CTS defines the amount of time how long a station will listen to another, so there is no
-	    need for constant polling). Eventually C succeeds in getting its CTS from A and is able to also transmit its data to B without collisions.}
+	    Then A sends its data to B while C has to wait until B's time slice expires 
+	    (a CTS defines the amount of time how long a station will listen to another, so there is no need for constant polling).
+	    Eventually C succeeds in getting its CTS from A and is able to also transmit its data to B without collisions.}
 	  \label{fig:csmaca}
 	\end{figure}
 
       \subsubsection{Interference}
-	Wireless interference occurs if two senders at the same time transmit data on the same carrier frequency. If so the waves may interfere and be wrongly detected
-	by the receiving stations. This leads to changed bits in the derived data and may result in turn to corrupt messages if more bits are flipped than the
-	forward error correction algorithms can detect. Such a malformed packet may not even be recognized as such, if the preamble, which is a certain signal to indicate an
-	incoming data stream, is already corrupt, rendering the rest of the packet as unusable noise. If a certain threshold of flipped bits occur after the preamble,
-	calculating the checksum on those packets will then show that there have been errors while transmitting the data, which will make the receiving station 
-	throw away this packet (destructive interference).
-	As the receiving station will not acknowledge the receipt of the packet, the sender will assume the packet was not transmitted correctly and therefore try 
-	to send the same packet again. If this process occurs often, throughput performance will suffer as it takes more time to send the same amount of data.
+	Wireless interference occurs if two senders at the same time transmit data on the same carrier frequency. 
+	If so the waves may interfere and be wrongly detected 	by the receiving stations. 
+	This leads to changed bits in the derived data and may result in turn to corrupt messages if more bits are flipped than the 	forward error correction algorithms can detect.
+	Such a malformed packet may not even be recognized as such,
+	if the preamble\footnote{The preamble is a certain signal to indicate an incoming data stream.} is already corrupt. 
+	This consequently renders the rest of the packet as unusable noise.
+	If a certain threshold of flipped bits is reached after the preamble,
+	calculating the checksum on those packets will then show that there have been errors while transmitting the data.
+	This will make again the receiving station drop this packet (destructive interference).
+	As the receiving station will not acknowledge the receipt of the packet,
+	the sender will assume the packet was not transmitted correctly and therefore try to send the same packet again.
+	If this process occurs often, throughput performance will suffer as it takes more time to send the same amount of data.
 	This kind of interference is called cooperative and occurs if two radios claim the same channel/medium (co-channel/adjacent-channel interference) if CSMA fails,
 	like in the hidden-station or exposed-station problem.
-	Whereas there is also uncooperative interference from devices like microwaves or cordless phones which do not access the medium purposefully, but rather
-	emit noise by accident on the same frequency. Nevertheless, the effect is the same.
+	Whereas there is also uncooperative interference from devices like microwaves or cordless phones which do not access the medium purposefully, 
+	but rather emit noise by accident on the same frequency.
+	Nevertheless, the effect is the same.
 	
 	For our purposes we generally define interference for wireless connections as any kind of disruption in communication, 
 	that includes both cooperative and non-cooperative interference.
-	
-	Despite solutions like RTS/CTS and others that mitigate the hidden station problem (and alleviate the cooperative interference),
-	there are still some situations where collisions and therefore interference occurs.
-	Additionally at a certain signal-strength level a station, while doing its carrier sensing, may not be able to differentiate noise from another stations transmission.
-	As Padhye et al.\cite{padhye2005estimation} mention, interference is the key cause of performance degradation in wireless networks. Hence, our idea is to increase throughput 
-	performance by reducing interference as much as possible.
 	
 	\begin{figure}[h!]
 	  \centering
@@ -150,6 +157,13 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	  \label{fig:interferenz}
 	\end{figure}
 	
+	Despite solutions like RTS/CTS and others that mitigate the hidden station problem (and alleviate the cooperative interference),
+	there are still some situations where collisions and therefore interference occurs.
+	Additionally at a certain signal-strength level a station, while doing its carrier sensing,
+	may not be able to differentiate noise from another stations transmission.
+	As Padhye et al.\cite{padhye2005estimation} mention, interference is the key cause of performance degradation in wireless networks.
+	Hence, our idea is to increase throughput performance by reducing interference as much as possible.
+
 \newpage
 	      
     \subsection{Wireless Distribution System (WDS)}
@@ -157,23 +171,27 @@ to compute a solution and conclude this part by discussing the relevance of the 
       
       \begin{quote}
 	creates a wireless backbone link between multiple access points that are part of the same wireless network. 
-	This allows a wireless network to be expanded using multiple access points without the need for a wired backbone to link them, as is traditionally required. 
+	This allows a wireless network to be expanded using multiple access points without the need for a wired backbone to link them, 
+	as is traditionally required. 
 	The WDS-enabled \ac{AP} can accept wireless clients (e.g. wireless laptop users) just as traditional APs would.
       \end{quote}
 
       They also point out, that WDS is currently not a certified standard of the \ac{IEEE} and every vendor implements it in a different way.
-      For an example see Figure \ref{fig:camping}. The idea behind this system is to make increasing the range of an already pre-configured \ac{WDS}
+      For an example see Figure \ref{fig:camping}.
+      The idea behind this system is to make increasing the range of an already pre-configured \ac{WDS}
       easy by just adding another \ac{AP} somewhere in range of the other APs and powering it on.
       Setting up the rest of the infrastructure and configuration from then on is supposed to happen automatically. 
-      This system allows us for example to quickly bring a network infrastructure to areas where no 
-      existing infrastructures (existing power- or network-cabling) can be utilized for this purpose, without the burden of creating such a costly infrastructure.
+      This system allows us for example to quickly bring a network infrastructure to areas where no existing infrastructures 
+      (existing power- or network-cabling) can be utilized for this purpose, without the burden of creating such a costly infrastructure.
       
       \subsubsection{\ac{WLC}}
 	The purpose of a \ac{WLC} is to centrally manage and configure multiple APs automatically - effectively ease the job of the administrator responsible for a 
-	wireless infrastructure. They are usually located in central networking-cabinets next to other network core components like switches and servers.
-	Managing such a \ac{WDS} can also be done through another central entity somewhere else in the network, for example by
-	electing an \ac{AP} for this job, which is directly connected to the wired \ac{LAN}, as it is done by DD-WRT \cite{dd_wrt}. 
-	Taking it one step further and eliminating the central logic at all would then result in a distributed logic on each of the APs, which is however more complex. 
+	wireless infrastructure.
+	They are usually located in central networking-cabinets next to other network core components like switches and servers.
+	Managing such a \ac{WDS} can also be done through another central entity somewhere else in the network,
+	for example by 	electing an \ac{AP} for this job, which is directly connected to the wired \ac{LAN}, as it is done by DD-WRT \cite{dd_wrt}. 
+	Taking it one step further and eliminating the central logic at all would then result in a distributed logic on each of the APs,
+	which is however more complex.
 	We will only deal with the centrally, managed scenario and ignore distributed approaches.
 	
 	\begin{figure}[h!]
@@ -203,7 +221,8 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	
       \subsubsection{Automatic \ac{WDS}}
 	\label{autowdsbasic}
-	\textit{AutoWDS} is an extension to the \ac{WLC}-aided configuration by also allowing such a configuration procedure over wireless links instead of solely wired connections.
+	\textit{AutoWDS} is an extension to the \ac{WLC}-aided configuration by also allowing such a configuration procedure 
+	  over wireless links instead of solely wired connections.
             
 	\begin{figure}[h!]
 	  \centering
@@ -216,7 +235,8 @@ to compute a solution and conclude this part by discussing the relevance of the 
 	The procedure is enhanced accordingly:
 	
 	\begin{enumerate}
-	  \item The first \ac{AP} finds a \ac{WLC} and proceeds as before. Additionally it announces its connection to the \ac{WLC} over its radios to other APs.
+	  \item The first \ac{AP} finds a \ac{WLC} and proceeds as before.
+	    Additionally it announces its connection to the \ac{WLC} over its radios to other APs.
 	  
 	  \item The second \ac{AP} does not find a \ac{WLC} on its \ac{LAN}-interface and extends its search on the radios. 
 	    There it receives the announcement of the first \ac{AP}.
@@ -269,16 +289,17 @@ to compute a solution and conclude this part by discussing the relevance of the 
     
   \subsection{Minimum Spanning Tree}
     A spanning tree is a subgraph for a given graph which contains all nodes of the original graph, but only the necessary and edge-weight minimal 
-    subset of edges which are needed to connect each node to the component. In order to find a minimum spanning tree for a non-negative weighted 
-    graph we use the \ac{DJP} algorithm \cite{jarnik, prim}. It works as described by the following:
+    subset of edges which are needed to connect each node to the component.
+    In order to find a minimum spanning tree for a non-negative weighted graph we use the \ac{DJP} algorithm \cite{jarnik, prim}.
+    It works as described by the following:
     
     \begin{enumerate}
-     \item Initialize the minimum tree with a single, randomly chosen vertex from the given graph.
-     
-     \item For all edges originating the set of nodes in the minimum tree to nodes which have not been visited yet, 
-      select the edge with the lowest score and add it and its nodes to the minimum tree.
+      \item Initialize the minimum tree with a single, randomly chosen vertex from the given graph.
       
-     \item Repeat step two as long as not all vertices of the given graph are visited.
+      \item For all edges originating the set of nodes in the minimum tree to nodes which have not been visited yet, 
+	select the edge with the lowest score and add it and its nodes to the minimum tree.
+	
+      \item Repeat step two as long as not all vertices of the given graph are visited.
     \end{enumerate}
     
     \begin{figure}[th!]
@@ -293,22 +314,24 @@ to compute a solution and conclude this part by discussing the relevance of the 
     On the other hand, Raniwala et al. \cite{caa_tricky} also mention:
     
     \begin{quote}
-      At first glance, this problem appears to be a graph-coloring problem. However, standard graph-coloring algorithms cannot really capture the specification and constraints 
-      of the channel assignment problem. A node-multi-coloring formulation fails to capture [...] communicating nodes need[ing] a common color. On the other hand,
-      an edge-coloring formulation fails to capture the [...] constraint where no more than \textit{q} (number of NICs per node) colors can be incident to a node.
-      While a constraint edge-coloring might be able to roughly model the remaining constraints, it is incapable of satisfying the constraint of limited channel capacity.
+      At first glance, this problem appears to be a graph-coloring problem.
+      However, standard graph-coloring algorithms cannot really capture the specification and constraints of the channel assignment problem.
+      A node-multi-coloring formulation fails to capture [...] communicating nodes need[ing] a common color.
+      On the other hand, an edge-coloring formulation fails to capture the [...] constraint
+      where no more than \textit{q} (number of NICs per node) colors can be incident to a node.
+      While a constraint edge-coloring might be able to roughly model the remaining constraints,
+      it is incapable of satisfying the constraint of limited channel capacity.
     \end{quote}
     
-    In addition to the modeling problems a potential result of such a COLORING solution still would not make a point on the topology to use,
-    as COLORING works on given network graphs and therefore topologies, but we also have to decide how to create and select the network topology.
+    In addition to the modeling problems a potential result of such a COLORING solution still would not make a point on the topology to use.
+    COLORING works on given network graphs and therefore topologies, but we also have to decide how to create and select the network topology.
     As a consequence, this formal problem or solutions to it are not considered in our work.
     
   \subsection{Mapping Network to Graph}
     For our purposes we will use the following mapping from devices and modules to a undirected, weighted graph.
     Each \ac{AP} and each module of our APs is represented by a node.
     
-    For each \ac{AP} we add edges with a special attribute "artificial" 
-    to each module of its corresponding \ac{AP} and describe those edges as artificial or device-module-edges.
+    For each \ac{AP} we add edges with a special attribute "artificial" to each module of its corresponding \ac{AP} and describe those edges as artificial or device-module-edges.
     Those edges also have their \ac{SNR} value set to the maximum value possible. 
     
     If two modules are within receive range of each other, 
