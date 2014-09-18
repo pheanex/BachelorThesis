@@ -7,11 +7,10 @@ On the other hand such a comparison would have to be treated with caution since,
 Si et al. \cite{overview_caa} provide an overview on the current well-known solutions on \ac{CA} and may serve for a further review and comparison.
 Therefore the following tests will focus on the comparison between \textit{AutoWDS basic} and its extended, optimized version.
 Furthermore our tests were restricted to the evaluation of spanning tree topologies, because \textit{AutoWDS} currently 
-still uses a bridged network for its APs instead of a proper routing system, with the drawback of \ac{STP} being active.
-\footnote{\ac{STP} is a temporary measure since it does not scale well. 
+still uses a bridged network for its APs instead of a proper routing system, with the drawback of \ac{STP} being active.\footnote{\ac{STP} is a temporary measure since it does not scale well. 
 Our survival paths are supposed to lay the ground for redundancy-systems in Layer 2 (like FabricPath \cite{fabricpath}).} 
 This means even if we would try to run a network topology with survival paths in it on \textit{AutoWDS}, \ac{STP} would disable some links in order to 
-eliminate circles in the topology \footnote{Circles in a network topology are undesirable since they can lead to broadcast-storms see \ac{IEEE} 802.1D}.
+eliminate circles in the topology.\footnote{Circles in a network topology are undesirable since they can lead to broadcast-storms see \ac{IEEE} 802.1D}
 As a consequence achievable throughput will be lower than it could be with survival paths.
 
 \newpage
