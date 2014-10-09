@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="29cm" height="18cm" viewBox="280 320 580 360" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <g>
+      <ellipse style="fill: #217521" cx="357.766" cy="512.088" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="357.766" cy="512.088" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="357.766" cy="512.088" rx="6.75" ry="6.75"/>
+    </g>
+    <g>
+      <ellipse style="fill: #217521" cx="332.316" cy="496.226" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" cx="332.316" cy="496.226" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" cx="332.316" cy="496.226" rx="6.75" ry="6.75"/>
+    </g>
+    <g>
+      <ellipse style="fill: #217521" cx="307.142" cy="481.066" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="307.142" cy="481.066" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="307.142" cy="481.066" rx="6.75" ry="6.75"/>
+    </g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="313.786" y1="485.067" x2="325.672" y2="492.225"/>
+    <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="338.89" y1="500.323" x2="351.192" y2="507.991"/>
+  </g>
+  <g>
+    <ellipse style="fill: #9cdaa4" cx="416.754" cy="634.436" rx="6.75" ry="6.75"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #9cdaa4" cx="416.754" cy="634.436" rx="6.75" ry="6.75"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #9cdaa4" cx="416.754" cy="634.436" rx="6.75" ry="6.75"/>
+  </g>
+  <g>
+    <g>
+      <ellipse style="fill: #217521" cx="538.482" cy="499.932" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="538.482" cy="499.932" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="538.482" cy="499.932" rx="6.75" ry="6.75"/>
+    </g>
+    <g>
+      <ellipse style="fill: #217521" cx="513.032" cy="484.07" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" cx="513.032" cy="484.07" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" cx="513.032" cy="484.07" rx="6.75" ry="6.75"/>
+    </g>
+    <g>
+      <ellipse style="fill: #217521" cx="487.858" cy="468.912" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="487.858" cy="468.912" rx="6.75" ry="6.75"/>
+      <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #217521" cx="487.858" cy="468.912" rx="6.75" ry="6.75"/>
+    </g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="494.502" y1="472.912" x2="506.388" y2="480.07"/>
+    <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="519.606" y1="488.167" x2="531.908" y2="495.835"/>
+  </g>
+  <g>
+    <ellipse style="fill: #9cdaa4" cx="419.176" cy="366.77" rx="6.75" ry="6.75"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #9cdaa4" cx="419.176" cy="366.77" rx="6.75" ry="6.75"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #9cdaa4" cx="419.176" cy="366.77" rx="6.75" ry="6.75"/>
+  </g>
+  <g>
+    <ellipse style="fill: #9cdaa4" cx="642.432" cy="444.308" rx="6.75" ry="6.75"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #9cdaa4" cx="642.432" cy="444.308" rx="6.75" ry="6.75"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #9cdaa4" cx="642.432" cy="444.308" rx="6.75" ry="6.75"/>
+  </g>
+  <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="365.007" y1="509.685" x2="480.617" y2="471.315"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #cbcbcb" x1="423.485" y1="373.179" x2="483.549" y2="462.503"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #cbcbcb" x1="413.398" y1="627.476" x2="361.122" y2="519.048"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #cbcbcb" x1="635.599" y1="447.964" x2="545.315" y2="496.276"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #cbcbcb" x1="419.814" y1="627.314" x2="484.798" y2="476.034"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #cbcbcb" x1="416.159" y1="373.91" x2="360.783" y2="504.948"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #cbcbcb" x1="495.5" y1="467.696" x2="634.79" y2="445.524"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 2.35099e-37; stroke: #ffffff" x="280.621" y="320.557" width="579.991" height="359.976"/>
+</svg>
