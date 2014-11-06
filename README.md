@@ -1,4 +1,4 @@
-Using a wireless backbone in a \ac{WDS} can be tricky as performance decreases with increasing size due to interference, 
+Using a wireless backbone in a WDS can be tricky as performance decreases with increasing size due to interference, 
 especially if channels and network topology are not selected carefully beforehand. 
 Additionally network dissociations may occur easily if crucial links fail as redundancy is neglected.
 
@@ -8,5 +8,5 @@ Our evaluation results show an increase in throughput performance of up to 9 tim
 and only one channel for the whole network is used.
 Furthermore our solution also provides a robust network topology which tackles the issue of network partition for single link failures by using survival paths.
 
-We achieve this gain in performance by utilizing multi-radio accesspoints and enhancing the \ac{DJP}-algorithm for graphs by a scoring system combined with
+We achieve this gain in performance by utilizing multi-radio Accesspoints and enhancing the DJP-algorithm for graphs by a scoring system combined with
 a greedy channel assignment.
