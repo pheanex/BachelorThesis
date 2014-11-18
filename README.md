@@ -1,3 +1,4 @@
+Title: Robust Link Selection and Channel Assignment for Centrally Managed Wireless Mesh Networks
 Using a wireless backbone in a WDS can be tricky as performance decreases with increasing size due to interference, 
 especially if channels and network topology are not selected carefully beforehand. 
 Additionally network dissociations may occur easily if crucial links fail as redundancy is neglected.
