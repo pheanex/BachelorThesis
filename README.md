@@ -1,4 +1,4 @@
-# Bachelor Thesis Computer Science @RWTH Aachen University @Chair of Computer Science i4/ComSys in cooperation with LANCOM Systems
+# Bachelor Thesis
 ![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/RWTH-Aachen-logo.png "RWTH Aachen") ![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/comsys-logo.png "ComSys RWTH") ![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/lancom-logo.png "LANCOM Systems")
 ## Title: Robust Link Selection and Channel Assignment for Centrally Managed Wireless Mesh Networks
 ## Abstract
@@ -14,3 +14,6 @@ Furthermore our solution also provides a robust network topology which tackles t
 
 We achieve this gain in performance by utilizing multi-radio Accesspoints and enhancing the DJP-algorithm for graphs by a scoring system combined with
 a greedy channel assignment.
+
+![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/channel-list.png "WLAN Mesh") ![alt text](https://github.com/pheanex/BachelorThesis/blob/master/Bilder/topo_chan_1_6_11_36_40_44.png?raw=true "Abstract network mesh") 
+
