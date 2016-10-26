@@ -1,4 +1,7 @@
-Title: Robust Link Selection and Channel Assignment for Centrally Managed Wireless Mesh Networks
+# Bachelor Thesis Computer Science @RWTH Aachen University @Chair of Computer Science i4/ComSys in cooperation with LANCOM Systems
+![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/RWTH-Aachen-logo.png "RWTH Aachen") ![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/comsys-logo.png "ComSys RWTH") ![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/lancom-logo.png "LANCOM Systems")
+## Title: Robust Link Selection and Channel Assignment for Centrally Managed Wireless Mesh Networks
+## Abstract
 Using a wireless backbone in a WDS can be tricky as performance decreases with increasing size due to interference, 
 especially if channels and network topology are not selected carefully beforehand. 
 Additionally network dissociations may occur easily if crucial links fail as redundancy is neglected.
