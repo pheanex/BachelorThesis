@@ -15,5 +15,5 @@ Furthermore our solution also provides a robust network topology which tackles t
 We achieve this gain in performance by utilizing multi-radio Accesspoints and enhancing the DJP-algorithm for graphs by a scoring system combined with
 a greedy channel assignment.
 
-![alt text](https://raw.githubusercontent.com/pheanex/BachelorThesis/master/Bilder/channel-list.png "WLAN Mesh") ![alt text](https://github.com/pheanex/BachelorThesis/blob/master/Bilder/topo_chan_1_6_11_36_40_44.png?raw=true "Abstract network mesh") 
+![alt text](https://github.com/pheanex/BachelorThesis/blob/master/Bilder/topo_chan_1_6_11_36_40_44.png?raw=true "Abstract network mesh") 
 
