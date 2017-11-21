@@ -17,3 +17,4 @@ a greedy channel assignment.
 
 ![alt text](https://github.com/pheanex/BachelorThesis/blob/master/Bilder/topo_chan_1_6_11_36_40_44.png?raw=true "Abstract network mesh") 
 
+You can find the thesis here [thesis.pdf](https://github.com/pheanex/BachelorThesis/blob/master/Thesis/thesis.pdf)
